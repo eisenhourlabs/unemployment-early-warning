@@ -70,10 +70,10 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 - 2026-11-07: Git initialized; pushed to public repo github.com/eisenhourlabs/unemployment-early-warning;
   FRED_API_KEY repository secret set.
 - 2026-11-07: first "Refresh data" workflow run green (run 42398782692): 159 ok, 0 failed, ~5 min; data-bot commit pushed.
-- Open items from that run: (a) the workflow stays green when some series fail (fetcher exits 1 only if ALL
-  fail), so partial failures must be caught by the Phase 1 data-quality checks / series-health summary;
-  (b) GitHub warns that actions/checkout@v4 and actions/setup-python@v5 use deprecated Node 20, so bump them
-  after checking current versions; (c) cloud uses Python 3.12, local .venv uses 3.15.
+- 2026-11-07: open items from that run fixed (see docs/decisions.md), confirmed green in run 42403686070:
+  fetcher now fails the run if any Tier 1 series fails or >10% of series fail, and prints a failed-series
+  summary; workflow uses actions/checkout@v7, actions/setup-python@v7 and Python 3.15 (matches .venv).
+- Watch: GitHub is moving ubuntu-latest to Ubuntu 26 (Python 3.15 is available there too).
 
 ## Next steps, in order
 1. Create `.venv`, install requirements, run the fetcher for UNRATE ICSA CCSA; check the output looks right
