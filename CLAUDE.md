@@ -103,7 +103,7 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   calculations); our US exhaustion rate / duration differ from DOL's published US figures by 0.08 pp /
   0.02 weeks for 2026 Q2 while every state matches exactly (cause not yet identified).
 
-- 2026-11-07: Phase 1 finished locally: FRED IDs verified; RPLS / GTRENDS / WARN / CHALLENGER set to
+- 2026-11-07: Phase 1 finished and confirmed green in the cloud (run 42413581523): FRED IDs verified; RPLS / GTRENDS / WARN / CHALLENGER set to
   future; Chicago Fed LMI fetcher (36 series); data-quality checks + series-health summary (211 series:
   206 OK, 5 skipped, 0 WARN, 0 FAIL on 2026-11-07). DOL open items accepted (see docs/decisions.md).
 - Still to watch: first real Thursday run (2026-11-12); ETA 539 national allowed age (42 days) is based on
