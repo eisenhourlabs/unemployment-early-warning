@@ -62,14 +62,18 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 - Fetch everything (~160 series, ~2 min): `python src\fetchers\fred_fetcher.py`
 - Test alerts (prints only while off): `python src\alerts\alerts.py`
 
-## Status (2026-11-06)
+## Status (2026-11-07)
 - Phase 0 done: folders, catalog (35 active rows), footprint weights, FRED fetcher (tested only against
   mocked API responses), scheduled workflow, alerts module.
 - 2026-11-07: `.venv` created; first live full fetch done, all 159 active series OK after one catalog ID fix
   (Empire State, logged in docs/decisions.md).
 - 2026-11-07: Git initialized; pushed to public repo github.com/eisenhourlabs/unemployment-early-warning;
   FRED_API_KEY repository secret set.
-- NOT yet done: first workflow run.
+- 2026-11-07: first "Refresh data" workflow run green (run 42398782692): 159 ok, 0 failed, ~5 min; data-bot commit pushed.
+- Open items from that run: (a) the workflow stays green when some series fail (fetcher exits 1 only if ALL
+  fail), so partial failures must be caught by the Phase 1 data-quality checks / series-health summary;
+  (b) GitHub warns that actions/checkout@v4 and actions/setup-python@v5 use deprecated Node 20, so bump them
+  after checking current versions; (c) cloud uses Python 3.12, local .venv uses 3.15.
 
 ## Next steps, in order
 1. Create `.venv`, install requirements, run the fetcher for UNRATE ICSA CCSA; check the output looks right
