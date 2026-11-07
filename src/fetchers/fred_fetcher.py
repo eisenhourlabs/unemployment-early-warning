@@ -10,6 +10,8 @@ What it does, step by step:
   5. If the data changed since last time, also saves a dated copy in data/vintages/<SERIES_ID>/
      so we keep a record of revisions (important for honest backtests).
   6. Writes data/processed/_metadata.csv (title, units, last updated) and data/fetch_log.csv.
+  7. Prints a summary of any failed series and exits with code 1 (a red GitHub run) if any
+     Tier 1 series failed or more than 10% of all series failed. Otherwise exits with code 0.
 
 How to run it (from the project folder):
     python src/fetchers/fred_fetcher.py            # fetch everything
@@ -40,6 +42,10 @@ FRED_URL = "https://api.stlouisfed.org/fred"
 START_DATE = "1990-01-01"   # history start; enough for 3 recessions of backtesting
 PAUSE_SECONDS = 0.6         # FRED allows ~120 requests/minute; this keeps us well under
 
+# When should a run count as failed (exit code 1, which turns the GitHub run red)?
+CRITICAL_TIER = "1"         # any failure in this tier fails the run
+MAX_FAIL_SHARE = 0.10       # ...or more than this share of all series failing
+
 
 def load_api_key() -> str:
     """Return the FRED key. Cloud runs use an environment variable; your PC uses config/.env."""
@@ -54,14 +60,17 @@ def load_api_key() -> str:
     return key
 
 
-def series_to_fetch(only=None) -> list[str]:
-    """Build the list of FRED series IDs from the catalog."""
+def series_to_fetch(only=None) -> dict[str, str]:
+    """Build the FRED series list from the catalog, as {series_id: tier}.
+
+    Per-state series inherit the tier of their STATE_ template row.
+    """
     states = []
     with open(STATE_WEIGHTS) as f:
         lines = [l for l in f if not l.startswith("#")]
         states = [row["state"] for row in csv.DictReader(lines)]
 
-    ids = []
+    tiers = {}   # dicts keep insertion order, so series are fetched in catalog order
     with open(CATALOG) as f:
         for row in csv.DictReader(f):
             if row["fetcher"] != "fred" or row.get("status", "active") != "active":
@@ -70,12 +79,14 @@ def series_to_fetch(only=None) -> list[str]:
             if sid.startswith("STATE_"):
                 # e.g. "State initial claims (e.g. TXICLAIMS)" -> pattern {ST}ICLAIMS
                 suffix = {"STATE_ICLAIMS": "ICLAIMS", "STATE_CCLAIMS": "CCLAIMS", "STATE_UR": "UR"}[sid]
-                ids += [st + suffix for st in states]
+                for st in states:
+                    tiers[st + suffix] = row["tier"]
             else:
-                ids.append(sid)
+                tiers[sid] = row["tier"]
     if only:
-        ids = list(only)   # series named on the command line, whether or not they are in the catalog
-    return ids
+        # Series named on the command line, whether or not they are in the catalog ("?" = unknown tier).
+        tiers = {sid: tiers.get(sid, "?") for sid in only}
+    return tiers
 
 
 def fred_get(endpoint: str, params: dict, key: str, tries: int = 3) -> dict:
@@ -134,7 +145,8 @@ def save(sid: str, df: pd.DataFrame) -> bool:
 
 def main(only=None):
     key = load_api_key()
-    ids = series_to_fetch(only)
+    tiers = series_to_fetch(only)
+    ids = list(tiers)
     print(f"Fetching {len(ids)} FRED series...")
     meta_rows, log_rows = [], []
     run_time = datetime.now(timezone.utc).isoformat(timespec="seconds")
@@ -166,7 +178,32 @@ def main(only=None):
 
     failed = log[log.status.str.startswith("FAILED")]
     print(f"Done: {len(log) - len(failed)} ok, {len(failed)} failed.")
-    return 1 if len(failed) == len(log) else 0   # exit code 1 only if everything failed
+    return run_verdict(failed, len(log), tiers)
+
+
+def run_verdict(failed: pd.DataFrame, total: int, tiers: dict) -> int:
+    """Print a failure summary and return the exit code: 1 = run failed, 0 = run OK."""
+    if failed.empty:
+        return 0
+
+    print("\nFailed series:")
+    for _, row in failed.iterrows():
+        print(f"  {row.series_id:<22} tier {tiers.get(row.series_id, '?'):<2} {row.status}")
+
+    critical = [sid for sid in failed.series_id if tiers.get(sid) == CRITICAL_TIER]
+    share = len(failed) / total
+    reasons = []
+    if critical:
+        reasons.append(f"Tier {CRITICAL_TIER} series failed: {', '.join(critical)}")
+    if share > MAX_FAIL_SHARE:
+        reasons.append(f"{len(failed)} of {total} series failed ({share:.1%}; limit {MAX_FAIL_SHARE:.0%})")
+
+    if reasons:
+        print("\nRUN FAILED: " + "; ".join(reasons))
+        return 1
+    print(f"\nRun OK: {len(failed)} of {total} failed ({share:.1%}), no Tier {CRITICAL_TIER} failures (limits: any Tier "
+          f"{CRITICAL_TIER}, or more than {MAX_FAIL_SHARE:.0%}).")
+    return 0
 
 
 if __name__ == "__main__":
