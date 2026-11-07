@@ -480,3 +480,16 @@ run_utc,series_id,status
 2026-11-07T18:55:57+00:00,UTUR,no change
 2026-11-07T18:55:57+00:00,WYUR,no change
 2026-11-07T18:55:57+00:00,SDUR,no change
+2026-11-07T19:54:17+00:00,DOL_ETA539_NATIONAL,updated: 1658 rows
+2026-11-07T19:54:30+00:00,DOL_ETA539_NATIONAL,updated: 1658 rows; no new periods
+2026-11-07T19:55:05+00:00,DOL_AR539,updated: 88033 rows
+2026-11-07T19:55:07+00:00,DOL_AR5159,updated: 20204 rows
+2026-11-07T19:55:07+00:00,DOL_AR218,updated: 6723 rows
+2026-11-07T19:55:24+00:00,CC4WSA,updated
+2026-11-07T19:55:24+00:00,IURNSA,updated
+2026-11-07T19:56:09+00:00,DOL_NATIONAL_WEEKLY,"updated: 1661 weeks; official through IC 2026-10-10 / CC 2026-10-10; preliminary IC weeks ['2026-10-17', '2026-10-24', '2026-10-31'], CC weeks ['2026-10-17', '2026-10-24']"
+2026-11-07T19:59:55+00:00,DOL_ETA539_NATIONAL,updated: 1658 rows; no new periods
+2026-11-07T19:59:58+00:00,DOL_AR539,updated: 88033 rows; no new periods
+2026-11-07T19:59:59+00:00,DOL_AR5159,updated: 20204 rows; no new periods
+2026-11-07T20:00:00+00:00,DOL_AR218,updated: 6723 rows; no new periods
+2026-11-07T20:00:02+00:00,DOL_NATIONAL_WEEKLY,"updated: 1661 weeks; official through IC 2026-10-10 / CC 2026-10-10; preliminary IC weeks ['2026-10-17', '2026-10-24', '2026-10-31'], CC weeks ['2026-10-17', '2026-10-24']"

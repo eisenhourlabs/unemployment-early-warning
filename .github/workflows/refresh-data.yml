@@ -13,6 +13,10 @@ on:
 permissions:
   contents: write             # lets the job commit the refreshed data files
 
+concurrency:                  # Thursdays have two runs 10 minutes apart: queue them, never run both at once
+  group: refresh-data
+  cancel-in-progress: false
+
 jobs:
   refresh:
     runs-on: ubuntu-latest
@@ -22,14 +26,36 @@ jobs:
         with:
           python-version: "3.15"        # matches the local .venv (3.15.x); newest 3.15 patch is used
       - run: pip install -r requirements.txt
+      - name: Wait for the weekly claims release (Thursday claims run only; never fails)
+        if: github.event.schedule == '35 13 * * 4'
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+        run: python src/fetchers/wait_for_claims.py 5 60
       - name: Fetch FRED series
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
         run: python src/fetchers/fred_fetcher.py
+      # DOL steps run even if an earlier step failed (!cancelled), so one outage doesn't block the rest.
+      - name: Fetch DOL national weekly claims (ETA 539)
+        if: ${{ !cancelled() }}
+        run: python src/fetchers/dol_national.py
+      - name: Fetch DOL state files (ar539, ar5159, ar218)
+        if: ${{ !cancelled() }}
+        run: python src/fetchers/dol_state.py
+      - name: Build merged weekly table (adds preliminary news-release weeks)
+        if: ${{ !cancelled() }}
+        run: python src/fetchers/dol_recent_weeks.py
+      - name: Calculate claims rates, exhaustion rate and duration
+        if: ${{ !cancelled() }}
+        run: python src/transforms/dol_rates.py
+      - name: Check DOL data (fails if DOL and FRED claims differ by more than 1%)
+        if: ${{ !cancelled() }}
+        run: python src/checks/dol_checks.py
       - name: Commit new data (if any)
+        if: ${{ !cancelled() }}         # save whatever succeeded; the run still shows red if a step failed
         run: |
           git config user.name "data-bot"
           git config user.email "data-bot@users.noreply.github.com"
-          git add data/
+          git add data/ docs/data_revisions.md
           git diff --cached --quiet || git commit -m "Data refresh $(date -u +%Y-%m-%dT%H:%MZ)"
           git push

@@ -1,0 +1,24 @@
+# Dashboard requirements
+
+Requirements the Phase 2 dashboard must meet. Add new ones here with the date; record the reasoning
+for design decisions in `docs/decisions.md`.
+
+## DOL claims rates (added 2026-11-07)
+
+1. Chart the **SA initial claims rate** and the **SA continuing claims rate**
+   (`data/processed/dol/claims_rates_weekly.csv`: `ic_rate_sa`, `cc_rate_sa`, in percent of covered employment).
+   - Long history: the full series from 1995.
+   - Recession shading for NBER recessions in the window (2001, 2007-09, 2020).
+   - Preliminary weeks visibly marked: weeks whose `source_initial` / `source_continued` is
+     "news release, advance" or "news release, revised" must look different from "ETA 539" weeks
+     (e.g. hollow markers or a dashed segment), with a legend note that they are preliminary and will be
+     replaced by the official ETA 539 figures.
+
+## Downloads (added 2026-11-07)
+
+2. Every DOL series and the merged weekly table must be downloadable as **CSV and XLSX**:
+   - `national_weekly.csv` (merged table, with its source columns)
+   - `national_weekly_eta539.csv`, `seasonal_factors.csv`
+   - `claims_rates_weekly.csv`, `exhaustion_duration_monthly.csv`, `benefit_duration_quarterly.csv`
+   - `ar539.csv`, `ar5159.csv`, `ar218.csv` (state detail; plain column names)
+   - Each download should include, or link to, the column descriptions in `config/dol_columns.csv`.

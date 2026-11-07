@@ -38,6 +38,10 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 - Alerts exist but stay OFF (`ALERTS_ENABLED=false`) unless Troy says otherwise.
 - Add indicators by adding rows to `config/series_catalog.csv`, not by hard-coding series in scripts.
 - Keep data vintages (`data/vintages/`); backtests must use data as it was known at the time.
+  EXCEPTION: DOL data (`data/processed/dol/`) keeps only the latest figures, with no vintages. Each run
+  overwrites revised history and logs the revision in `docs/data_revisions.md`. For real-time backtests of
+  national claims, use the FRED vintages of ICSA/CCSA/ICNSA/CCNSA instead.
+- DOL data starts in 1995 (all DOL files).
 - Thresholds and model weights come from backtests (2001, 2008, 2020 and recent data). Record every
   decision and its reason in `docs/decisions.md`.
 - Verify current release dates and series status before stating them; data and schedules change.
@@ -48,7 +52,15 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 | --- | --- |
 | `config/series_catalog.csv` | Every series: source, fetcher, frequency, tier, role, page, status (active/future) |
 | `config/state_weights.csv` | Footprint ranking by state (44 states, rank only; exact weights in `internal/`) |
+| `config/dol_columns.csv` | DOL coded column names -> plain names, with how each was confirmed (verified / label / inferred / unclear) |
 | `src/fetchers/fred_fetcher.py` | Downloads all active FRED series (incl. per-state series) to `data/processed/` |
+| `src/fetchers/dol_*.py` | DOL pipeline: `dol_national.py` (ETA 539), `dol_state.py` (ar539/ar5159/ar218), `dol_recent_weeks.py` (merged table + preliminary weeks), `dol_common.py` (shared) |
+| `src/fetchers/wait_for_claims.py` | Thursday run: waits up to 60 min for the claims release on FRED; never fails |
+| `src/transforms/dol_rates.py` | Claims rates, 12-month exhaustion rate, average duration |
+| `src/checks/dol_checks.py` | DOL vs FRED (fails run above 1%); SA continuing claims rate vs DOL IUR (report only) |
+| `data/processed/dol/` | DOL outputs (latest figures only) |
+| `docs/data_revisions.md` | Automatic log of DOL revisions |
+| `docs/dashboard_requirements.md` | What the Phase 2 dashboard must show |
 | `src/alerts/alerts.py` | Optional alerts (off) |
 | `src/signals/`, `src/forecast/` | Phase 3: triggers, composite score, forecast fan |
 | `site/` | Phase 2: the dashboard pages |
@@ -61,6 +73,9 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 - Fetch a few series: `python src\fetchers\fred_fetcher.py UNRATE ICSA CCSA`
 - Fetch everything (~160 series, ~2 min): `python src\fetchers\fred_fetcher.py`
 - Test alerts (prints only while off): `python src\alerts\alerts.py`
+- DOL pipeline, in order (run the FRED fetch first):
+  `python src\fetchers\dol_national.py`, `python src\fetchers\dol_state.py`,
+  `python src\fetchers\dol_recent_weeks.py`, `python src\transforms\dol_rates.py`, `python src\checks\dol_checks.py`
 
 ## Status (2026-11-07)
 - Phase 0 done: folders, catalog (35 active rows), footprint weights, FRED fetcher (tested only against
@@ -74,17 +89,18 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   fetcher now fails the run if any Tier 1 series fails or >10% of series fail, and prints a failed-series
   summary; workflow uses actions/checkout@v7, actions/setup-python@v7 and Python 3.15 (matches .venv).
 - Watch: GitHub is moving ubuntu-latest to Ubuntu 26 (Python 3.15 is available there too).
+- 2026-11-07: DOL pipeline built and tested locally (ETA 539 national, ar539/ar5159/ar218, merged weekly
+  table with preliminary weeks, claims rates, exhaustion rate, duration, checks); added to the workflow.
+  DOL's news release PDF (www.dol.gov) blocks automated downloads, so preliminary weeks come from FRED.
+- DOL open items: 19 coded columns are still "unclear" in config/dol_columns.csv (none are used in
+  calculations); our US exhaustion rate / duration differ from DOL's published US figures by 0.08 pp /
+  0.02 weeks for 2026 Q2 while every state matches exactly (cause not yet identified).
 
 ## Next steps, in order
-1. Create `.venv`, install requirements, run the fetcher for UNRATE ICSA CCSA; check the output looks right
-   (latest unemployment rate, claims in the low hundreds of thousands, no errors). Then run the full fetch
-   and report any FAILED series (likely a wrong ID in the catalog: fix it and log the fix).
-2. Initialize Git, make the first commit (confirm `config/.env` and `internal/` are NOT included).
-3. Create the public GitHub repo with the GitHub CLI (`gh repo create`), push, and set the secret with
-   `gh secret set FRED_API_KEY` (read the value from config/.env without echoing it).
-4. Trigger the workflow (`gh workflow run "Refresh data"`), watch it (`gh run watch`), fix until green.
-5. Then Phase 1 continues: DOL weekly-claims backup fetcher, Chicago Fed LMI fetcher, data-quality checks
-   (freshness, gaps, outliers), and a series-health summary. Then Phase 2: the dashboard MVP on GitHub Pages.
+Setup steps 1-4 (venv, first fetch, Git, GitHub, first workflow run) are done.
+1. Phase 1 continues: Chicago Fed LMI fetcher, data-quality checks (freshness, gaps, outliers), and a
+   series-health summary.
+2. Then Phase 2: the dashboard MVP on GitHub Pages (see docs/dashboard_requirements.md).
 
 ## Where planning lives
 The full plan, roadmap and decisions are kept in Troy's Claude project ("Unemployment Correlations"),

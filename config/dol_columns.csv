@@ -1,0 +1,135 @@
+report,code,name,description,basis
+eta539_national,weekEnded,week_ended,Week ended (Saturday). Continued-claims fields refer to the week of unemployment ending on this date,data map / national report
+eta539_national,InitialClaims/NSA,ic_nsa,"Initial claims, not seasonally adjusted (state programs incl. workshare equivalent)",verified: equals FRED ICNSA every week 1990-2026
+eta539_national,InitialClaims/SF,ic_sf,Initial claims seasonal factor (x100),national report
+eta539_national,InitialClaims/SA,ic_sa,"Initial claims, seasonally adjusted",national report
+eta539_national,InitialClaims/SA4WK,ic_sa_4wk,"Initial claims SA, 4-week moving average",national report
+eta539_national,ContinuedClaims/NSA,cc_nsa,"Continued claims (insured unemployment), NSA",verified: equals FRED CCNSA every week 1990-2026
+eta539_national,ContinuedClaims/SF,cc_sf,Continued claims seasonal factor (x100),national report
+eta539_national,ContinuedClaims/SA,cc_sa,"Continued claims, seasonally adjusted",national report
+eta539_national,ContinuedClaims/SA4WK,cc_sa_4wk,"Continued claims SA, 4-week moving average",national report
+eta539_national,IUR/NSA,iur_nsa,"Insured unemployment rate, NSA (percent, 1 decimal)",national report
+eta539_national,IUR/SA,iur_sa,"Insured unemployment rate, SA (percent, 1 decimal)",verified: cc_sa / covered_employment rounds to it
+eta539_national,CoveredEmployment,covered_employment,Covered employment used as the IUR denominator (updated quarterly),national report
+ar539,st,state,State or area code (50 states + DC + PR + VI),data map
+ar539,rptdate,week_ended,Report week ended (Saturday); initial-claims fields refer to this week,verified: national IC NSA = sum of c3 + c7 by this date
+ar539,c1,week_number,Week number of the year,data map
+ar539,c2,reflected_week_ended,Week of unemployment that continued-claims fields refer to (always 7 days before week_ended),verified: national CC NSA = sum of c8 + c12 by this date
+ar539,c3,ic_state_ui,State UI initial claims (IC),verified (with c7)
+ar539,c4,ic_ucfe,Initial claims for federal employees with no state UI (FIC / UCFE),data map label
+ar539,c5,ic_ucx,Initial claims for ex-servicemembers only (XIC / UCX),data map label
+ar539,c6,ic_stc_workshare,Short-time compensation (workshare) initial claims (WSIC),data map label
+ar539,c7,ic_stc_workshare_equiv,Workshare equivalent initial claims (WSEIC),verified (with c3)
+ar539,c8,cw_state_ui,State UI continued weeks claimed (CW),verified (with c12)
+ar539,c9,cw_ucfe,Continued weeks claimed for federal employees with no state UI (FCW),data map label
+ar539,c10,cw_ucx,Continued weeks claimed for ex-servicemembers only (XCW),data map label
+ar539,c11,cw_stc_workshare,Workshare continued weeks claimed (WSCW),data map label
+ar539,c12,cw_stc_workshare_equiv,Workshare equivalent continued weeks claimed (WSECW),verified (with c8)
+ar539,c13,cw_eb_total,"Extended Benefits continued weeks claimed, total (EBT)",data map label
+ar539,c14,ar539_c14_ebui,EBUI: EB continued weeks related to UI (exact meaning not confirmed),unclear
+ar539,c15,cw_state_additional_total,"State additional benefits continued weeks claimed, total (ABT)",data map label
+ar539,c16,ar539_c16_abui,ABUI: state additional benefit weeks related to UI (exact meaning not confirmed),unclear
+ar539,c17,cw_13wk_avg,Average continued weeks claimed over 13 weeks (AT),inferred: close to 13-week mean of c8
+ar539,c18,covered_employment,Covered employment (CE),data map label; state sum within 0.4% of national
+ar539,c19,iur_13wk,13-week insured unemployment rate (R) used for EB triggers,verified: = 100 x c17 / c18
+ar539,c20,iur_13wk_prior_2yr_avg,Average of the 13-week rate for the same period in the prior 2 years (AR),inferred
+ar539,c21,iur_13wk_pct_of_prior_2yr,c19 as a percent of c20 (P),verified: = 100 x c19 / c20
+ar539,c22,eb_trigger_status,EB trigger status code (e.g. B / E),data map label
+ar539,c23,eb_status_change_date,Date the EB trigger status last changed,data map label
+ar5159,st,state,State or area code,data map
+ar5159,rptdate,month_ended,Last day of the report month,data map
+ar5159,c1,ic_state_ui_total,"State UI initial claims, total (sum of c2 c3 c4)",verified: c1 = c2 + c3 + c4
+ar5159,c2,ic_state_ui_new_intrastate,State UI new intrastate initial claims excl. transitional,inferred (column order)
+ar5159,c3,ic_state_ui_additional_intrastate,State UI additional intrastate initial claims,inferred (column order)
+ar5159,c4,ic_state_ui_interstate_filed_from_agent,State UI interstate claims filed from agent state,inferred (column order)
+ar5159,c97,ic_state_ui_interstate_taken_as_agent,State UI interstate claims taken as agent state,inferred (column order)
+ar5159,c5,ic_state_ui_transitional,State UI transitional claims,inferred (column order)
+ar5159,c6,ic_state_ui_interstate_received_as_liable,State UI interstate claims received as liable state,inferred (column order)
+ar5159,c7,ic_ucfe_total,"UCFE-no-UI initial claims, total (sum of c8 c9 c10)",verified: c7 = c8 + c9 + c10
+ar5159,c8,ic_ucfe_new_intrastate,UCFE new intrastate initial claims,inferred (column order)
+ar5159,c9,ic_ucfe_additional_intrastate,UCFE additional intrastate initial claims,inferred (column order)
+ar5159,c10,ic_ucfe_interstate_filed_from_agent,UCFE interstate claims filed from agent state,inferred (column order)
+ar5159,c98,ic_ucfe_interstate_taken_as_agent,UCFE interstate claims taken as agent state,inferred (column order)
+ar5159,c11,ic_ucfe_transitional,UCFE transitional claims,inferred (column order)
+ar5159,c12,ic_ucfe_interstate_received_as_liable,UCFE interstate claims received as liable state,inferred (column order)
+ar5159,c13,ic_ucx_total,"UCX-only initial claims, total (sum of c14 c15 c16)",verified: c13 = c14 + c15 + c16
+ar5159,c14,ic_ucx_new_intrastate,UCX new intrastate initial claims,inferred (column order)
+ar5159,c15,ic_ucx_additional_intrastate,UCX additional intrastate initial claims,inferred (column order)
+ar5159,c16,ic_ucx_interstate_filed_from_agent,UCX interstate claims filed from agent state,inferred (column order)
+ar5159,c99,ic_ucx_interstate_taken_as_agent,UCX interstate claims taken as agent state,inferred (column order)
+ar5159,c17,ic_ucx_transitional,UCX transitional claims,inferred (column order)
+ar5159,c18,ic_ucx_interstate_received_as_liable,UCX interstate claims received as liable state,inferred (column order)
+ar5159,c19,ar5159_c19,State UI line 201 col 8 (eligibility reviews / continued weeks claimed section),unclear
+ar5159,c20,ar5159_c20,State UI line 201 col 9,unclear
+ar5159,c21,ar5159_c21,State UI line 201 col 10,unclear
+ar5159,c22,ar5159_c22,State UI line 201 col 11,unclear
+ar5159,c24,ar5159_c24,State UI line 201 col 12,unclear
+ar5159,c94,ar5159_c94,State UI line 201 col 13 (entering self-employment),unclear
+ar5159,c25,ar5159_c25,UCFE line 202 col 8,unclear
+ar5159,c26,ar5159_c26,UCFE line 202 col 9,unclear
+ar5159,c27,ar5159_c27,UCFE line 202 col 10,unclear
+ar5159,c28,ar5159_c28,UCFE line 202 col 11,unclear
+ar5159,c30,ar5159_c30,UCFE line 202 col 12,unclear
+ar5159,c31,ar5159_c31,UCX line 203 col 8,unclear
+ar5159,c32,ar5159_c32,UCX line 203 col 9,unclear
+ar5159,c33,ar5159_c33,UCX line 203 col 10,unclear
+ar5159,c34,ar5159_c34,UCX line 203 col 11,unclear
+ar5159,c36,ar5159_c36,UCX line 203 col 12,unclear
+ar5159,c38,wc_state_ui_total,"State UI weeks compensated, all weeks",verified: reproduces DOL published average duration
+ar5159,c39,wc_state_ui_total_unemployment,State UI weeks compensated for total unemployment,inferred (c39 <= c38)
+ar5159,c40,wc_state_ui_interstate,State UI interstate weeks compensated,inferred (column order)
+ar5159,c41,wc_ucfe_ucx_total,UCFE + UCX weeks compensated,verified: c41 = c42 + c43
+ar5159,c42,wc_ucfe,UCFE-no-UI weeks compensated,data map label
+ar5159,c43,wc_ucx,UCX-only weeks compensated,data map label
+ar5159,c95,wc_self_employment,Self-employment assistance weeks compensated (all programs),inferred (column order)
+ar5159,c45,amt_state_ui_total,"State UI benefits paid, all weeks (dollars)",data map label
+ar5159,c46,amt_state_ui_total_unemployment,State UI benefits paid for total unemployment (dollars),inferred (column order)
+ar5159,c47,amt_state_ui_interstate,State UI interstate benefits paid (dollars),inferred (column order)
+ar5159,c48,ar5159_c48,Line 302 col 17 (does NOT equal c49 + c50),unclear
+ar5159,c49,amt_ucfe,UCFE-no-UI benefits paid (dollars),data map label
+ar5159,c50,amt_ucx,UCX-only benefits paid (dollars),data map label
+ar5159,c96,amt_self_employment,Self-employment assistance benefits paid (dollars),inferred (column order)
+ar5159,c51,fp_state_ui_total,"State UI first payments, total",verified: reproduces DOL published exhaustion rate and duration
+ar5159,c52,fp_state_ui_intrastate,State UI intrastate first payments,verified: c51 = c52 + c53
+ar5159,c53,fp_state_ui_interstate,State UI interstate first payments,verified: c51 = c52 + c53
+ar5159,c54,fp_ucfe,UCFE-no-UI first payments,data map label
+ar5159,c55,fp_ucx,UCX-only first payments,data map label
+ar5159,c56,final_payments_state_ui,State UI final payments (exhaustions),verified: reproduces DOL published exhaustion rate
+ar5159,c57,final_payments_ucfe,UCFE-no-UI final payments,data map label
+ar5159,c58,final_payments_ucx,UCX-only final payments,data map label
+ar218,st,state,State or area code,data map
+ar218,rptdate,quarter_ended,Last day of the report quarter,data map
+ar218,c1,md_total,"Monetary determinations, total",verified: c1 = c2 + c3
+ar218,c2,md_insufficient_wage_credits,Monetary determinations with insufficient wage credits,data map label
+ar218,c3,md_sufficient_wage_credits,Monetary determinations with sufficient wage credits,data map label
+ar218,c4,by_established_total,"Claimants establishing benefit years, total",data map label
+ar218,c5,by_at_max_weekly_benefit,Claimants establishing benefit years at maximum weekly benefit,data map label
+ar218,c6,by_at_max_benefit_and_duration,Claimants establishing benefit years at maximum benefit and duration,data map label
+ar218,c9,potential_total,Potential duration: number of determinations establishing benefit years,verified: = sum of duration bands
+ar218,c10,potential_lt10wk,Potential duration under 10 weeks,data map label
+ar218,c11,potential_10_14wk,Potential duration 10-14 weeks,data map label
+ar218,c12,potential_15_19wk,Potential duration 15-19 weeks,data map label
+ar218,c13,potential_20_21wk,Potential duration 20-21 weeks,data map label
+ar218,c14,potential_22_23wk,Potential duration 22-23 weeks,data map label
+ar218,c15,potential_24_25wk,Potential duration 24-25 weeks,data map label
+ar218,c23,potential_26_27wk,Potential duration 26-27 weeks,data map label
+ar218,c24,potential_28_29wk,Potential duration 28-29 weeks,data map label
+ar218,c25,potential_30_31wk,Potential duration 30-31 weeks,data map label
+ar218,c26,potential_32_33wk,Potential duration 32-33 weeks,data map label
+ar218,c27,potential_34plus_wk,Potential duration 34 weeks and over,data map label
+ar218,c28,potential_at_max,Number at maximum potential duration,data map label
+ar218,c29,potential_avg_weeks,Average potential duration (weeks),data map label
+ar218,c16,actual_total,Actual duration: claimants who received final payments (exhaustees),verified: = sum of duration bands
+ar218,c17,actual_lt10wk,Actual duration under 10 weeks (exhaustees),data map label
+ar218,c18,actual_10_14wk,Actual duration 10-14 weeks (exhaustees),data map label
+ar218,c19,actual_15_19wk,Actual duration 15-19 weeks (exhaustees),data map label
+ar218,c20,actual_20_21wk,Actual duration 20-21 weeks (exhaustees),data map label
+ar218,c21,actual_22_23wk,Actual duration 22-23 weeks (exhaustees),data map label
+ar218,c22,actual_24_25wk,Actual duration 24-25 weeks (exhaustees),data map label
+ar218,c30,actual_26_27wk,Actual duration 26-27 weeks (exhaustees),data map label
+ar218,c31,actual_28_29wk,Actual duration 28-29 weeks (exhaustees),data map label
+ar218,c32,actual_30_31wk,Actual duration 30-31 weeks (exhaustees),data map label
+ar218,c33,actual_32_33wk,Actual duration 32-33 weeks (exhaustees),data map label
+ar218,c34,actual_34plus_wk,Actual duration 34 weeks and over (exhaustees),data map label
+ar218,c35,actual_at_max,Exhaustees at maximum duration,data map label
+ar218,c36,actual_avg_weeks,Average actual duration of exhaustees (weeks),data map label
