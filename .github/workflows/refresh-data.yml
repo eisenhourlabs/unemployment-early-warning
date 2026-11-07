@@ -1,0 +1,35 @@
+# Runs the data fetchers in GitHub's cloud on a schedule and saves new data back to the repository.
+# Times are UTC. Central Time = UTC-6 in winter (UTC-5 in summer), so runs land about an hour
+# later in CT during daylight time; that is fine for these release times.
+name: Refresh data
+
+on:
+  schedule:
+    - cron: "45 13 * * 1-5"   # weekdays ~7:45 am CT (after 7:30 am CT releases)
+    - cron: "0 16 * * 1-5"    # weekdays ~10:00 am CT (catches 9:00 am CT releases)
+    - cron: "35 13 * * 4"     # Thursday ~7:35 am CT, right after weekly jobless claims
+  workflow_dispatch: {}       # adds a "Run workflow" button for manual runs
+
+permissions:
+  contents: write             # lets the job commit the refreshed data files
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Fetch FRED series
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+        run: python src/fetchers/fred_fetcher.py
+      - name: Commit new data (if any)
+        run: |
+          git config user.name "data-bot"
+          git config user.email "data-bot@users.noreply.github.com"
+          git add data/
+          git diff --cached --quiet || git commit -m "Data refresh $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push

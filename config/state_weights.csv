@@ -1,0 +1,46 @@
+# Footprint ranking: 1 = largest exposure, 44 states. Ties share a rank. Updated 2026-11-07.
+state,state_name,footprint_rank
+TX,Texas,1
+CA,California,2
+NC,North Carolina,3
+PA,Pennsylvania,4
+FL,Florida,5
+OH,Ohio,6
+IL,Illinois,7
+GA,Georgia,8
+VA,Virginia,9
+IN,Indiana,10
+TN,Tennessee,11
+SC,South Carolina,12
+NY,New York,13
+KY,Kentucky,14
+AL,Alabama,15
+WA,Washington,15
+WI,Wisconsin,17
+MD,Maryland,18
+MI,Michigan,19
+MO,Missouri,19
+NJ,New Jersey,19
+LA,Louisiana,22
+MS,Mississippi,23
+AZ,Arizona,24
+OK,Oklahoma,25
+CO,Colorado,26
+MN,Minnesota,26
+WV,West Virginia,26
+OR,Oregon,29
+IA,Iowa,30
+KS,Kansas,31
+NM,New Mexico,32
+HI,Hawaii,33
+NV,Nevada,33
+ID,Idaho,35
+NE,Nebraska,36
+DE,Delaware,37
+MT,Montana,38
+NH,New Hampshire,38
+ME,Maine,40
+ND,North Dakota,40
+UT,Utah,40
+WY,Wyoming,40
+SD,South Dakota,44
