@@ -67,7 +67,9 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   mocked API responses), scheduled workflow, alerts module.
 - 2026-11-07: `.venv` created; first live full fetch done, all 159 active series OK after one catalog ID fix
   (Empire State, logged in docs/decisions.md).
-- NOT yet done: Git repository, GitHub upload, GitHub secret, first workflow run.
+- 2026-11-07: Git initialized; pushed to public repo github.com/eisenhourlabs/unemployment-early-warning;
+  FRED_API_KEY repository secret set.
+- NOT yet done: first workflow run.
 
 ## Next steps, in order
 1. Create `.venv`, install requirements, run the fetcher for UNRATE ICSA CCSA; check the output looks right
