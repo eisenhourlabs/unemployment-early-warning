@@ -14,6 +14,42 @@ CAUR,Unemployment Rate in California,Percent,Monthly,Seasonally Adjusted,2026-10
 CC4WSA,4-Week Moving Average of Continued Claims (Insured Unemployment),Number,"Weekly, Ending Saturday",Seasonally Adjusted,2026-11-05 07:34:28-06,1990-01-06,2026-10-24,1709500.0
 CCNSA,Continued Claims (Insured Unemployment),Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-05 07:34:29-06,1990-01-06,2026-10-24,1494812.0
 CCSA,Continued Claims (Insured Unemployment),Number,"Weekly, Ending Saturday",Seasonally Adjusted,2026-11-05 07:34:30-06,1990-01-06,2026-10-24,1718000.0
+CFLMICONTRIBUTIONHIRINGRATEUWADVANCE,CFLMI Real-Time Hiring Contribution (Advance),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,0.012
+CFLMICONTRIBUTIONHIRINGRATEUWFINAL,CFLMI Real-Time Hiring Contribution (Final),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,-0.023
+CFLMICONTRIBUTIONLAYOFFSOTHERSEPSADVANCE,CFLMI Real-Time Layoffs Contribution (Advance),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,0.003
+CFLMICONTRIBUTIONLAYOFFSOTHERSEPSFINAL,CFLMI Real-Time Layoffs Contribution (Final),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,-0.015
+CFLMIFCR,Chicago Fed Flow-Consistent Rate of Unemployment,%,Monthly,SA,"November 5, 2026",2008-07-12,2026-10-17,4.169763
+CFLMIFORECASTADV16,CFLMI 16th percentile real-time unemployment rate forecast (advance),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,4.05
+CFLMIFORECASTADV25,CFLMI 25th percentile real-time unemployment rate forecast (advance),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,4.1
+CFLMIFORECASTADV50,CFLMI 50th percentile real-time unemployment rate forecast (advance),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,4.19
+CFLMIFORECASTADV75,CFLMI 75th percentile real-time unemployment rate forecast (advance),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,4.28
+CFLMIFORECASTADV84,CFLMI 84th percentile real-time unemployment rate forecast (advance),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,4.33
+CFLMIFORECASTFIN16,CFLMI 16th percentile real-time unemployment rate forecast (final),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,4.0
+CFLMIFORECASTFIN25,CFLMI 25th percentile real-time unemployment rate forecast (final),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,4.05
+CFLMIFORECASTFIN50,CFLMI 50th percentile real-time unemployment rate forecast (final),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,4.14
+CFLMIFORECASTFIN75,CFLMI 75th percentile real-time unemployment rate forecast (final),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,4.22
+CFLMIFORECASTFIN84,CFLMI 84th percentile real-time unemployment rate forecast (final),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,4.27
+CFLMIFORECASTREV16,CFLMI 16th percentile real-time unemployment rate forecast (revised),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,4.32
+CFLMIFORECASTREV25,CFLMI 25th percentile real-time unemployment rate forecast (revised),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,4.37
+CFLMIFORECASTREV50,CFLMI 50th percentile real-time unemployment rate forecast (revised),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,4.46
+CFLMIFORECASTREV75,CFLMI 75th percentile real-time unemployment rate forecast (revised),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,4.55
+CFLMIFORECASTREV84,CFLMI 84th percentile real-time unemployment rate forecast (revised),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,4.59
+CFLMIHIRINGRATEUW,Chicago Fed Hiring Rate for Unemployed Workers,%,Monthly,SA,"November 5, 2026",2008-07-12,2026-10-17,46.17518
+CFLMILAYOFFSOTHERSEPSRATE,Chicago Fed Layoffs and Other Separations Rate,%,Monthly,SA,"November 5, 2026",2008-07-12,2026-10-17,2.009173
+CFLMIPROBGEPLUS03PPADVANCE,CFLMI Real-Time Unemployment Rate 1-Month Forecast Probability: >= +0.3 pp (advance),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,4.3
+CFLMIPROBGEPLUS03PPFINAL,CFLMI Real-Time Unemployment Rate 1-Month Forecast Probability: >= +0.3 pp (final),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,2.9
+CFLMIPROBLEMINUS03PPADVANCE,CFLMI Real-Time Unemployment Rate 1-Month Forecast Probability: <=-0.3 pp (advance),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,5.5
+CFLMIPROBLEMINUS03PPFINAL,CFLMI Real-Time Unemployment Rate 1-Month Forecast Probability: <=-0.3 pp (final),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,10.2
+CFLMIPROBMINUS01PPADVANCE,CFLMI Real-Time Unemployment Rate 1-Month Forecast Probability: -0.1 pp (advance),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,21.8
+CFLMIPROBMINUS01PPFINAL,CFLMI Real-Time Unemployment Rate 1-Month Forecast Probability: -0.1 pp (final),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,27.6
+CFLMIPROBMINUS2PPADVANCE,CFLMI Real-Time Unemployment Rate 1-Month Forecast Probability: -.2 pp (advance),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,10.6
+CFLMIPROBMINUS2PPFINAL,CFLMI Real-Time Unemployment Rate 1-Month Forecast Probability: -.2 pp (final),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,15.4
+CFLMIPROBNOCHANGEADVANCE,CFLMI Real-Time Unemployment Rate 1-Month Forecast Probability: No change (advance),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,29.5
+CFLMIPROBNOCHANGEFINAL,CFLMI Real-Time Unemployment Rate 1-Month Forecast Probability: No change (final),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,27.1
+CFLMIPROBPLUS01PPADVANCE,CFLMI Real-Time Unemployment Rate 1-Month Forecast Probability: +0.1 pp (advance),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,19.5
+CFLMIPROBPLUS01PPFINAL,CFLMI Real-Time Unemployment Rate 1-Month Forecast Probability: +0.1 pp (final),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,12.3
+CFLMIPROBPLUS02PPADVANCE,CFLMI Real-Time Unemployment Rate 1-Month Forecast Probability: +0.2 pp (advance),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,8.7
+CFLMIPROBPLUS02PPFINAL,CFLMI Real-Time Unemployment Rate 1-Month Forecast Probability: +0.2 pp (final),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,4.4
 COCCLAIMS,Continued Claims (Insured Unemployment) in Colorado,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:39:03-06,1990-01-06,2026-10-24,30486.0
 COICLAIMS,Initial Claims in Colorado,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:39:00-06,1990-01-06,2026-10-31,3104.0
 COUR,Unemployment Rate in Colorado,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:38:02-05,1990-01-01,2026-09-01,4.1

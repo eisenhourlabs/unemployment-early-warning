@@ -56,6 +56,9 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 | `src/fetchers/fred_fetcher.py` | Downloads all active FRED series (incl. per-state series) to `data/processed/` |
 | `src/fetchers/dol_*.py` | DOL pipeline: `dol_national.py` (ETA 539), `dol_state.py` (ar539/ar5159/ar218), `dol_recent_weeks.py` (merged table + preliminary weeks), `dol_common.py` (shared) |
 | `src/fetchers/wait_for_claims.py` | Thursday run: waits up to 60 min for the claims release on FRED; never fails |
+| `src/fetchers/chicagofed_fetcher.py` | Chicago Fed Labor Market Indicators: 36 series to `data/processed/CFLMI*.csv` (with vintages) |
+| `src/checks/data_quality.py` | Stale / gaps / outlier / fetch checks for every series -> `data/processed/series_health.csv`; fails only on a stale or missing Tier 1 series |
+| `config/quality_rules.csv`, `config/quality_dol_columns.csv` | Data-quality settings: allowed ages, known gaps, skips, outlier window and threshold; which DOL columns to check |
 | `src/transforms/dol_rates.py` | Claims rates, 12-month exhaustion rate, average duration |
 | `src/checks/dol_checks.py` | DOL vs FRED (fails run above 1%); SA continuing claims rate vs DOL IUR (report only) |
 | `data/processed/dol/` | DOL outputs (latest figures only) |
@@ -76,6 +79,8 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 - DOL pipeline, in order (run the FRED fetch first):
   `python src\fetchers\dol_national.py`, `python src\fetchers\dol_state.py`,
   `python src\fetchers\dol_recent_weeks.py`, `python src\transforms\dol_rates.py`, `python src\checks\dol_checks.py`
+- Chicago Fed: `python src\fetchers\chicagofed_fetcher.py`
+- Series health (run last): `python src\checks\data_quality.py`
 
 ## Status (2026-11-07)
 - Phase 0 done: folders, catalog (35 active rows), footprint weights, FRED fetcher (tested only against
@@ -98,11 +103,15 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   calculations); our US exhaustion rate / duration differ from DOL's published US figures by 0.08 pp /
   0.02 weeks for 2026 Q2 while every state matches exactly (cause not yet identified).
 
+- 2026-11-07: Phase 1 finished locally: FRED IDs verified; RPLS / GTRENDS / WARN / CHALLENGER set to
+  future; Chicago Fed LMI fetcher (36 series); data-quality checks + series-health summary (211 series:
+  206 OK, 5 skipped, 0 WARN, 0 FAIL on 2026-11-07). DOL open items accepted (see docs/decisions.md).
+- Still to watch: first real Thursday run (2026-11-12); ETA 539 national allowed age (42 days) is based on
+  one observation; Chicago Fed terms of use before offering its data as downloads.
+
 ## Next steps, in order
-Setup steps 1-4 (venv, first fetch, Git, GitHub, first workflow run) are done.
-1. Phase 1 continues: Chicago Fed LMI fetcher, data-quality checks (freshness, gaps, outliers), and a
-   series-health summary.
-2. Then Phase 2: the dashboard MVP on GitHub Pages (see docs/dashboard_requirements.md).
+Setup (steps 1-4) and Phase 1 are done.
+1. Phase 2: the dashboard MVP on GitHub Pages (see docs/dashboard_requirements.md).
 
 ## Where planning lives
 The full plan, roadmap and decisions are kept in Troy's Claude project ("Unemployment Correlations"),

@@ -1,0 +1,15 @@
+file,column,date_col,frequency,catalog_id,by_state,filter_state
+national_weekly_eta539.csv,ic_nsa,week_ended,weekly,DOL_ETA539_NATIONAL,no,
+national_weekly_eta539.csv,ic_sa,week_ended,weekly,DOL_ETA539_NATIONAL,no,
+national_weekly_eta539.csv,cc_nsa,week_ended,weekly,DOL_ETA539_NATIONAL,no,
+national_weekly_eta539.csv,cc_sa,week_ended,weekly,DOL_ETA539_NATIONAL,no,
+national_weekly.csv,ic_sa,week_ended,weekly,DOL_NATIONAL_WEEKLY,no,
+national_weekly.csv,cc_sa,week_ended,weekly,DOL_NATIONAL_WEEKLY,no,
+claims_rates_weekly.csv,ic_rate_sa,week_ended,weekly,DOL_CLAIMS_RATES,no,
+claims_rates_weekly.csv,cc_rate_sa,week_ended,weekly,DOL_CLAIMS_RATES,no,
+ar539.csv,ic_state_ui,week_ended,weekly,DOL_AR539,yes,
+ar5159.csv,fp_state_ui_total,month_ended,monthly,DOL_AR5159,yes,
+ar218.csv,actual_avg_weeks,quarter_ended,quarterly,DOL_AR218,yes,
+exhaustion_duration_monthly.csv,exhaustion_rate_12m,month_ended,monthly,DOL_EXHAUSTION_DURATION,no,US
+exhaustion_duration_monthly.csv,avg_duration_12m,month_ended,monthly,DOL_EXHAUSTION_DURATION,no,US
+benefit_duration_quarterly.csv,actual_avg_weeks,quarter_ended,quarterly,DOL_EXHAUSTION_DURATION,no,US

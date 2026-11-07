@@ -35,6 +35,9 @@ jobs:
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
         run: python src/fetchers/fred_fetcher.py
+      - name: Fetch Chicago Fed Labor Market Indicators (Tier 3; logs failures, never fails the run)
+        if: ${{ !cancelled() }}
+        run: python src/fetchers/chicagofed_fetcher.py
       # DOL steps run even if an earlier step failed (!cancelled), so one outage doesn't block the rest.
       - name: Fetch DOL national weekly claims (ETA 539)
         if: ${{ !cancelled() }}
@@ -51,6 +54,9 @@ jobs:
       - name: Check DOL data (fails if DOL and FRED claims differ by more than 1%)
         if: ${{ !cancelled() }}
         run: python src/checks/dol_checks.py
+      - name: Data-quality checks and series-health summary (fails only if a Tier 1 series is stale or missing)
+        if: ${{ !cancelled() }}
+        run: python src/checks/data_quality.py
       - name: Commit new data (if any)
         if: ${{ !cancelled() }}         # save whatever succeeded; the run still shows red if a step failed
         run: |
