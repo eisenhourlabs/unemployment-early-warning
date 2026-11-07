@@ -90,7 +90,9 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   summary; workflow uses actions/checkout@v7, actions/setup-python@v7 and Python 3.15 (matches .venv).
 - Watch: GitHub is moving ubuntu-latest to Ubuntu 26 (Python 3.15 is available there too).
 - 2026-11-07: DOL pipeline built and tested locally (ETA 539 national, ar539/ar5159/ar218, merged weekly
-  table with preliminary weeks, claims rates, exhaustion rate, duration, checks); added to the workflow.
+  table with preliminary weeks, claims rates, exhaustion rate, duration, checks); added to the workflow
+  and confirmed green in run 42408917305 (161 FRED series ok; DOL vs FRED exact match 1995-2026).
+  The Thursday wait step has not yet run on a real Thursday schedule; check the first one (2026-11-12).
   DOL's news release PDF (www.dol.gov) blocks automated downloads, so preliminary weeks come from FRED.
 - DOL open items: 19 coded columns are still "unclear" in config/dol_columns.csv (none are used in
   calculations); our US exhaustion rate / duration differ from DOL's published US figures by 0.08 pp /
