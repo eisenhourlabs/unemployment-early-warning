@@ -223,12 +223,14 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   "first live run" / "vs. last week" labels), temp-help wording shared with the Leading page, Job Losses what-ifs +
   notes, Duration 13/26-week fan + what-ifs, Leading Signal column, Data & Downloads "Early-warning model" section
   (5 files), About line. Browser check: 757 pass on all 7 pages (contexts now closed per page). docs/model.md 7.2.
-  Waiting for Troy's review. Troy's item 3: after the Nov 12 claims release, run live.py, commit data\model, push
-  (only once 3e-2 is merged, or on main directly if it isn't).
+  Approved by Troy; fast-forwarded into main and pushed; "Publish site" run 42529017045 green; verified live.
+- NEXT (Troy's item 3): after the Nov 12 claims release (8:30 am ET), run live.py, check its output, commit the
+  data\model files and push (main and phase3a), so the score doesn't show "not updated" (first possible on Nov 18).
+  Troy will ask; it can't run unprompted. Then stage 3e-3.
 
 ## Next steps, in order
 Setup (steps 1-4), Phase 1, Phase 2 and the Phase 2 review fixes are done and live.
-1. docs/phase3e_design.md is APPROVED (decisions at its end). 3e-1 is done and live; 3e-2 built (awaiting review); then 3e-3,
+1. docs/phase3e_design.md is APPROVED (decisions at its end). 3e-1 and 3e-2 are done and live; next 3e-3,
    each reviewed locally before merging to main and publishing. Switch on the Actions pull-request setting in 3e-3.
    Push phase3a / merge to main only when he says so.
 2. Stage 3e per docs/phase3_plan.md. Stage 3e must also: show trigger signal colors for the panel (yield curve
