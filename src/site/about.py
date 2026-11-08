@@ -35,7 +35,7 @@ def source_rows() -> list[dict]:
             link, via = CHICAGO_LMI_LINK, ""
         else:
             link, via = DOL_LINK, ""
-        name = r["name"] + (" (44 footprint states)" if sid.startswith("STATE_") else "")
+        name = r["name"] + (" (by state)" if sid.startswith("STATE_") else "")
         out.append({"name": name, "id": "" if sid.startswith(("STATE_", "DOL_", "CHI_")) else sid,
                     "publisher": r["source"] + via, "frequency": r["frequency"],
                     "licence": LICENCE_TEXT.get(r["license"], r["license"]), "link": link,

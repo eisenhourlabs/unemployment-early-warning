@@ -52,7 +52,7 @@
   {%- if calendar %}
   <div class="table-scroll">
   <table>
-    <thead><tr><th>Release</th><th>Next</th><th>Time</th><th>After that</th></tr></thead>
+    <thead><tr><th>Release</th><th>Next</th><th>Time</th></tr></thead>
     <tbody>
       {%- for r in calendar %}
       <tr>
@@ -60,13 +60,12 @@
           {%- if r.detail and "20" in r.detail %} <span class="muted">({{ r.detail }})</span>{% endif %}</td>
         <td>{{ r.next }}</td>
         <td>{{ r.time }}</td>
-        <td>{{ r.after }}</td>
       </tr>
       {%- endfor %}
     </tbody>
   </table>
   </div>
-  <p class="chart-footer">Scheduled dates from FRED's release calendar and the Chicago Fed's release schedule; publishers can change them.</p>
+  <p class="chart-footer">Scheduled dates from FRED's release calendar; publishers can change them.</p>
   {%- else %}
   <p>Release calendar not available.</p>
   {%- endif %}

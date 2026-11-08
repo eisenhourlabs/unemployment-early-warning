@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 import plotly.graph_objects as go
 
-from common import (ACCENT, claims_weekly, fmt_change, fmt_claims, fmt_date, fmt_month, fred, fred_metadata,
+from common import (ACCENT, claims_weekly, pre_recession_averages, fmt_change, fmt_claims, fmt_date, fmt_month, fred, fred_metadata,
                     is_preliminary, last_time_as_extreme, line_chart, ordinal, percentile_text, plain,
                     prelim_label, streak, value_on_or_before, vs_month, weekly_claims_chart)
 
@@ -53,26 +53,37 @@ def unemployment_chart(forecast: pd.DataFrame | None = None) -> dict:
     return c
 
 
+# Covered employment grew sharply in 1978 when state and local government workers came under UI coverage,
+# so claims rates before and after are not strictly comparable. Both rate charts mark it.
+COVERAGE_MARKER = [("1978-01-01", "UI coverage expanded (1978)")]
+
+
 def ic_rate_chart(claims: pd.DataFrame, wide=False) -> dict:
+    rate = claims.dropna(subset=["ic_rate_sa_per10k"]).set_index("week_ended")["ic_rate_sa_per10k"]
     return weekly_claims_chart(
-        "ic-rate", "SA initial claims rate", "New job losses: drives how often IUI claims start (frequency).",
-        "Source: DOL weekly claims (ETA 539 and news release; FRED ICSA for preliminary weeks). "
-        "Seasonally adjusted initial claims per 10,000 covered workers, weekly.",
+        "ic-rate", "SA initial claims rate",
+        "New job losses. For involuntary unemployment insurance (IUI), this drives how often claims start (frequency).",
+        "Source: DOL state UI claims (ETA 539 weekly report and Thursday news release; FRED ICSA for preliminary "
+        "weeks). Seasonally adjusted initial claims per 10,000 covered workers, weekly, from 1971.",
         claims, "ic_rate_sa_per10k", "ic_rate_sa_4wk_per10k", "source_initial",
         "Per 10,000 covered workers", "%{y:.1f}",
-        ["week_ended", "ic_rate_sa_per_10k", "ic_rate_sa_4wk_per_10k", "source"], wide=wide)
+        ["week_ended", "ic_rate_sa_per_10k", "ic_rate_sa_4wk_per_10k", "source"], wide=wide,
+        refs=pre_recession_averages(rate), ref_fmt=".1f", markers=COVERAGE_MARKER)
 
 
 def cc_rate_chart(claims: pd.DataFrame, wide=False) -> dict:
+    rate = claims.dropna(subset=["cc_rate_sa"]).set_index("week_ended")["cc_rate_sa"]
     return weekly_claims_chart(
         "cc-rate", "SA continuing claims rate",
-        "How long people stay on benefits: drives how long IUI claims last (severity).",
-        "Source: DOL weekly claims (ETA 539 and news release; FRED CCSA for preliminary weeks). "
-        "Seasonally adjusted continued claims as a percent of covered workers, weekly; "
+        "How long people stay on state UI benefits. For involuntary unemployment insurance (IUI), this drives how "
+        "long claims last (severity).",
+        "Source: DOL state UI claims (ETA 539 weekly report and Thursday news release; FRED CCSA for preliminary "
+        "weeks). Seasonally adjusted continued claims as a percent of covered workers, weekly, from 1971; "
         "matches DOL's insured unemployment rate.",
         claims, "cc_rate_sa", "cc_rate_sa_4wk", "source_continued",
         "Percent of covered workers", "%{y:.1f}%",
-        ["week_ended", "cc_rate_sa_pct", "cc_rate_sa_4wk_pct", "source"], wide=wide)
+        ["week_ended", "cc_rate_sa_pct", "cc_rate_sa_4wk_pct", "source"], wide=wide,
+        refs=pre_recession_averages(rate), ref_fmt=".2f", markers=COVERAGE_MARKER)
 
 
 # ===========================================================================
@@ -117,13 +128,13 @@ def build_tiles(claims: pd.DataFrame) -> list[dict]:
     tiles.append(weekly_tile("SA initial claims, 4-week average", ic4, 0, "", "", ic4.index[0].year,
                              prelim_label(src) if is_preliminary(src) else ""))
 
-    # 3. SA initial claims rate, per 10,000 covered workers (DOL, from 1995)
+    # 3. SA initial claims rate, per 10,000 covered workers (DOL, from 1971)
     w = claims.dropna(subset=["ic_rate_sa_per10k"]).set_index("week_ended")
     tiles.append(weekly_tile("SA initial claims rate", w["ic_rate_sa_per10k"], 1, " per 10k", "",
                              w.index[0].year, prelim_label(w["source_initial"].iloc[-1])
                              if is_preliminary(w["source_initial"].iloc[-1]) else ""))
 
-    # 4. SA continuing claims rate, percent (DOL, from 1995)
+    # 4. SA continuing claims rate, percent (DOL, from 1971)
     c = claims.dropna(subset=["cc_rate_sa"]).set_index("week_ended")
     tiles.append(weekly_tile("SA continuing claims rate", c["cc_rate_sa"], 1, "%", " pt", c.index[0].year,
                              prelim_label(c["source_continued"].iloc[-1])

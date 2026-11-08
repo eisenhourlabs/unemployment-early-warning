@@ -9,13 +9,13 @@ from common import (bars_with_average, claims_weekly, fred, line_chart, seasonal
                     year_ago_change_pct)
 from overview import ic_rate_chart
 
-INTRO = ("New job losses drive how often IUI claims start (claim frequency). Initial claims are the fastest "
-         "signal, published every Thursday; payrolls, JOLTS and the household survey confirm it monthly.")
+INTRO = ("How many people are losing jobs. State UI initial claims are the fastest signal, published every "
+         "Thursday; payrolls, JOLTS and the household survey confirm it monthly.")
 
 
 def initial_claims_sources(claims: pd.DataFrame) -> pd.Series:
     """Source label for each week (ETA 539 or news release), indexed by week. Weeks before our DOL data
-    (1995) come from FRED, which republishes DOL's official figures, so they count as ETA 539."""
+    (1971) come from FRED, which republishes DOL's official figures, so they count as ETA 539."""
     return claims.set_index("week_ended")["source_initial"]
 
 
@@ -35,7 +35,7 @@ def build() -> dict:
     charts.append(weekly_claims_chart(
         "ic-level", "SA initial claims",
         "Week-to-week detail on new claims; the 4-week average smooths holiday and weather noise.",
-        "Source: DOL weekly claims via FRED (ICSA, IC4WSA). Seasonally adjusted, number of claims, weekly.",
+        "Source: DOL state UI claims via FRED (ICSA, IC4WSA). Seasonally adjusted, number of claims, weekly.",
         level, "ic_sa", "ic_sa_4wk", "source", "Initial claims (SA)", "%{y:,.0f}",
         ["week_ended", "ic_sa", "ic_sa_4wk", "source"]))
 
@@ -43,7 +43,8 @@ def build() -> dict:
     charts.append(seasonal_chart(
         "ic-nsa-seasonal", "NSA initial claims: this year vs. the prior 3 years",
         "Raw claims follow a strong seasonal pattern; comparing years checks the seasonal adjustment.",
-        "Source: DOL weekly claims (ETA 539 and news release). Not seasonally adjusted, number of claims, "
+        "Source: DOL state UI claims (ETA 539 weekly report and Thursday news release). Not seasonally adjusted, "
+        "number of claims, "
         "weekly, by week-ending date. Fixed view: ignores the page time control.",
         claims[["week_ended", "ic_nsa", "source_initial"]], "ic_nsa", "source_initial", "%{y:,.0f}",
         ["week_ended", "year", "ic_nsa", "source"]))
@@ -53,7 +54,7 @@ def build() -> dict:
     charts.append(line_chart(
         "ic-yoy", "Initial claims vs. a year ago",
         "Turns the claims level into a trend: above zero means claims are running higher than a year ago.",
-        "Source: DOL weekly claims via FRED (IC4WSA). Percent change in the SA 4-week average vs. the same week "
+        "Source: DOL state UI claims via FRED (IC4WSA). Percent change in the SA 4-week average vs. the same week "
         "52 weeks earlier, weekly.",
         yoy, "% change vs. a year ago", "% change vs. a year ago", "%{y:+.1f}%", "ic_sa_4wk_pct_change_vs_year_ago",
         monthly=False, zero_line=True, prelim=sources))
@@ -80,7 +81,7 @@ def build() -> dict:
     # 7. Newly unemployed (less than 5 weeks)
     charts.append(line_chart(
         "newly-unemployed", "Newly unemployed (less than 5 weeks)",
-        "Fresh inflow into unemployment from the household survey, whether or not people file a claim.",
+        "A proxy for fresh inflow into unemployment, from the household survey, whether or not people file a claim.",
         "Source: BLS Current Population Survey via FRED (UEMPLT5). Number unemployed less than 5 weeks, "
         "thousands, seasonally adjusted, monthly. Gap: no October 2025 survey (government shutdown).",
         fred("UEMPLT5"), "Unemployed < 5 weeks", "Thousands of people", "%{y:,.0f}k", "unemployed_lt5wk_thousands"))

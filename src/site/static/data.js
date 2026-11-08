@@ -17,7 +17,7 @@
       tr.hidden = !ok;
       if (ok) shown++;
     });
-    count.textContent = "Showing " + shown + " of " + rows.length + " files" + (states ? "" : " (state series hidden)");
+    count.textContent = "Showing " + shown + " file" + (shown === 1 ? "" : "s") + (states ? "" : " (state series hidden)");
   }
   form.addEventListener("input", apply);
   form.addEventListener("change", apply);

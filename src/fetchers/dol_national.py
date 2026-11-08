@@ -3,7 +3,7 @@ DOL national weekly claims (ETA 539 report): the official series.
 
 Downloads the National report from https://oui.doleta.gov/unemploy/claims.asp as XML (the same request
 the website form sends), keeps every column, and saves:
-  data/processed/dol/national_weekly_eta539.csv  weeks with data, from 1995
+  data/processed/dol/national_weekly_eta539.csv  weeks with data, from 1971
   data/processed/dol/seasonal_factors.csv        DOL's published seasonal factors, including future weeks
 Past weeks that DOL revised are overwritten and logged in docs/data_revisions.md (no vintages).
 
@@ -16,7 +16,7 @@ from datetime import date
 
 import pandas as pd
 
-from dol_common import OUI, START_DATE, column_names, download, log_fetch, save_latest, update_metadata
+from dol_common import OUI, NATIONAL_START_DATE, column_names, download, log_fetch, save_latest, update_metadata
 
 SERIES_ID = "DOL_ETA539_NATIONAL"
 REPORT_URL = f"{OUI}/wkclaims/report.asp"
@@ -25,7 +25,7 @@ REPORT_URL = f"{OUI}/wkclaims/report.asp"
 def fetch() -> pd.DataFrame:
     """Download the national report as XML and return one row per week."""
     last_year = date.today().year + 1          # the form offers next year too (future seasonal factors)
-    form = {"level": "us", "final_yr": last_year, "strtdate": START_DATE[:4],
+    form = {"level": "us", "final_yr": last_year, "strtdate": NATIONAL_START_DATE[:4],
             "enddate": last_year, "filetype": "xml"}
     root = ET.fromstring(download(REPORT_URL, data=form))
 
@@ -42,7 +42,7 @@ def fetch() -> pd.DataFrame:
     df["week_ended"] = pd.to_datetime(df.week_ended, format="%m/%d/%Y").dt.strftime("%Y-%m-%d")
     for c in ["ic_nsa", "ic_sa", "cc_nsa", "cc_sa", "covered_employment"]:
         df[c] = df[c].round().astype("Int64")   # whole numbers ("Int64" allows blanks)
-    return df[df.week_ended >= START_DATE].sort_values("week_ended").reset_index(drop=True)
+    return df[df.week_ended >= NATIONAL_START_DATE].sort_values("week_ended").reset_index(drop=True)
 
 
 def main() -> int:

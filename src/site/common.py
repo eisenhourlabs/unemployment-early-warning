@@ -51,7 +51,7 @@ def fred_metadata() -> pd.DataFrame:
 
 
 def claims_weekly() -> pd.DataFrame:
-    """DOL weekly claims rates (from 1995) joined with the claims levels and their source flags."""
+    """DOL weekly claims rates (from 1971) joined with the claims levels and their source flags."""
     rates = pd.read_csv(DOL / "claims_rates_weekly.csv", parse_dates=["week_ended"])
     levels = pd.read_csv(DOL / "national_weekly.csv", parse_dates=["week_ended"],
                          usecols=["week_ended", "ic_nsa", "ic_sa", "ic_sa_4wk", "cc_sa", "cc_sa_4wk"])
@@ -113,20 +113,20 @@ def fmt_change(delta: float, decimals: int, unit: str = "") -> str:
 def percentile_rank(values: pd.Series, latest: float) -> int:
     """Empirical percentile: the share of all observations (full history) at or below the latest value.
 
-    Example: 62 means 62% of all weeks since 1995 had a rate at or below this week's.
+    Example: 62 means 62% of all weeks since 1971 had a rate at or below this week's.
     """
     values = values.dropna()
     return int(round(100 * (values <= latest).mean()))
 
 
 def percentile_text(values: pd.Series, latest: float, since) -> str:
-    """'62nd percentile since 1995', or 'Lowest since 1995' / 'Highest since 1995' at the extremes,
-    because '0th percentile' reads oddly (it means fewer than 0.5% of observations were at or below)."""
+    """'62nd percentile since 1971', or 'Lowest since 1971 (start of data)' at the extremes, because
+    '0th percentile' reads oddly. Never 'record low': the data simply start in that year."""
     values = values.dropna()
     if latest <= values.min():
-        return f"Lowest since {since} (record low)"
+        return f"Lowest since {since} (start of data)"
     if latest >= values.max():
-        return f"Highest since {since} (record high)"
+        return f"Highest since {since} (start of data)"
     pct = percentile_rank(values, latest)
     if pct < 1:
         return f"Below the 1st percentile since {since}"
@@ -333,7 +333,7 @@ def line_chart(id, title, why, footer, s: pd.Series, name, y_title, hover, csv_c
     add_recession_shading(fig, d.date.iloc[0])
     base_layout(fig, y_title, x_hover or ("%b %Y" if monthly else "Week ending %b %-d, %Y"), legend=len(tail) > 0)
 
-    footer += " Grey bands: NBER recessions." + last_data_note(
+    footer += (" Hollow markers: preliminary." if len(tail) else "") + " Grey bands: NBER recessions." + last_data_note(
         d.dropna(subset=["value"]), "date", "source" if prelim is not None else None, monthly)
     columns = ["date", csv_col] + (["source"] if prelim is not None else [])
     rows = [[x, v] + ([src] if prelim is not None else [])
@@ -341,10 +341,58 @@ def line_chart(id, title, why, footer, s: pd.Series, name, y_title, hover, csv_c
     return card(id, title, why, footer, fig, columns, rows, wide=wide, zero=zero_line, downloadable=downloadable)
 
 
+def pre_recession_averages(s: pd.Series) -> list[tuple[str, float]]:
+    """Reference levels for a weekly series: its average over the 12 months before the 2001, 2008-09 and
+    2020 recessions, and its 2019 calendar-year average.
+
+    "Before" = the 12 months before the first recession month in FRED's USREC series. USREC marks recessions
+    from the month after the NBER peak, so the windows end Mar 2001, Dec 2007 and Feb 2020 (the peak months)."""
+    global BANDS
+    if BANDS is None:
+        BANDS = recession_bands()
+    refs = []
+    for year, label in [(2001, "Before 2001"), (2008, "Before 2008–09"), (2020, "Before 2020")]:
+        start = next(b["start"] for b in BANDS if b["start"].year == year)
+        window = s[(s.index >= start - pd.DateOffset(months=12)) & (s.index < start)]
+        refs.append((label, float(window.mean())))
+    refs.append(("2019 average", float(s[s.index.year == 2019].mean())))
+    return refs
+
+
+def add_reference_lines(fig: go.Figure, refs: list[tuple[str, float]], x0: str, x1: str, fmt: str) -> None:
+    """Dotted grey horizontal lines across the whole chart, one legend entry for all of them, and a label at
+    the right edge. Lines whose values are within 4% of each other share one label so the text never overlaps.
+    meta.ref tells site.js to keep these lines inside the y-axis whatever dates are shown."""
+    for i, (label, v) in enumerate(refs):
+        fig.add_trace(go.Scatter(x=[x0, x1], y=[v, v], mode="lines", name="Pre-recession averages (dotted)",
+                                 legendgroup="refs", showlegend=(i == 0), hoverinfo="skip",
+                                 line=dict(color=GREYS[1], width=1.2, dash="dot"), meta={"role": "grey1", "ref": True}))
+    groups = []
+    for label, v in sorted(refs, key=lambda r: r[1]):
+        if groups and abs(v - groups[-1][-1][1]) <= 0.04 * max(abs(v), 1e-9):
+            groups[-1].append((label, v))
+        else:
+            groups.append([(label, v)])
+    for g in groups:
+        text = " · ".join(f"{label} {format(v, fmt)}" for label, v in g)
+        fig.add_annotation(xref="paper", x=1, xanchor="right", y=max(v for _, v in g), yanchor="bottom",
+                           text=text, showarrow=False, font=dict(size=10, color="#52514e"))
+
+
+def add_marker(fig: go.Figure, when: str, text: str) -> None:
+    """A thin dashed vertical line with a short label (e.g. the 1978 change in UI coverage)."""
+    fig.add_shape(type="line", x0=when, x1=when, yref="paper", y0=0, y1=1, line=dict(color=AXIS, width=1, dash="dash"),
+                  layer="below")
+    fig.add_annotation(x=when, yref="paper", y=1, yanchor="top", xanchor="left", xshift=3, text=text,
+                       showarrow=False, font=dict(size=10, color="#52514e"))
+
+
 def weekly_claims_chart(id, title, why, footer, d: pd.DataFrame, weekly_col, avg_col, source_col,
-                        y_title, hover, csv_names, wide=False) -> dict:
+                        y_title, hover, csv_names, wide=False, refs: list | None = None, ref_fmt=".1f",
+                        markers: list | None = None) -> dict:
     """Weekly claims measure: 4-week average bold, weekly faint, preliminary (news release) weeks
-    dashed with hollow markers. d has columns week_ended, weekly_col, avg_col, source_col."""
+    dashed with hollow markers. d has columns week_ended, weekly_col, avg_col, source_col.
+    refs: [(label, value)] reference levels drawn as dotted lines; markers: [(date, label)] vertical lines."""
     d = d.dropna(subset=[weekly_col])[["week_ended", weekly_col, avg_col, source_col]].copy()
     d["x"] = dates(d.week_ended)
     official, tail, labels = split_preliminary(d, source_col)
@@ -371,11 +419,19 @@ def weekly_claims_chart(id, title, why, footer, d: pd.DataFrame, weekly_col, avg
             marker=dict(size=8, symbol="circle-open", color=ACCENT, line=dict(width=2)),
             meta={"role": "main-prelim"},
             hovertemplate=f"{hover} · %{{customdata}}<extra>4-week average</extra>"))
+    if refs:
+        add_reference_lines(fig, refs, d.x.iloc[0], d.x.iloc[-1], ref_fmt)
+    for when, text in markers or []:
+        add_marker(fig, when, text)
     add_recession_shading(fig, d.week_ended.iloc[0])
     base_layout(fig, y_title, "Week ending %b %-d, %Y")
 
-    footer += (" Hollow markers: preliminary. Grey bands: NBER recessions."
-               + last_data_note(d, "week_ended", source_col))
+    footer = ("Plotted: 4-week average (bold), weekly (faint). " + footer
+              + " Hollow markers: preliminary. Grey bands: NBER recessions."
+              + (" Dotted lines: average SA weekly rate over the 12 months up to each NBER peak (Apr 2000–Mar 2001, "
+                 "Jan–Dec 2007, Mar 2019–Feb 2020) and over 2019."
+                 if refs else "")
+              + last_data_note(d, "week_ended", source_col))
     # Download table: one row per week (the 4-week average is blank for the first 3 weeks).
     rows = [[x, w, (None if pd.isna(a) else a), s]
             for x, w, a, s in zip(d.x, d[weekly_col], d[avg_col], d[source_col])]

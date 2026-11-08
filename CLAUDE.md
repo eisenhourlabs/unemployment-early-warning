@@ -147,10 +147,40 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   this PC; it passed again minutes later. If a DOL step fails in a run, check this first.
 
 ## Next steps, in order
-Setup (steps 1-4), Phase 1 and Phase 2 are done.
-1. Phase 3: signals and forecast: backtest thresholds (2001, 2008-09, 2020, recent), composite early-warning score
-   (green / amber / red) on the Overview, forecast fan on the unemployment rate chart, signal colors on the
-   Leading page. Plan with Troy first; decisions go in docs/decisions.md.
+Setup (steps 1-4), Phase 1 and Phase 2 are done and live. IN PROGRESS: Phase 2 review fixes (Troy's 10-item list,
+pasted 2026-11-07), on Git branch `phase2-review-fixes` (committed locally, NOT pushed, NOT merged into main).
+Troy's answers: 1 = (b) keep state series but no counts / "footprint"; 2 = (a) claims rates from 1971; 3 = y-axis
+always includes the reference lines. Decisions logged in docs/decisions.md.
+
+To resume (in order):
+1. `git checkout phase2-review-fixes`, then `git merge main` (brings in the data-bot's data commits).
+2. Regenerate the national DOL data from 1971 (data files were left out of the branch on purpose):
+   `python src\fetchers\dol_national.py`, `python src\fetchers\dol_recent_weeks.py`,
+   `python src\transforms\dol_rates.py`, `python src\checks\dol_checks.py`, `python src\checks\data_quality.py`
+3. Still to do from the list:
+   - Item 7: add `.github/workflows/publish-site.yml` (build + deploy jobs only, on push to src/site/**, config/**,
+     requirements.txt; same concurrency group "refresh-data"). The freshness line ALREADY says "also rebuilt when the
+     site changes", so this must land before pushing.
+   - Item 1: add to src/checks/check_site.py a case-insensitive search of every built page for "footprint",
+     state counts (e.g. "(132)", "44 "), and "IUI" not preceded by "involuntary unemployment insurance (IUI)".
+   - check_site.py: data_dictionary.csv exists and every DOL row links to it; DOL XLSX "Columns" sheet now has a
+     units column; Data table has new columns (Latest value / Date / Updated / checked).
+   - Update data/quality_rules if needed (ETA 539 national now from 1971: check the gap / staleness checks still pass).
+   - Rebuild (`python src\site\build_site.py`), run `python src\checks\check_site.py`, look at screenshots of every
+     page (reference-line labels, 1978 marker, Leading sort, About, Data table at phone width).
+   - Update CLAUDE.md hard rule: "DOL data starts in 1995 (all DOL files)" -> "DOL state files start in 1995; the
+     national ETA 539 report starts in 1971". Update the Status section, commit, merge into main, push, run the
+     workflow and confirm the live site.
+4. Then Phase 3: signals and forecast (backtest thresholds on 2001, 2008-09, 2020 and recent data; composite
+   green / amber / red score on the Overview; forecast fan; signal colors on the Leading page). Plan with Troy first.
+
+Done on the branch so far (code only, built once locally without errors; not browser-checked):
+items 2 (state UI claims / IUI wording), 3 (1971 history, "start of data", About explanation), 4 (card wording,
+"Plotted:" footers, preliminary note on the year-ago chart), 5 (sentiment lag note; TEMPHELPS verified), 6 (About:
+disclaimer, "public and free-to-use data", ETA 539/5159/218 lines), 7 (calendar: no "After that" column, no Chicago Fed
+row; freshness wording), 8 (data/data_dictionary.csv, units standardized, Latest value / Date split, "checked" for DOL),
+9 (reference lines), 10 (risk-direction sort, percentiles since 1990 with flags), and item 1's text changes.
+
 Open items to watch: first real Thursday run (2026-11-12); ETA 539 allowed age (42 days); Chicago Fed LMI terms of use;
 DOL certificate glitch seen once on 2026-11-08.
 

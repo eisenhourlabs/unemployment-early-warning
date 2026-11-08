@@ -10,11 +10,12 @@
 {%- if summary %}
 <section class="card summary" aria-labelledby="summary-title">
   <h2 id="summary-title">Summary</h2>
-  <p class="why">Latest values with full-history percentiles. Arrows show the direction of the 3-month change only,
-    not whether it is good or bad; signal colors arrive in Phase 3.</p>
+  <p class="why">Sorted with the indicators moving toward layoff risk first (largest move relative to its usual
+    3-month moves first), then unchanged, then those moving away from risk. No colors yet: signal thresholds arrive
+    in Phase 3.</p>
   <div class="table-scroll">
   <table>
-    <thead><tr><th>Indicator</th><th>Latest</th><th>As of</th><th>3-month change</th><th>Percentile</th><th>Typical lead</th></tr></thead>
+    <thead><tr><th>Indicator</th><th>Latest</th><th>As of</th><th>3-month change</th><th>Direction</th><th>Percentile</th><th>Typical lead</th></tr></thead>
     <tbody>
       {%- for r in summary %}
       <tr>
@@ -23,13 +24,18 @@
         <td class="num">{{ r.latest }}</td>
         <td>{{ r.as_of }}</td>
         <td class="num"><span class="arrow" aria-label="{{ r.direction }}">{{ r.arrow }}</span> {{ r.change }}</td>
-        <td>{{ r.percentile }}</td>
+        <td>{{ r.risk }}{% if r.yield_curve %}<sup>†</sup>{% endif %}</td>
+        <td>{{ r.percentile }}{% if r.late_start %}<sup>*</sup>{% endif %}</td>
         <td>{{ r.lead }}</td>
       </tr>
       {%- endfor %}
     </tbody>
   </table>
   </div>
+  <p class="chart-footer">Percentiles: share of monthly / weekly / daily values since 1990 at or below the latest.
+    <sup>*</sup> Series that start later use their own start (shown). <sup>†</sup> Yield curve: a falling or inverted
+    curve is treated as toward risk; in past cycles recessions often began after the curve had turned back up, so this
+    simple rule will be tested in Phase 3.</p>
 </section>
 {%- endif %}
 <div class="grid">

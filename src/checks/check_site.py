@@ -62,7 +62,8 @@ STATE_JS = """() => [...document.querySelectorAll('.chart')].map(gd => {
     tr.x.forEach((x, i) => {
       x = String(x).slice(0, 10); const y = tr.y[i];
       if (y !== null && x > last) last = x;
-      if (y === null || x < r[0] || x > r[1]) return;
+      const always = tr.meta && tr.meta.ref;
+      if (y === null || (!always && (x < r[0] || x > r[1]))) return;
       n++; lo = Math.min(lo, y); hi = Math.max(hi, y);
     });
   });

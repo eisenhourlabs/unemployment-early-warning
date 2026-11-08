@@ -92,7 +92,8 @@
       if (tr.visible === false || tr.visible === "legendonly" || !tr.y) return;
       for (var i = 0; i < tr.x.length; i++) {
         var x = String(tr.x[i]).slice(0, 10), y = tr.y[i];
-        if (y === null || y === undefined || x < x0 || x > x1) continue;
+        var always = tr.meta && tr.meta.ref;   // reference lines (pre-recession averages) always stay in view
+        if (y === null || y === undefined || (!always && (x < x0 || x > x1))) continue;
         if (y < lo) lo = y;
         if (y > hi) hi = y;
       }
