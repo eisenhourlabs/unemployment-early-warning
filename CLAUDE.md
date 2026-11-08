@@ -141,15 +141,14 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 - 2026-11-07: Stage 5 built locally: Data & Downloads page (170 series / files as CSV + XLSX, 6 bundle files,
   346 download files, ~60 MB in site/data/; licence exclusions listed). Browser check compares every CSV with its
   source and opens every XLSX. Reviewed by Troy and live (run 42445260168).
-- 2026-11-07: Stage 6 built locally: About page. All six Phase 2 pages built; browser check passes on all of them.
-  Waiting for Troy's review before pushing.
+- 2026-11-07: Stage 6 (About page) reviewed and live (run 42446643167). Phase 2 is complete: six pages live at
+  https://eisenhourlabs.github.io/unemployment-early-warning/
 - Watch: on 2026-11-08 ~03:55 UTC oui.doleta.gov briefly failed its certificate check (hostname mismatch) from
   this PC; it passed again minutes later. If a DOL step fails in a run, check this first.
 
 ## Next steps, in order
-Setup (steps 1-4) and Phase 1 are done. Phase 2 is built in stages; Troy reviews each one locally before the next.
-1. Stage 6 review: About page (built 2026-11-07; push and republish after Troy's review). Then Phase 2 is done.
-2. Phase 3: signals and forecast: backtest thresholds (2001, 2008-09, 2020, recent), composite early-warning score
+Setup (steps 1-4), Phase 1 and Phase 2 are done.
+1. Phase 3: signals and forecast: backtest thresholds (2001, 2008-09, 2020, recent), composite early-warning score
    (green / amber / red) on the Overview, forecast fan on the unemployment rate chart, signal colors on the
    Leading page. Plan with Troy first; decisions go in docs/decisions.md.
 Open items to watch: first real Thursday run (2026-11-12); ETA 539 allowed age (42 days); Chicago Fed LMI terms of use;
