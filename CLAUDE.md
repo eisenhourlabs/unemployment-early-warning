@@ -120,12 +120,13 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 
 - 2026-11-07: Phase 2 ("Unemployment Watch", design in docs/phase2_design.md) Stage 1 built: site frame,
   Overview page, USREC + history_start in the catalog, release calendar, build + deploy jobs in the workflow.
-  Browser check passes locally (desktop, phone, dark mode, time control, downloads). Waiting for Troy's
-  review and for GitHub Pages to be switched on (Settings > Pages > Source: GitHub Actions).
+  Browser check passes locally (desktop, phone, dark mode, time control, downloads). GitHub Pages switched
+  on (Source: GitHub Actions); first publish green in run 42438518785 (refresh, build, deploy).
+  Live site: https://eisenhourlabs.github.io/unemployment-early-warning/
 
 ## Next steps, in order
 Setup (steps 1-4) and Phase 1 are done. Phase 2 is built in stages; Troy reviews each one locally before the next.
-1. Phase 2 Stage 1 review: site frame + Overview + publishing (built 2026-11-07; first live deploy pending).
+1. Phase 2 Stage 1 review: site frame + Overview + publishing (live since 2026-11-07; Troy's review of the page).
 2. Stage 2: Job Losses page (7 charts, docs/phase2_design.md).
 3. Stage 3: Duration page (6 charts).
 4. Stage 4: Leading Indicators page (summary table + 8 charts).
