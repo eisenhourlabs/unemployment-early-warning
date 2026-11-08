@@ -20,8 +20,11 @@ Definitions:
   Flag        drop candidate = adds warning in none of the events it can be tested on;
               weak = adds in only one, or (amber) more false alarms than hits. Nothing is dropped here.
 
-Writes data/model/trigger_episodes.csv, trigger_leads.csv, trigger_summary.csv and prints the tables used
-in docs/model.md section 4.
+Both overall-status rules (new: "overall"; plan: "overall_old") are scored like triggers, and compared side
+by side in data/model/status_comparison.csv (months in each color, leads, false alarms, longest amber runs).
+
+Writes data/model/trigger_episodes.csv, trigger_leads.csv, trigger_summary.csv, status_comparison.csv and
+prints the tables used in docs/model.md section 4.
 
 Run it (after triggers.py and events.py):
     python src/model/backtest_triggers.py
@@ -41,6 +44,9 @@ BRIDGE = 2             # off-months bridged inside an episode
 LIVE = 3               # an episode must still be on within this many months before the event start to count
 BASELINE = ["sahm", "claims_vs_low", "claims_yoy", "cont_claims_yoy"]
 LEVELS = {"amber": ["amber", "red"], "red": ["red"]}
+# The two overall-status versions in triggers_monthly.csv, scored like triggers.
+STATUS = {"overall": "Overall status (new rule)", "overall_old": "Overall status (plan rule)"}
+RUN_WINDOWS = {"2006-08": ("2006-01-01", "2008-12-01"), "2022-25": ("2022-01-01", "2025-12-01")}
 
 
 def months_between(a, b) -> int:
@@ -109,15 +115,14 @@ def lead_for(event, eps, on, available, window):
 
 def main() -> None:
     trig, ev, cfg = load()
-    trigger_ids = list(cfg.index) + ["overall"]
-    names = dict(cfg.name)
-    names["overall"] = "Overall Layer 1 status"
+    trigger_ids = list(cfg.index) + list(STATUS)
+    names = {**dict(cfg.name), **STATUS}
 
     episode_rows, lead_rows = [], []
     for tid in trigger_ids:
-        color = trig[f"{tid}_color"] if tid != "overall" else trig["overall"]
+        color = trig[f"{tid}_color"] if tid not in STATUS else trig[tid]
         available = color != ""
-        basis = trig[f"{tid}_basis"] if tid != "overall" else pd.Series("mixed", index=trig.index)
+        basis = trig[f"{tid}_basis"] if tid not in STATUS else pd.Series("mixed", index=trig.index)
         for level, colors in LEVELS.items():
             on = color.isin(colors)
             eps = episodes(on, available)
@@ -146,7 +151,7 @@ def main() -> None:
                     lead_rows.append({"trigger": tid, "level": level, "window": w, "event": event.event,
                                       "start_month": event.start_month, "group": event.group,
                                       "lead": text, "lead_months": k,
-                                      "basis": basis.get(event.start, "") if tid != "overall" else "mixed"})
+                                      "basis": basis.get(event.start, "") if tid not in STATUS else "mixed"})
 
     episodes_df = pd.DataFrame(episode_rows)
     leads = pd.DataFrame(lead_rows)
@@ -173,7 +178,7 @@ def main() -> None:
     # Summary per trigger and level.
     summary = []
     for tid in trigger_ids:
-        color = trig[f"{tid}_color"] if tid != "overall" else trig["overall"]
+        color = trig[f"{tid}_color"] if tid not in STATUS else trig[tid]
         years = (color != "").sum() / 12
         for level in LEVELS:
             L = leads[(leads.trigger == tid) & (leads.level == level) & (leads.window == WINDOW)]
@@ -197,7 +202,7 @@ def main() -> None:
                 "false_alarms": int((E.outcome == "false alarm").sum()),
                 "false_alarms_per_decade": round(10 * (E.outcome == "false alarm").sum() / years, 1) if years else None,
             }
-            if tid != "overall" and level == "amber":
+            if tid not in STATUS and level == "amber":
                 c, t, extra = adds[tid]
                 row["adds_warning"] = f"{c} of {t}"
                 row["adds_detail"] = extra
@@ -212,6 +217,53 @@ def main() -> None:
             summary.append(row)
     summary = pd.DataFrame(summary)
 
+    # Side-by-side comparison of the two overall-status rules.
+    rec_events = ev[ev.group == "recession"]
+    comp = []
+    for tid, label in STATUS.items():
+        status = trig[tid]
+        share = status.value_counts()
+        row = {"rule": label, "column": tid}
+        for c in ["green", "amber", "red"]:
+            row[f"months_{c}"] = int(share.get(c, 0))
+            row[f"pct_{c}"] = round(100 * share.get(c, 0) / len(status), 1)
+        for level in LEVELS:
+            L = leads[(leads.trigger == tid) & (leads.level == level) & (leads.window == WINDOW)]
+            for r in rec_events.itertuples():
+                row[f"{level}_lead_#{r.event}"] = L[L.event == r.event].lead.iloc[0]
+            row[f"{level}_lead_#7_early_signal"] = L[L.event == 7].lead.iloc[0]
+            row[f"{level}_lead_#13_2020"] = L[L.event == 13].lead.iloc[0]
+            E = episodes_df[(episodes_df.trigger == tid) & (episodes_df.level == level)]
+            row[f"{level}_hits"] = int(E.outcome.str.startswith("hit").sum())
+            row[f"{level}_followed_by_scare"] = int((E.outcome == "followed by scare").sum())
+            row[f"{level}_false_alarms"] = int((E.outcome == "false alarm").sum())
+            row[f"{level}_false_alarm_starts"] = ", ".join(E[E.outcome == "false alarm"].start)
+        # Continuous runs of AMBER months (amber exactly, not red).
+        runs, start = [], None
+        for m, c in status.items():
+            if c == "amber" and start is None:
+                start = m
+            if c != "amber" and start is not None:
+                runs.append((start, prev)); start = None
+            prev = m
+        if start is not None:
+            runs.append((start, prev))
+        length = lambda r: months_between(r[0], r[1]) + 1
+        longest = max(runs, key=length)
+        row["longest_amber_run"] = f"{length(longest)} months ({longest[0]:%Y-%m} to {longest[1]:%Y-%m})"
+        for name, (a0, a1) in RUN_WINDOWS.items():
+            inside = [r for r in runs if r[1] >= pd.Timestamp(a0) and r[0] <= pd.Timestamp(a1)]
+            months_amber = int((status.loc[a0:a1] == "amber").sum())
+            if inside:
+                big = max(inside, key=length)
+                row[f"amber_{name}"] = (f"longest run {length(big)} months ({big[0]:%Y-%m} to {big[1]:%Y-%m}); "
+                                        f"{months_amber} amber months in {a0[:4]}-{a1[:4]}")
+            else:
+                row[f"amber_{name}"] = f"no amber; {months_amber} amber months"
+        comp.append(row)
+    comparison = pd.DataFrame(comp).set_index("rule").T
+    comparison.to_csv(MODEL / "status_comparison.csv")
+
     episodes_df.to_csv(MODEL / "trigger_episodes.csv", index=False)
     leads.to_csv(MODEL / "trigger_leads.csv", index=False)
     summary.to_csv(MODEL / "trigger_summary.csv", index=False)
@@ -223,6 +275,8 @@ def main() -> None:
     wide = leads[leads.window == WINDOW].pivot_table(index=["trigger", "level"], columns="event",
                                                      values="lead", aggfunc="first")
     print(wide.reindex(trigger_ids, level=0).to_string())
+    print()
+    print(comparison.to_string())
     print()
     y24 = leads[(leads.trigger == "yield_curve") & (leads.window == YIELD_WINDOW)]
     print("Yield curve, 24-month window:", ", ".join(f"#{r.event}:{r.level[0]}:{r.lead}" for r in y24.itertuples()))

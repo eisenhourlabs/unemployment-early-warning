@@ -1,0 +1,37 @@
+,Overall status (new rule),Overall status (plan rule)
+column,overall,overall_old
+months_green,469,424
+pct_green,65.3,59.1
+months_amber,55,97
+pct_amber,7.7,13.5
+months_red,194,197
+pct_red,27.0,27.4
+amber_lead_#1,2,2
+amber_lead_#2,0,4
+amber_lead_#4,6,8
+amber_lead_#5,1,on since 1979-02
+amber_lead_#8,on since 1989-06,on since 1989-06
+amber_lead_#9,0,0
+amber_lead_#12,1,on since 2006-12
+amber_lead_#7_early_signal,4,4
+amber_lead_#13_2020,3,6
+amber_hits,8,6
+amber_followed_by_scare,3,4
+amber_false_alarms,3,4
+amber_false_alarm_starts,"1967-10, 1973-08, 2025-12","1967-10, 1985-02, 1995-07, 2006-12"
+red_lead_#1,2,2
+red_lead_#2,0,0
+red_lead_#4,0,0
+red_lead_#5,late +1,0
+red_lead_#8,late +1,late +1
+red_lead_#9,0,0
+red_lead_#12,late +3,late +3
+red_lead_#7_early_signal,0,0
+red_lead_#13_2020,0,0
+red_hits,6,7
+red_followed_by_scare,2,2
+red_false_alarms,1,1
+red_false_alarm_starts,1979-04,1979-04
+longest_amber_run,9 months (1990-02 to 1990-10),17 months (2024-11 to 2026-03)
+amber_2006-08,longest run 4 months (2008-01 to 2008-04); 4 amber months in 2006-2008,longest run 12 months (2007-05 to 2008-04); 16 amber months in 2006-2008
+amber_2022-25,longest run 4 months (2024-04 to 2024-07); 13 amber months in 2022-2025,longest run 17 months (2024-11 to 2026-03); 27 amber months in 2022-2025

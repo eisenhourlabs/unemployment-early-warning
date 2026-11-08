@@ -193,25 +193,25 @@ nfci,red,1989-03,1989-04,2,revised,false alarm,
 nfci,red,2008-03,2009-06,16,revised,during event,
 overall,amber,1967-10,1968-01,4,mixed,false alarm,
 overall,amber,1969-11,1971-11,25,mixed,hit (recession),1.0
-overall,amber,1973-08,1976-02,31,mixed,hit (recession),2.0
+overall,amber,1973-08,1973-08,1,mixed,false alarm,
+overall,amber,1973-12,1976-02,27,mixed,hit (recession),2.0
 overall,amber,1976-09,1977-02,6,mixed,followed by scare,3.0
-overall,amber,1979-02,1983-07,54,mixed,hit (recession),4.0
+overall,amber,1979-04,1981-06,27,mixed,hit (recession),4.0
+overall,amber,1981-10,1983-07,22,mixed,hit (recession),5.0
 overall,amber,1984-09,1984-10,2,mixed,followed by scare,6.0
-overall,amber,1985-02,1985-02,1,mixed,false alarm,
 overall,amber,1989-06,1992-12,43,mixed,hit (early signal),7.0
-overall,amber,1995-07,1995-11,5,mixed,false alarm,
-overall,amber,2000-11,2003-01,27,mixed,hit (recession),9.0
-overall,amber,2005-09,2005-09,1,mixed,followed by scare,11.0
-overall,amber,2006-12,2010-06,43,mixed,false alarm,
-overall,amber,2019-09,2021-04,20,mixed,hit (2020),13.0
-overall,amber,2022-12,2026-03,40,mixed,followed by scare,14.0
+overall,amber,2000-11,2002-11,25,mixed,hit (recession),9.0
+overall,amber,2008-01,2010-06,30,mixed,hit (recession),12.0
+overall,amber,2019-12,2021-04,17,mixed,hit (2020),13.0
+overall,amber,2023-03,2025-02,24,mixed,followed by scare,14.0
+overall,amber,2025-12,2026-02,3,mixed,false alarm,
 overall,red,1969-11,1971-11,25,mixed,hit (recession),1.0
 overall,red,1973-12,1976-02,27,mixed,hit (recession),2.0
 overall,red,1976-12,1977-02,3,mixed,followed by scare,3.0
 overall,red,1979-04,1979-04,1,mixed,false alarm,
-overall,red,1979-10,1979-12,3,mixed,hit (recession),4.0
+overall,red,1979-10,1979-11,2,mixed,hit (recession),4.0
 overall,red,1980-04,1981-05,14,mixed,during event,
-overall,red,1981-11,1983-07,21,mixed,hit (recession),5.0
+overall,red,1981-12,1983-07,20,mixed,during event,
 overall,red,1989-10,1990-01,4,mixed,hit (early signal),7.0
 overall,red,1990-11,1992-12,26,mixed,during event,
 overall,red,2000-11,2002-11,25,mixed,hit (recession),9.0
@@ -219,3 +219,31 @@ overall,red,2008-05,2010-06,26,mixed,during event,
 overall,red,2020-03,2021-04,14,mixed,hit (2020),13.0
 overall,red,2023-05,2023-11,7,mixed,followed by scare,14.0
 overall,red,2024-08,2024-10,3,mixed,during event,
+overall_old,amber,1967-10,1968-01,4,mixed,false alarm,
+overall_old,amber,1969-11,1971-11,25,mixed,hit (recession),1.0
+overall_old,amber,1973-08,1976-02,31,mixed,hit (recession),2.0
+overall_old,amber,1976-09,1977-02,6,mixed,followed by scare,3.0
+overall_old,amber,1979-02,1983-07,54,mixed,hit (recession),4.0
+overall_old,amber,1984-09,1984-10,2,mixed,followed by scare,6.0
+overall_old,amber,1985-02,1985-02,1,mixed,false alarm,
+overall_old,amber,1989-06,1992-12,43,mixed,hit (early signal),7.0
+overall_old,amber,1995-07,1995-11,5,mixed,false alarm,
+overall_old,amber,2000-11,2003-01,27,mixed,hit (recession),9.0
+overall_old,amber,2005-09,2005-09,1,mixed,followed by scare,11.0
+overall_old,amber,2006-12,2010-06,43,mixed,false alarm,
+overall_old,amber,2019-09,2021-04,20,mixed,hit (2020),13.0
+overall_old,amber,2022-12,2026-03,40,mixed,followed by scare,14.0
+overall_old,red,1969-11,1971-11,25,mixed,hit (recession),1.0
+overall_old,red,1973-12,1976-02,27,mixed,hit (recession),2.0
+overall_old,red,1976-12,1977-02,3,mixed,followed by scare,3.0
+overall_old,red,1979-04,1979-04,1,mixed,false alarm,
+overall_old,red,1979-10,1979-12,3,mixed,hit (recession),4.0
+overall_old,red,1980-04,1981-05,14,mixed,during event,
+overall_old,red,1981-11,1983-07,21,mixed,hit (recession),5.0
+overall_old,red,1989-10,1990-01,4,mixed,hit (early signal),7.0
+overall_old,red,1990-11,1992-12,26,mixed,during event,
+overall_old,red,2000-11,2002-11,25,mixed,hit (recession),9.0
+overall_old,red,2008-05,2010-06,26,mixed,during event,
+overall_old,red,2020-03,2021-04,14,mixed,hit (2020),13.0
+overall_old,red,2023-05,2023-11,7,mixed,followed by scare,14.0
+overall_old,red,2024-08,2024-10,3,mixed,during event,

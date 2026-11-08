@@ -156,8 +156,10 @@ Sahm value (0.53) uses the July unemployment rate released on August 2, and matc
 | 7 | Manufacturing surveys (Philly + Empire average) | below 0 for 3 months in a row | 3-month average below −15 | Philly from 1968, Empire added from Jul 2001; real-time from 2014–15, **revised** before |
 | 8 | Financial conditions (NFCI) | above 0 | above 0.5 | NFCI first releases from 2011 (real-time); before that, the history as published in May 2011, from 1973 (**revised**) |
 
-**Overall Layer 1 status** (plan): red if any of triggers 1–4 is red; amber if two or more triggers are amber or red;
-otherwise green. From 1967 to 2026 it was green 59% of months, amber 14% and red 27% (the red months are mostly inside events).
+**Overall Layer 1 status.** Sections 4.1–4.6 use the plan's rule: red if any of triggers 1–4 is red; amber if two or
+more triggers are amber or red; otherwise green. From 1967 to 2026 it was green 59% of months, amber 14% and red 27%
+(the red months are mostly inside events). After review, Troy replaced it with a new rule and a smaller panel;
+**see 4.8 for the new rule and the side-by-side comparison.**
 **October 2026: all eight triggers green; overall green.**
 
 **Yield-curve splice check.** For 1982–2026, where both exist, the official 10y − 3m spread averages 0.12 point below
@@ -205,7 +207,7 @@ Months before the event's start (0 = same month); 12-month window. \* = this tri
 | 6 Yield curve | 0 | 4 | 8 | on since 1979-02 | on since 1989-08 | 2 | on since 2006-10 | 2 | 7 |
 | 7 Manufacturing surveys | 0\* | late +3 | 4\* | late +1 | on since 1989-07 | late +3 | late +1 | 3\* | late +1 |
 | 8 NFCI | n/a | 10\* | on since 1978-04\* | on since 1978-04\* | 1\* | late +1 | 6\* | on since 1987-04\* | none |
-| **Overall status** | 2 | 4 | 8 | on since 1979-02 | on since 1989-06 | 0 | on since 2006-12 | 4 | 6 |
+| **Overall status (plan rule)** | 2 | 4 | 8 | on since 1979-02 | on since 1989-06 | 0 | on since 2006-12 | 4 | 6 |
 
 **Red:**
 
@@ -219,7 +221,7 @@ Months before the event's start (0 = same month); 12-month window. \* = this tri
 | 6 Yield curve | late +1 | late +7 | late +7 | 2 | on since 1989-09 | late +3 | 8 | 1 | 5 |
 | 7 Manufacturing surveys | late +2 | late +10 | 1 | late +1 | 1 | late +3 | late +9 | late +5 | late +1 |
 | 8 NFCI | n/a | 9 | 4 | on since 1979-06 | none | none | late +1 | none | none |
-| **Overall status** | 2 | 0 | 0 | 0 | late +1 | 0 | late +3 | 0 | 0 |
+| **Overall status (plan rule)** | 2 | 0 | 0 | 0 | late +1 | 0 | late +3 | 0 | 0 |
 
 **Scares, amber** (did the trigger "warn" of a spike that faded?):
 
@@ -233,7 +235,7 @@ Months before the event's start (0 = same month); 12-month window. \* = this tri
 | 6 Yield curve | none | none | none | late +12 | 5 | on since 2023-01 |
 | 7 Manufacturing surveys | none | none | none | none | 11 | late +10 |
 | 8 NFCI | none | 7\* | none | none | none | none |
-| **Overall status** | 5 | 2 | none | 1 | 6 | on since 2022-12 |
+| **Overall status (plan rule)** | 5 | 2 | none | 1 | 6 | on since 2022-12 |
 
 **Yield curve with a 24-month window** (amber): 1970 0, 1973 4, 1979 8, 1981 on since 1979-02, 1990 **14**, 2000 2,
 2008 **16**, early signal 2, 2020 7. The curve warned of every recession within two years. With the 12-month window it only
@@ -261,7 +263,7 @@ Hits, scares and false alarms count episodes that start outside events. False al
 |  | red | 2 of 7 | 1 | 2 | 1 | 2 | 0.3 | | |
 | 8 NFCI | amber | 3 of 6 | 6 | 3 | 1 | 3 | 0.6 | 2 of 7 (#2 +10\*, #12 +5\*) | keep (revised data only) |
 |  | red | 2 of 6 | 6.5 | 2 | 0 | 5 | 0.9 | | |
-| **Overall status** | amber | 4 of 7 (the other 3 "on since") | 3 | 6 | 4 | 4 | 0.7 | | |
+| **Overall status (plan rule; new rule in 4.8)** | amber | 4 of 7 (the other 3 "on since") | 3 | 6 | 4 | 4 | 0.7 | | |
 |  | red | 5 of 7 | 0 | 7 | 2 | 1 | 0.2 | | |
 
 False alarms, by start month (amber unless noted): Sahm 1967-10, 1986-05, 2023-11, 2025-12; claims vs. 52-wk low
@@ -291,7 +293,7 @@ manufacturing 1995-06, 2012-08, 2015-10, 2025-05; NFCI 1978-04, 1987-04, 1998-10
    episodes followed by scares. That is close to the target if scares count as half-right, which is a fair reading given
    your decision that scares count as events.
 
-### 4.6 Candidates to drop (flagged only; nothing has been dropped)
+### 4.6 Candidates to drop (flagged in stage 3b; Troy's decision is in 4.8)
 
 | Trigger | Flag | Why | Points in its favor |
 | --- | --- | --- | --- |
@@ -314,3 +316,64 @@ indicators out of sample in the score, which is the better test of whether they 
 - Events are dated on final data and triggers on real-time data. A trigger can be "late +1" partly because the
   last week of the event's start month was published the following month (for example 1990-10, trigger 2 red).
 - The 12-month window favors fast indicators. The 24-month view for the yield curve shows what a longer window would credit.
+
+### 4.8 Stage 3b review: new panel and overall rule (Troy, 2026-11-08)
+
+**Panel** (`config/triggers.csv`, column `layer1_role`):
+
+| Role | Triggers | In the overall status? |
+| --- | --- | --- |
+| Core | 1 Sahm, 2 initial claims vs. 52-week low, 4 continued claims vs. a year ago | Yes |
+| Panel | 6 yield curve ("long lead, often 12+ months"), 8 NFCI ("real-time only since 2011") | Yes, but only alongside a core trigger |
+| Context | 5 temp help, 7 manufacturing surveys | No: shown on the Leading page as context (site change in stage 3e) |
+| Removed | 3 initial claims vs. a year ago | No |
+
+All eight are still computed and stay candidates for the stage 3c score.
+
+**New overall rule:** red if trigger 1, 2 or 4 is red. Amber if at least one of triggers 1, 2 or 4 is amber or red AND at
+least one other panel trigger (1, 2, 4, 6 or 8) is amber or red; in other words, two or more panel triggers on, with a
+core one among them. Otherwise green. The yield curve and NFCI can no longer turn the status amber on their own, or
+together without a core trigger.
+
+**New rule vs. the plan's rule** (both computed every month; `data/model/status_comparison.csv`):
+
+| | New rule | Plan rule (old) |
+| --- | --- | --- |
+| Months green / amber / red | 469 / 55 / 194 (65% / 8% / 27%) | 424 / 97 / 197 (59% / 14% / 27%) |
+| Amber lead, 1970 #1 | 2 | 2 |
+| Amber lead, 1973 #2 | 0 | 4 |
+| Amber lead, 1979 #4 | 6 | 8 |
+| Amber lead, 1981 #5 | 1 | on since 1979-02 |
+| Amber lead, 1990 #8 | on since 1989-06 (the early signal's run) | on since 1989-06 |
+| Amber lead, 2000 #9 | 0 | 0 |
+| Amber lead, 2008 #12 | 1 | on since 2006-12 |
+| Amber lead, early signal #7 / 2020 #13 | 4 / 3 | 4 / 6 |
+| Red lead, recessions #1, #2, #4, #5, #8, #9, #12 | 2, 0, 0, late +1, late +1, 0, late +3 | 2, 0, 0, 0, late +1, 0, late +3 |
+| Red lead, early signal #7 / 2020 #13 | 0 / 0 | 0 / 0 |
+| Amber episodes: hits / followed by scare / false alarms | 8 / 3 / 3 | 6 / 4 / 4 |
+| Amber false alarms (start month) | 1967-10, 1973-08, 2025-12 | 1967-10, 1985-02, 1995-07, 2006-12 |
+| Red episodes: hits / followed by scare / false alarms | 6 / 2 / 1 | 7 / 2 / 1 |
+| Red false alarm | 1979-04 (strike spike) | 1979-04 (strike spike) |
+| Longest continuous amber run | 9 months (1990-02 to 1990-10) | 17 months (2024-11 to 2026-03) |
+| Amber in 2006–08 | 4 amber months; longest run 4 (2008-01 to 2008-04) | 16 amber months; longest run 12 (2007-05 to 2008-04) |
+| Amber in 2022–25 | 13 amber months; longest run 4 (2024-04 to 2024-07) | 27 amber months; longest run 17 (2024-11 to 2026-03) |
+
+**What changed:**
+
+1. **The long amber runs are gone.** In 2006–08 and 2022–25 the plan rule was amber mostly because the yield curve and temp
+   help (and, in 2025–26, the yield curve's red re-steepening) were on together. Under the new rule those months are green
+   unless a core trigger joins in. Amber time falls from 14% to 8% of months. The longest run is now 9 months, in 1990,
+   leading into the 1990–91 recession.
+2. **Warning is mostly kept.** Overall amber was on at or before the start of every recession under both rules. The new
+   rule gives shorter measured leads where the plan rule's amber was driven by the yield curve (1973: 0 vs. 4; 1979: 6 vs. 8;
+   2020: 3 vs. 6). In 1981 and 2008 the new rule's amber is a fresh 1-month warning instead of a run that began more than a
+   year earlier.
+3. **False alarms:** amber 3 vs. 4. The new rule's three are 1967-10 (Sahm + yield curve), 1973-08 (a one-month claims blip
+   with the yield curve inverted and NFCI red on revised data; the 1973 event followed 4 months later, after the blip had ended) and **2025-12 to 2026-02**
+   (Sahm amber at 0.30–0.43 around the uncollected October 2025 unemployment rate, while the yield curve was red from
+   re-steepening after the 2022–24 inversion). Red false alarms are unchanged (1 each).
+4. **Red is slightly later in 1981** (late +1 vs. 0), because trigger 3 (now removed) went red in the event's start month.
+5. **Today (October 2026):** green under both rules.
+
+**Caveat:** the new rule was chosen after looking at these same 7 recessions, so its record here is in-sample. Stage 3c's
+out-of-sample test of the score is the fairer comparison.

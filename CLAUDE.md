@@ -174,17 +174,23 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 - 2026-11-08: Stage 3b built locally on `phase3a` (not pushed, website unchanged): 8 Layer 1 triggers monthly since 1967
   on real-time data where it exists (Sahm, yield curve real-time throughout; temp help / manufacturing / NFCI revised
   before 2011-15; claims current-vintage), backtest of leads and false alarms, overall status chart
-  reports/layer1_status.png, docs/model.md section 4. Drop candidates flagged, nothing dropped. Waiting for Troy's review.
+  reports/layer1_status.png, docs/model.md section 4. Drop candidates flagged, nothing dropped.
+- 2026-11-08: Stage 3b review decisions applied (docs/model.md 4.8): "still on within 3 months" rule kept; panel = core 1 Sahm,
+  2 claims vs. 52-wk low, 4 continued claims + 6 yield curve (long lead) and 8 NFCI (real-time only since 2011); 3 removed;
+  5 temp help and 7 manufacturing = context only (Leading page, stage 3e); all 8 stay 3c score candidates. New overall rule:
+  red if 1, 2 or 4 red; amber if one of 1, 2, 4 amber/red AND another panel trigger amber/red. Compared with the plan rule:
+  amber 8% vs. 14% of months, longest amber run 9 vs. 17 months, amber false alarms 3 vs. 4. Waiting for Troy's review.
 
 ## Next steps, in order
 Setup (steps 1-4), Phase 1, Phase 2 and the Phase 2 review fixes are done and live.
-1. Stage 3b review: Troy decides on the flagged triggers (docs/model.md 4.6) and the 3-month "still on" condition
-   added during the build (4.2). Do not start 3c until he says so. Merge `phase3a` into main and push only when he
+1. Stage 3b review of the new overall rule (docs/model.md 4.8). Do not start 3c until he says so. Merge `phase3a` into main and push only when he
    says "push".
 2. Stage 3c (score), plan with Troy first. REQUIRED (Troy, 2026-11-08): fit the score (a) with and without the four
    one-off shock scares (#3, #6, #11, #14), and (b) with and without TEMPHELPS and JOLTS, and report the differences.
    Also measure the claims revision effect with FRED's 2009+ claims vintages (ICSA / CCSA).
-3. Stages 3d-3e per docs/phase3_plan.md.
+3. Stages 3d-3e per docs/phase3_plan.md. Stage 3e must also: show trigger signal colors for the panel (yield curve
+   labeled "long lead, often 12+ months"; NFCI caveat "real-time only since 2011"); move temp help and manufacturing
+   surveys to the Leading page as context only (not counted in the overall status); use the new overall rule.
 Open items to watch: first real Thursday run (2026-11-12); ETA 539 allowed age (42 days); Chicago Fed LMI terms of use;
 DOL certificate glitch seen once on 2026-11-08.
 

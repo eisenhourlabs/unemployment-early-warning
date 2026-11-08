@@ -11,8 +11,13 @@ Each trigger gets three columns in data/model/triggers_monthly.csv:
                current-vintage  = today's values cut back by the release lag (DOL claims: our rule)
                revised          = before the series' first ALFRED vintage: earliest archived values
 
-Overall Layer 1 status (plan): red if any of the first four triggers is red; amber if two or more triggers
-are amber or red; otherwise green.
+Overall Layer 1 status, two versions (both in the output, for comparison):
+  overall      NEW rule (Troy, stage 3b review), panel only (config/triggers.csv layer1_role core/panel):
+               red if any core trigger (1, 2, 4) is red; amber if a core trigger is amber/red AND at least one
+               other panel trigger (1, 2, 4, 6, 8) is amber/red; otherwise green.
+  overall_old  the plan's original rule: red if any of triggers 1-4 is red; amber if two or more of all eight
+               triggers are amber or red; otherwise green.
+Triggers 5 and 7 (context) and 3 (removed) are still computed: they stay candidates for the stage 3c score.
 
 Run it (after build_claims_history.py, alfred_fetcher.py and current_fetcher.py):
     python src/model/triggers.py
@@ -174,14 +179,28 @@ def main() -> None:
         rows.append(row)
     df = pd.DataFrame(rows).set_index("month")
 
-    # Overall Layer 1 status.
-    first_four = ["sahm", "claims_vs_low", "claims_yoy", "cont_claims_yoy"]
-    colors = df[[f"{t}_color" for t in cfg.index]]
-    df["n_amber_or_red"] = colors.isin(["amber", "red"]).sum(axis=1)
-    any_red_top4 = (df[[f"{t}_color" for t in first_four]] == "red").any(axis=1)
+    # Overall Layer 1 status, two versions side by side.
+    def on(tids, levels=("amber", "red")):
+        """For each month, how many of these triggers are amber or red (or, with levels=("red",), red)."""
+        return df[[f"{t}_color" for t in tids]].isin(levels).sum(axis=1)
+
+    # (a) overall_old = the plan's rule: red if any of triggers 1-4 is red; amber if 2+ of all 8 are amber/red.
+    first_four = list(cfg.sort_values("order").index[:4])
+    df["n_amber_or_red"] = on(cfg.index)
+    df["overall_old"] = "green"
+    df.loc[df.n_amber_or_red >= 2, "overall_old"] = "amber"
+    df.loc[on(first_four, ("red",)) >= 1, "overall_old"] = "red"
+
+    # (b) overall = the new rule (Troy, stage 3b review), using only the panel in config/triggers.csv:
+    #     red if any CORE trigger (1 Sahm, 2 claims vs. 52-week low, 4 continued claims) is red;
+    #     amber if at least one core trigger is amber/red AND at least one other panel trigger (core or
+    #     panel: 6 yield curve, 8 NFCI) is amber/red, i.e. 2+ panel triggers on with a core one among them.
+    core = list(cfg[cfg.layer1_role == "core"].index)
+    panel = list(cfg[cfg.layer1_role.isin(["core", "panel"])].index)
+    df["n_panel_amber_or_red"] = on(panel)
     df["overall"] = "green"
-    df.loc[df.n_amber_or_red >= 2, "overall"] = "amber"
-    df.loc[any_red_top4, "overall"] = "red"
+    df.loc[(on(core) >= 1) & (df.n_panel_amber_or_red >= 2), "overall"] = "amber"
+    df.loc[on(core, ("red",)) >= 1, "overall"] = "red"
 
     df.to_csv(OUT, date_format="%Y-%m-%d")
     print(f"Wrote {OUT.relative_to(ROOT)}: {len(df)} months, {months[0]:%Y-%m} to {months[-1]:%Y-%m}")
@@ -193,7 +212,8 @@ def main() -> None:
         counts = df[f"{tid}_basis"].value_counts().to_dict()
         counts.pop("", None)
         print(f"  {tid:16} from {first:%Y-%m}  {counts}")
-    print("  overall:", df.overall.value_counts().to_dict())
+    print("  overall (new rule):", df.overall.value_counts().to_dict())
+    print("  overall_old (plan rule):", df.overall_old.value_counts().to_dict())
 
     # Yield-curve splice check: how different are the two definitions where both exist (1982 on)?
     gs = (_current("GS10") - _current("TB3MS")).dropna()
