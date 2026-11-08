@@ -102,8 +102,9 @@
   function showsToday(w) { return w[1] >= data.today; }
   function windowFor(chart) {
     var w = baseWindow(chart);
-    if (chart.fixed || !chart.ahead || !showsToday(w)) return w;
-    var end = chart.whatif && chart.whatifAhead > chart.ahead ? chart.whatifAhead : chart.ahead;
+    if (chart.fixed || !(chart.ahead || chart.whatifAhead) || !showsToday(w)) return w;
+    // a chart with what-if paths but no fan (initial claims) only reaches past today while they are shown
+    var end = chart.whatif && chart.whatifAhead > (chart.ahead || "") ? chart.whatifAhead : (chart.ahead || w[1]);
     return [w[0], end > w[1] ? end : w[1]];
   }
   // Which traces are visible in a window: forecast elements (meta.today) only in today's view; what-if paths

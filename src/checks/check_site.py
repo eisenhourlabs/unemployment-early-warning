@@ -88,9 +88,10 @@ TODAY = None   # the page's "today" (set per page)
 def view_end(spec, x1, whatif=False):
     """Where a chart's x-axis should end: charts with a forecast run on to its end in today's view (and to the
     end of the what-if paths while those are shown), as site.js does."""
-    if not spec.get("ahead") or x1 < TODAY:
+    ahead, wa = spec.get("ahead") or "", spec.get("whatif_ahead") or ""
+    if not (ahead or wa) or x1 < TODAY:
         return x1
-    end = spec["whatif_ahead"] if whatif and spec.get("whatif_ahead", "") > spec["ahead"] else spec["ahead"]
+    end = wa if whatif and wa > ahead else (ahead or x1)
     return max(end, x1)
 
 
@@ -248,8 +249,12 @@ def check_page(browser, url, name, shots_prefix, first_page):
     check(max(widths) <= 400, f"phone: every card fits within 400 px (rightmost edge {max(widths)} px)")
     cols = pp.evaluate("getComputedStyle([...document.querySelectorAll('main .grid')].pop()).gridTemplateColumns")
     check(len(cols.split()) == 1, f"phone: charts in one column ({cols})")
-    pp.screenshot(path=str(SHOTS / f"{shots_prefix}_phone.png"), full_page=True)
+    try:   # a review aid, not a check: a very tall page can exceed what a low-memory PC can capture
+        pp.screenshot(path=str(SHOTS / f"{shots_prefix}_phone.png"), full_page=True)
+    except Exception as e:
+        print(f"  note  phone screenshot not saved ({str(e).splitlines()[0]})")
     check(not errors, f"no browser errors at the end {errors[:3] if errors else ''}")
+    page.context.close(); pp.context.close()   # free the memory before the next page (low-memory PCs)
 
 
 def check_data_page(browser, url, base):
@@ -359,6 +364,7 @@ def check_data_page(browser, url, base):
     check(overflow <= 0, f"phone: page is not wider than the screen (overflow {overflow} px; the table scrolls inside its box)")
     pp.screenshot(path=str(SHOTS / "data_phone.png"), full_page=False)
     check(not errors, f"no browser errors at the end {errors[:3] if errors else ''}")
+    page.context.close(); pp.context.close()   # free the memory before the next page (low-memory PCs)
 
 
 def check_text_page(browser, url, name):
@@ -385,6 +391,7 @@ def check_text_page(browser, url, name):
     overflow = pp.evaluate("document.documentElement.scrollWidth - window.innerWidth")
     check(overflow <= 0, f"phone: page is not wider than the screen (overflow {overflow} px)")
     pp.screenshot(path=str(SHOTS / f"{Path(name).stem}_phone.png"), full_page=False)
+    page.context.close(); pp.context.close()   # free the memory before the next page (low-memory PCs)
 
 
 def check_wording() -> None:
@@ -494,7 +501,88 @@ def check_phase3(browser, base) -> None:
         check(words in body, f"Outlook: says '{words}'")
     check(page.locator(".method details").count() >= 8, f"Outlook: {page.locator('.method details').count()} methodology sections")
     check(not re.search(r"\b(nan|NaN|None|undefined)\b", body), "Outlook: no 'nan' / 'None' in the page text")
+    live = json.loads((ROOT / "data" / "model" / "live_latest.json").read_text(encoding="utf-8"))
+    page.goto(base + "index.html")
+    page.wait_for_selector("body[data-ready=true]")
+    change = page.locator(".score-change").inner_text()
+    want = "First live run" if live["score"].get("first_live_run") else "vs."
+    check(want in change and ("backtest" in change) == bool(live["score"].get("first_live_run")),
+          f"Overview: the change line says what it compares with ({change!r})")
+
+    # ---- Stage 3e-2: claims pages ----
+    for href, cid, has_fan in [("job-losses.html", "ic-rate", False), ("duration.html", "cc-rate", True)]:
+        page.goto(base + href)
+        page.wait_for_selector("body[data-ready=true]")
+        spec = next(s for s in json.loads(page.locator("#page-data").text_content())["charts"] if s["id"] == cid)
+
+        def st():
+            return next(c for c in page.evaluate(TODAY_JS) if c["id"] == f"chart-{cid}")
+
+        s0 = st()
+        if has_fan:
+            check(len(s0["today"]) >= 4 and all(v is True for v in s0["today"]), f"{href}: fan shown in 5Y")
+            check(s0["x"][1] == spec["ahead"], f"{href}: chart runs on to the fan's end {spec['ahead']} (got {s0['x'][1]})")
+        else:
+            check(len(s0["today"]) == 0, f"{href}: no forecast fan on the initial-claims chart")
+            check(s0["x"][1] == TODAY_OF(page), f"{href}: chart ends today while the what-if box is off (got {s0['x'][1]})")
+        check(s0["whatif"] and all(v is False for v in s0["whatif"]), f"{href}: what-if paths hidden until ticked")
+        page.check(f"input[data-whatif='{cid}']")
+        page.wait_for_timeout(300)
+        s1 = st()
+        check(all(v is True for v in s1["whatif"]) and s1["x"][1] == spec["whatif_ahead"],
+              f"{href}: what-if ticked shows both paths to {spec['whatif_ahead']} (got {s1['x'][1]})")
+        page.click(".timecontrol > button[data-range='2008-09']")
+        page.wait_for_timeout(300)
+        s2 = st()
+        check(all(v is False for v in s2["today"] + s2["whatif"]), f"{href}: 2008-09 view shows history only")
+        notes = page.locator(f"#card-{cid} .chart-note").all_inner_texts()
+        want = "52-week ranges are not shown" if has_fan else "We don't show a forecast range for initial claims"
+        check(any(want in n for n in notes), f"{href}: note '{want}…' present")
+        if not has_fan:
+            check(any("In the early-warning score, new claims" in n for n in notes), f"{href}: score driver line present")
+        check(not re.search(r"\b(nan|NaN|None|undefined)\b", page.inner_text("main")), f"{href}: no 'nan' / 'None'")
+
+    # ---- Leading: signal colours and context labels ----
+    page.goto(base + "leading.html")
+    page.wait_for_selector("body[data-ready=true]")
+    cells = page.eval_on_selector_all(".summary tbody tr", """rows => rows.map(r => ({
+        name: r.cells[0].innerText.split('\\n')[0], signal: r.querySelector('.signal-cell').innerText.replace(/\\s+/g, ' ')}))""")
+    by = lambda word: [c for c in cells if word.lower() in c["name"].lower()]
+    yc, nf = by("Yield curve"), by("National Financial Conditions")
+    check(len(yc) == 1 and re.match(r"[●▲■] (Green|Amber|Red)", yc[0]["signal"]) and "long lead" in yc[0]["signal"],
+          f"Leading: yield curve has its colour and 'long lead' note {yc}")
+    check(len(nf) == 1 and re.match(r"[●▲■] (Green|Amber|Red)", nf[0]["signal"]) and "since 2011" in nf[0]["signal"],
+          f"Leading: NFCI has its colour and 'real-time only since 2011' note {nf}")
+    ctx = [c for c in cells if "not counted in the overall status" in c["signal"]]
+    check(len(ctx) == 3 and not any(re.search(r"Green|Amber|Red", c["signal"]) for c in ctx),
+          f"Leading: temp help and the two factory surveys are context, with no colour ({len(ctx)} rows)")
+    th = next((c for c in ctx if "Temporary-help" in c["signal"]), None)
+    th_live = next(c for c in live["score"]["contributions"] if c["input"] == "temp_help")
+    check(th is not None and th_live["sentence"] in th["signal"],
+          f"Leading: temp help uses the Overview driver's wording ({th_live['sentence']!r})")
+
+    # ---- Data & Downloads: model files ----
+    from openpyxl import load_workbook
+    page.goto(base + "data.html")
+    links = page.eval_on_selector_all("#model a[download]", "els => els.map(e => e.getAttribute('href'))")
+    check(len(links) == 10, f"Data: 5 model files as CSV and XLSX ({len(links)} links)")
+    bad = []
+    for href in [l for l in links if l.endswith(".xlsx")]:
+        wb = load_workbook(SITE / href, read_only=True)
+        about = [r for r in wb["About"].iter_rows(values_only=True)]
+        if wb.sheetnames != ["Data", "About"] or not any("not official statistics" in str(r) for r in about):
+            bad.append(href)
+    check(not bad, f"Data: every model XLSX has an About sheet saying 'not official statistics' {bad}")
+    check("UNRATEMD" in page.locator("#model").inner_text() and not any("UNRATEMD" in l for l in links),
+          "Data: FOMC median named as a FRED reference, not offered as a file")
+    page.goto(base + "about.html")
+    check(page.locator("#updates a[href='outlook.html#methodology']").count() == 1, "About: Updates links to the methodology")
     check(not errors, f"no browser errors {errors[:3] if errors else ''}")
+    page.context.close()
+
+
+def TODAY_OF(page) -> str:
+    return json.loads(page.locator("#page-data").text_content())["today"]
 
 
 def main() -> int:

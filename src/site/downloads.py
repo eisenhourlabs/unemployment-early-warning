@@ -5,6 +5,8 @@ What it writes (each file has a permanent address, so Excel's Data > From Web ca
   site/data/series/<ID>.csv / .xlsx   every public FRED series (national and state)
   site/data/dol/<file>.csv / .xlsx     every DOL file (state files with plain column names)
   site/data/data_dictionary.csv        every column of every DOL file: file, column, definition, units
+  site/data/model/<file>.csv / .xlsx   early-warning model outputs (score, trigger, forecast, what-if and nowcast
+                                       histories); "model output, not official statistics"
   site/data/bundles/                   dol_weekly_claims.csv / .xlsx, weekly_series.csv, monthly_series.csv,
                                        everything.xlsx (one sheet per frequency + a data dictionary)
 Each XLSX has an "About" sheet (source, units, link, citation); DOL files also get a "Columns" sheet
@@ -225,6 +227,121 @@ def write_xlsx(path, sheets: list[tuple[str, pd.DataFrame | list[list]]]) -> Non
     wb.save(path)
 
 
+# ===========================================================================
+# Early-warning model outputs (Phase 3)
+# ===========================================================================
+MODEL = ROOT / "data" / "model"
+MODEL_NOTE = "Model output, not official statistics. Unemployment Watch early-warning model; method: outlook.html#methodology"
+
+
+def model_files() -> list[dict]:
+    """The model downloads: one entry per file with its table, description and 'as of' rule. A file whose inputs are
+    missing is left out (the rest of the page still builds)."""
+    out = []
+
+    def add(stem, name, contents, asof_rule, df, columns):
+        out.append({"stem": stem, "name": name, "contents": contents, "asof_rule": asof_rule, "df": df,
+                    "columns": columns})
+
+    # 1. Score history: monthly out-of-sample scores since 1980, then every live run
+    monthly, runs = MODEL / "score_display_monthly.csv", MODEL / "live_history.csv"
+    if monthly.exists():
+        m = pd.read_csv(monthly)
+        m = pd.DataFrame({"date": m.month, "kind": "month (backtest)", "score_3m": m.p3, "score_6m": m.p6,
+                          "score_12m": m.p12, "colour": m.colour, "basis": m.basis})
+        if runs.exists():
+            r = pd.read_csv(runs)
+            m = pd.concat([m, pd.DataFrame({"date": r["asof"], "kind": "live run", "score_3m": r.p3, "score_6m": r.p6,
+                                            "score_12m": r.p12, "colour": r.colour, "basis": "live"})])
+        add("score_history", "Early-warning score history",
+            "Month (1980 on) and live run: chance of a new deterioration event within 3 / 6 / 12 months, the colour "
+            "shown, and the basis (pseudo out of sample 1980-1999, out of sample 2000 on, live)", "each row", m,
+            [["date", "Month (backtest: as of its last day) or live run date"],
+             ["kind", "month (backtest) or live run"],
+             ["score_3m / score_6m / score_12m", "Probability (0-1) that an event starts within 3 / 6 / 12 months"],
+             ["colour", "Colour shown (hysteresis: amber from 0.20 until below 0.15; red from 0.50 until below 0.40)"],
+             ["basis", "pseudo out of sample (1980-1999, inputs partly revised), out of sample (2000 on), live"]])
+    # 2. Trigger history: monthly Layer 1 values and colours since 1967
+    trig = MODEL / "triggers_monthly.csv"
+    if trig.exists():
+        t = pd.read_csv(trig, keep_default_na=False)
+        t = t.drop(columns=[c for c in ("overall_old", "n_amber_or_red", "n_panel_amber_or_red") if c in t])
+        t = t.rename(columns={"overall": "overall_status"})
+        add("trigger_history", "Warning-trigger history",
+            "Monthly Layer 1 trigger values and colours since 1967 (as of each month's last day), the data basis "
+            "of each, and the overall status", "each row", t,
+            [["<trigger>_value", "The trigger's number (Sahm: points; claims and continued claims: ratio - 1; temp "
+              "help: 6-month change; yield curve: 10y-3m spread, points; factory surveys: index; NFCI: index)"],
+             ["<trigger>_color", "green / amber / red (blank before enough data exist)"],
+             ["<trigger>_basis", "real-time (as published then), current-vintage (today's claims cut back by the "
+              "release lag) or revised (before the first archived vintage)"],
+             ["overall_status", "Panel rule: red if trigger 1, 2 or 4 is red; amber if one of them is amber/red and "
+              "another panel trigger (1, 2, 4, 6, 8) is amber/red; else green. Temp help and factory surveys are "
+              "context, not counted"]])
+    # 3. Forecast archive: every live run's fans
+    fans = MODEL / "live_fans_history.csv"
+    if fans.exists():
+        add("forecast_archive", "Forecast archive",
+            "Every live run's forecast ranges: target, horizon, middle value and the 10 / 25 / 75 / 90 percentiles, "
+            "and the weight on past-event paths", "run date", pd.read_csv(fans),
+            [["asof", "Run date"], ["target", "ur = unemployment rate (%); cc = SA continuing claims rate, 4-week "
+                                    "average (% of covered employment)"],
+             ["latest_period / level_at_origin", "Latest published period and value the forecast starts from"],
+             ["horizon / horizon_months / target_period", "Months (ur) or weeks (cc) ahead, and the period forecast"],
+             ["q10 / q25 / median / q75 / q90", "Percentiles of the forecast distribution (80% range: q10-q90)"],
+             ["deterioration_weight", "Weight on past-event paths (the matching event probability)"]])
+    # 4. Stress paths (what-ifs) from the latest live run
+    latest = MODEL / "live_latest.json"
+    if latest.exists():
+        import json
+        live = json.loads(latest.read_text(encoding="utf-8"))
+        rows = [{"asof": live["asof"], "target": t, "scenario": sc, "period": pt["period"], "level": pt["level"]}
+                for t, st in live["stress"].items() for sc, pts in st["scenarios"].items() for pt in pts]
+        add("stress_paths", "What-if paths",
+            "If a 2001-type or 2008-type downturn started now: the path from today's level (not forecasts)",
+            "run date", pd.DataFrame(rows),
+            [["target", "ur = unemployment rate (%); ic = SA initial claims rate, 4-week average (% of covered "
+              "employment; the site shows it per 10,000 = x100); cc = SA continuing claims rate, 4-week average (%)"],
+             ["scenario", "2001-type (event #9) or 2008-type (event #12): the change after that event's start, "
+              "added (ur, points) or applied as a % change (claims rates) to today's level"],
+             ["period / level", "Month or week, and the what-if level"]])
+    # 5. Nowcast history: the backtest (2000 on) and every live nowcast
+    nc = MODEL / "nowcast.csv"
+    if nc.exists():
+        n = pd.read_csv(nc)
+        n = pd.DataFrame({"month": n.month, "kind": "backtest", "released": n.released, "prior_value": n.prior_value,
+                          "nowcast": n.nowcast.round(3), "first_release": n.first_release,
+                          "error": (n.first_release - n.nowcast).round(3)})
+        if runs.exists():
+            r = pd.read_csv(runs).dropna(subset=["nowcast"])
+            if len(r):
+                n = pd.concat([n, pd.DataFrame({"month": r.nowcast_month, "kind": "live (run " + r["asof"] + ")",
+                                                "nowcast": r.nowcast.round(3)})])
+        add("nowcast_history", "Nowcast history",
+            "Every nowcast of the next unemployment-rate release with its first release and error (backtest from 2000; "
+            "live runs once available). Typical range +/-0.2 point (held about 80% of first releases)", "release date",
+            n, [["month", "Month the release covers"], ["kind", "backtest or live"],
+                ["released", "Date of the first release"], ["prior_value", "Previous published rate (no-change forecast)"],
+                ["nowcast", "Our nowcast (%)"], ["first_release", "Rate as first published (%)"],
+                ["error", "first_release - nowcast (points)"]])
+    return out
+
+
+def write_model_files(out, built: datetime) -> list[dict]:
+    """Write data/model/<stem>.csv and .xlsx (Data + About sheets) for each model file; returns the page rows."""
+    mdir = out / "data" / "model"
+    mdir.mkdir(parents=True, exist_ok=True)
+    rows = []
+    for e in model_files():
+        e["df"].to_csv(mdir / f"{e['stem']}.csv", index=False)
+        about = [["Unemployment Watch download", e["name"]], ["Note", MODEL_NOTE], ["Contents", e["contents"]],
+                 ["File built (UTC)", built.strftime("%Y-%m-%d %H:%M")], ["", ""], ["Column", "Meaning"]] + e["columns"]
+        write_xlsx(mdir / f"{e['stem']}.xlsx", [("Data", e["df"]), ("About", about)])
+        rows.append({"name": e["name"], "contents": e["contents"], "asof": e["asof_rule"], "rows": len(e["df"]),
+                     "csv": f"data/model/{e['stem']}.csv", "xlsx": f"data/model/{e['stem']}.xlsx"})
+    return rows
+
+
 def about_sheet(e: dict, built: datetime) -> list[list]:
     rows = [["Unemployment Watch download", ""],
             ["Series / file", e["id"]], ["Name", e["title"]], ["Source", e["source"]], ["Source link", e["source_url"]],
@@ -359,5 +476,6 @@ def build(out, built: datetime) -> dict:
                                "state", "updated", "csv", "xlsx", "latest_date", "latest_value")}
             | {"dictionary": "data/data_dictionary.csv" if e["kind"] == "DOL" else ""}
             | {"page_label": PAGE_LABELS.get(e["page"], e["page"])} for e in dol + fred]
-    return {"rows": rows, "bundles": bundles, "excluded": excluded(),
-            "n_files": len(fred) * 2 + len(dol) * 2 + 7}
+    model = write_model_files(out, built)
+    return {"rows": rows, "bundles": bundles, "excluded": excluded(), "model_files": model,
+            "n_files": len(fred) * 2 + len(dol) * 2 + 7 + len(model) * 2}

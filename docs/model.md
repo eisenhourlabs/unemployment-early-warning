@@ -1222,3 +1222,16 @@ The fan differences are simulation noise: the UR 12-month 90th percentile ranges
 **Today (8 November 2026):** 6-month score 2% (1.77%), green, −0.6 pt vs. last week. Drivers: new claims near their
 52-week low (down), strong factory surveys (down), temp help growing only 1.4% over six months (up). All Layer 1 triggers
 green. Nowcast for November waits for the reference-week claims (after 26 November).
+
+### 7.2 Stage 3e-2: claims pages, Leading, downloads
+
+- **Live-run record.** `live.py` now writes `data/model/live_history.csv` (one row per run date) and
+  `live_fans_history.csv` (each run's fans). The weekly history line uses the backtest up to the first live run, then
+  the live runs. The score's change is labeled by what it compares with: last week's backtest score for the first live
+  run, then the previous live run ("vs. last week" when it is 5-9 days earlier).
+- **Driver sentences** exist for every input with a non-zero contribution. Temp help names its usual pace: the
+  training mean of the 6-month change, +2.9% (1968-2025).
+- **Initial claims rate (Job Losses):** what-if paths (2001-type peak 20.2 per 10,000 after 51 weeks, 2008-type 24.5
+  after 61 weeks from 12.7), no fan, and the score driver line ("currently the largest downward pull").
+- **Continuing claims rate (Duration):** 13 and 26-week fan (1.07% (1.02-1.13), 1.05% (0.97-1.14)) and what-ifs; the 52-week
+  range is not shown (80% bands held 68% of outcomes, 2000-2026 excluding 2020).

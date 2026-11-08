@@ -21,6 +21,9 @@ numbers.
 
 Writes:
   data/model/live_latest.json          the result set the site reads
+  data/model/live_history.csv          one row per live run (score, colour, inputs, nowcast); re-running a date
+                                       replaces its row. "Change vs. last week" compares only live with live
+  data/model/live_fans_history.csv     every live run's fans (the forecast archive download)
   data/model/score_display_weekly.csv  weekly 6-month score since 2000 with its colour (Overview history line):
                                        the weekly out-of-sample backtest ("backtest"), then this run ("live")
   data/model/score_display_monthly.csv monthly 3 / 6 / 12-month scores since 1980 with the colour (Outlook history):
@@ -55,6 +58,8 @@ FROZEN = MODEL / "frozen"
 OUT = MODEL / "live_latest.json"
 WEEKLY_OUT = MODEL / "score_display_weekly.csv"
 MONTHLY_OUT = MODEL / "score_display_monthly.csv"
+RUNS = MODEL / "live_history.csv"                   # one row per live run (re-running a date replaces its row)
+FANS_HISTORY = MODEL / "live_fans_history.csv"     # every live run's fans (the forecast archive download)
 SEED = 20261108                                     # fixed seed: same inputs give the same fans
 PANEL = ["sahm", "claims_vs_low", "cont_claims_yoy", "yield_curve", "nfci"]
 CONTEXT = ["temp_help", "mfg_surveys"]
@@ -120,15 +125,16 @@ def probability(fz: dict, x: dict, h: int) -> tuple[float, list[dict]]:
     for f in fz["score"]["features"]:
         v, mean, sd, w = num(x.get(f)), m["mean"][f], m["sd"][f], m["weights"][f]
         z = 0.0 if math.isnan(v) or not sd else max(-clip, min(clip, (v - mean) / sd))   # missing -> average
-        parts.append({"input": f, "value": None if math.isnan(v) else v, "z": z, "weight": w, "contribution": w * z})
+        parts.append({"input": f, "value": None if math.isnan(v) else v, "z": z, "weight": w, "contribution": w * z,
+                      "mean": mean})
         eta += w * z
     return float(expit(eta)), parts
 
 
-def driver_text(f: str, v: float, up: bool) -> str:
+def driver_sentence(f: str, v: float, up: bool, mean: float | None = None) -> str:
     """Fixed plain-English templates (design brief, Overview). Inputs are signed so higher = worse; the template is
-    chosen by the direction of the contribution, and checked against the raw value so it never says something false."""
-    tail = " (pushes the score up)" if up else " (pulls the score down)"
+    chosen by the direction of the contribution, and checked against the raw value so it never says something false.
+    mean: the input's training average (temp help: the usual 6-month change is minus this)."""
     if f == "claims_low":
         text = (f"New claims have risen {v * 100:.0f}% above their low of the past year" if up and v > 0
                 else "New claims are close to their low of the past year" if up
@@ -139,8 +145,9 @@ def driver_text(f: str, v: float, up: bool) -> str:
     elif f == "temp_help":
         change = -v                                  # the input is MINUS the 6-month change
         if up:
+            usual = f"less than its usual {-mean * 100:.1f}%" if mean is not None and mean < 0 else "less than usual"
             text = (f"Temporary-help jobs fell {abs(change) * 100:.1f}% over six months" if change < 0
-                    else f"Temporary-help jobs grew only {change * 100:.1f}% over six months, less than usual")
+                    else f"Temporary-help jobs grew only {change * 100:.1f}% over six months, {usual}")
         else:
             text = ("Temporary-help jobs grew over six months" if change >= 0
                     else f"Temporary-help jobs fell only {abs(change) * 100:.1f}% over six months, less than usual")
@@ -165,7 +172,14 @@ def driver_text(f: str, v: float, up: bool) -> str:
         text = f"Continuing claims are {abs(v) * 100:.0f}% {'above' if v > 0 else 'below'} a year ago"
     else:
         text = f"{f} {'pushes up' if up else 'pulls down'}"
-    return text + tail
+    return text
+
+
+def driver_text(p: dict) -> str:
+    """A contribution as a sentence ending '(pushes the score up)' or '(pulls the score down)'."""
+    up = p["contribution"] > 0
+    return (driver_sentence(p["input"], p["value"], up, p.get("mean"))
+            + (" (pushes the score up)" if up else " (pulls the score down)"))
 
 
 def drivers(parts: list[dict], n=3) -> list[dict]:
@@ -173,20 +187,25 @@ def drivers(parts: list[dict], n=3) -> list[dict]:
     live = [p for p in parts if p["weight"] > 0 and p["value"] is not None and abs(p["contribution"]) > 1e-9]
     live.sort(key=lambda p: -abs(p["contribution"]))
     return [{"input": p["input"], "direction": "up" if p["contribution"] > 0 else "down",
-             "contribution": p["contribution"], "text": driver_text(p["input"], p["value"], p["contribution"] > 0)}
+             "contribution": p["contribution"], "text": driver_text(p)}
             for p in live[:n]]
 
 
-def weekly_history(fz: dict, asof: pd.Timestamp, p6_now: float) -> pd.DataFrame:
+def weekly_history(fz: dict, asof: pd.Timestamp, p6_now: float, runs: pd.DataFrame) -> pd.DataFrame:
     """Weekly 6-month scores: the out-of-sample backtest (score_weekly.csv, every Thursday from 2000 with that
-    year's model), topped up with the frozen model for Thursdays after it up to a week before the run date, then
-    this run. Colour = hysteresis over the whole sequence."""
+    year's model), topped up with the frozen model for Thursdays after it up to a week before the first live run
+    (or this run), then every earlier live run (live_history.csv) and this run. Colour = hysteresis over the whole
+    sequence."""
+    earlier = runs[runs.index < asof]
+    first_live = earlier.index[0] if len(earlier) else asof
     wk = pd.read_csv(MODEL / "score_weekly.csv", parse_dates=["thursday"]).set_index("thursday")["score"]
-    fill = pd.date_range(wk.index[-1] + pd.Timedelta(days=7), asof - pd.Timedelta(days=7), freq="W-THU")
+    fill = pd.date_range(wk.index[-1] + pd.Timedelta(days=7), first_live - pd.Timedelta(days=7), freq="W-THU")
     extra = {d: probability(fz, features_at(d), 6)[0] for d in fill}
     df = pd.DataFrame({"score": pd.concat([wk, pd.Series(extra, dtype=float)])})
     df["basis"] = "backtest"
-    df = df[df.index < asof]
+    df = df[df.index < first_live]
+    for d, r in earlier.iterrows():
+        df.loc[d] = [r.p6, "live"]
     df.loc[asof] = [p6_now, "live"]
     df["colour"] = hysteresis(df.score, fz["colour"])
     df.index.name = "date"
@@ -439,12 +458,24 @@ def main() -> None:
     p6 = raw[6][0]
     probs = {"p3_raw": raw[3][0], "p12_raw": raw[12][0], "p6": p6,
              "p3": min(raw[3][0], p6), "p12": max(raw[12][0], p6)}        # coherent: 3 <= 6 <= 12
-    weekly = weekly_history(fz, asof, p6)
+    runs = (pd.read_csv(RUNS, parse_dates=["asof"]).set_index("asof") if RUNS.exists()
+            else pd.DataFrame(columns=["p3", "p6", "p12", "colour"], index=pd.DatetimeIndex([], name="asof")))
+    weekly = weekly_history(fz, asof, p6, runs)
     weekly.to_csv(WEEKLY_OUT, date_format="%Y-%m-%d")
     monthly = monthly_history(fz)
     monthly.to_csv(MONTHLY_OUT, date_format="%Y-%m-%d")
     prev = weekly.iloc[-2]
     colour = weekly.colour.iloc[-1]
+    # What "change" compares with (3e-1 review): a live run is compared only with an earlier live run. Until there is
+    # one, the comparison is with last week's backtest score and says so.
+    if prev.basis == "live":
+        days = (asof - prev.name).days
+        compare = "vs. last week" if 5 <= days <= 9 else f"vs. the run of {prev.name:%b} {prev.name.day}"
+    else:
+        compare = "vs. last week's backtest score"
+    for c in raw[6][1]:
+        c["sentence"] = (None if c["value"] is None or abs(c["contribution"]) < 1e-9 else   # zero weight: no direction
+                         driver_sentence(c["input"], c["value"], c["contribution"] > 0, c.get("mean")))
 
     # ---- the "as of" facts every panel prints ----
     ic4 = as_known_on("IC4WSA", asof).dropna()
@@ -469,6 +500,8 @@ def main() -> None:
             "base_rates": fz["base_rates"],
             "previous": {"date": f"{prev.name:%Y-%m-%d}", "p6": float(prev.score), "colour": prev.colour,
                          "basis": prev.basis, "display": score_display(float(prev.score), disp)},
+            "first_live_run": prev.basis != "live", "compare_label": compare,
+            "live_runs": int((weekly.basis == "live").sum()),
             "change_pt": (p6 - float(prev.score)) * 100,
             "thresholds": fz["colour"],
             "drivers": drivers(raw[6][1]),
@@ -483,12 +516,28 @@ def main() -> None:
     }
     OUT.write_text(json.dumps(result, indent=1, allow_nan=False, default=float), encoding="utf-8")
 
+    # ---- record the run (re-running the same date replaces its rows) ----
+    n = result["nowcast"]
+    runs.loc[asof, ["p3", "p6", "p12", "colour", "model_year", "initial_claims_week", "unemployment_month",
+                    "nowcast_month", "nowcast", "run_at"]] = [
+        probs["p3"], probs["p6"], probs["p12"], colour, fz["model_year"], inputs["initial_claims_week"],
+        inputs["unemployment_month"], n["month"], n.get("value"), result["run_at"]]
+    runs.sort_index().to_csv(RUNS, date_format="%Y-%m-%d", index_label="asof")
+    rows = [{"asof": result["asof"], "target": name, "label": f["label"], "latest_period": f["latest_period"],
+             "level_at_origin": f["level"], **{k: h[k] for k in ("horizon", "horizon_months", "target_period", "q10",
+                                                                 "q25", "median", "q75", "q90", "deterioration_weight")}}
+            for name, f in fans.items() for h in f["horizons"]]
+    hist = pd.read_csv(FANS_HISTORY) if FANS_HISTORY.exists() else pd.DataFrame(columns=list(rows[0]))
+    hist = pd.concat([hist[hist["asof"] != result["asof"]], pd.DataFrame(rows)])   # hist["asof"]: .asof is a pandas method.sort_values(["asof", "target", "horizon"])
+    hist.to_csv(FANS_HISTORY, index=False)
+
     # ---- print a summary ----
     s = result["score"]
     print(f"  inputs: initial claims week {inputs['initial_claims_week']}, continuing {inputs['continuing_claims_week']}, "
           f"unemployment {inputs['unemployment_month'][:7]} = {inputs['unemployment_rate']}%")
     print(f"  score: 3m {s['p3']:.2%}  6m {s['p6']:.2%}  12m {s['p12']:.2%}  colour {colour}  "
-          f"(last week {s['previous']['p6']:.2%} on {s['previous']['date']}, change {s['change_pt']:+.1f} pt)")
+          f"({s['change_pt']:+.1f} pt {s['compare_label']}: {s['previous']['p6']:.2%} on {s['previous']['date']}; "
+          f"live run number {s['live_runs']})")
     for d in s["drivers"]:
         print(f"    {d['text']}")
     t = result["triggers"]
@@ -501,7 +550,8 @@ def main() -> None:
     if result["fomc"]:
         print(f"  FOMC Q4 {result['fomc']['year']}: {result['fomc']['value']} ({result['fomc']['released']}); "
               f"ours {result['fomc']['our_q4_median']:.2f}")
-    print(f"Wrote {OUT.relative_to(ROOT)}, {WEEKLY_OUT.relative_to(ROOT)}, {MONTHLY_OUT.relative_to(ROOT)}")
+    print(f"Wrote {OUT.relative_to(ROOT)}, {WEEKLY_OUT.relative_to(ROOT)}, {MONTHLY_OUT.relative_to(ROOT)}, "
+          f"{RUNS.relative_to(ROOT)}, {FANS_HISTORY.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":

@@ -1,20 +1,46 @@
 """
-Leading Indicators page (simple version): a summary table, then eight charts.
-No signal colors yet: Phase 3 adds them once thresholds are backtested.
+Leading Indicators page: a summary table, then eight charts.
+Phase 3: the table shows the Layer 1 colours of the two panel triggers measured here (yield curve, NFCI); temp help
+and the regional factory surveys are labeled as context (not counted in the overall status).
 Called by build_site.py.
 """
 
 import csv
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 import pandas as pd
 
-from common import (ROOT, fmt_date, fmt_month, fred, fred_metadata, line_chart, lines_chart, percentile_text,
-                    value_on_or_before)
+from common import (ROOT, fmt_date, fmt_month, fred, fred_metadata, line_chart, lines_chart, model_output,
+                    percentile_text, signal, value_on_or_before)
 
 INTRO = ("Indicators that have tended to move before layoffs: the yield curve, temporary help jobs, factory "
-         "hours, housing permits, regional surveys, consumer sentiment and financial conditions. Shown as-is "
-         "for now; Phase 3 adds green / amber / red signals once thresholds are backtested.")
+         "hours, housing permits, regional surveys, consumer sentiment and financial conditions. Two of them are "
+         "warning triggers with a colour (the yield curve and financial conditions); temporary help and the regional "
+         "surveys are shown as context. The full panel and the early-warning score are on the Outlook page.")
+
+# Layer 1 links (Phase 3): catalog series -> (trigger id, note). Panel triggers get their colour; context rows a label.
+SIGNAL_FOR = {"T10Y3M": ("yield_curve", "long lead, often 12+ months; the trigger uses monthly averages"),
+              "NFCI": ("nfci", "real-time history only since 2011")}
+CONTEXT = {"TEMPHELPS": "temp_help", "GACDFSA066MSFRBPHI": "mfg", "GACDISA066MSFRBNY": "mfg"}
+
+
+def signal_cell(sid: str, live: dict | None) -> dict | None:
+    """What the Signal column shows for a series: a trigger colour, a context label, or nothing."""
+    if live is None:
+        return None
+    if sid in SIGNAL_FOR:
+        tid, note = SIGNAL_FOR[sid]
+        row = next(r for r in live["triggers"]["rows"] if r["id"] == tid)
+        return {"signal": signal(row["colour"]), "note": note}
+    if sid in CONTEXT:
+        out = {"context": "Context: not counted in the overall status"}
+        c = next((c for c in live["score"]["contributions"] if c["input"] == CONTEXT[sid]), None)
+        if sid == "TEMPHELPS" and c and c.get("sentence"):
+            # Same words as the Overview driver, so the two pages never seem to disagree (3e-1 review)
+            effect = "pushes the score up" if c["contribution"] > 0 else "pulls the score down"
+            out["detail"] = f"{c['sentence']}; in the early-warning score this {effect}."
+        return out
+    return None
 
 # Series shown as a % change vs. a year ago instead of their level (the level just trends up over time).
 YEAR_AGO_CHANGE = {"TEMPHELPS"}
@@ -63,7 +89,7 @@ def standardized_change(s: pd.Series, change: float) -> float:
     return change / spread if spread and spread > 0 else 0.0
 
 
-def summary_table() -> list[dict]:
+def summary_table(live: dict | None = None) -> list[dict]:
     """One row per active catalog series on the 'leading' page (add a catalog row to add a table row).
 
     Sorted by direction toward risk (catalog column risk_direction: 'down' = falling is toward risk):
@@ -110,11 +136,13 @@ def summary_table() -> list[dict]:
             "lead": r["typical_lead"],
             "sort": (group, -abs(z)),
             "yield_curve": sid == "T10Y3M",
+            "signal": signal_cell(sid, live),
         })
     return sorted(table, key=lambda row: row["sort"])
 
 
-def build() -> dict:
+def build(built: datetime) -> dict:
+    live = model_output(built)["live"]
     charts = []
 
     # 1. Yield curve: 10-year minus 3-month Treasury (daily)
@@ -192,4 +220,4 @@ def build() -> dict:
         "average since 1971, positive = tighter. Weekly, week ending Friday.",
         fred("NFCI"), "NFCI", "Index (0 = average)", "%{y:.2f}", "nfci", monthly=False, zero_line=True))
 
-    return {"intro": INTRO, "summary": summary_table(), "charts": charts}
+    return {"intro": INTRO, "summary": summary_table(live), "charts": charts}

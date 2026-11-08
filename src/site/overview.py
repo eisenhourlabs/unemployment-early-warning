@@ -10,7 +10,7 @@ from zoneinfo import ZoneInfo
 import pandas as pd
 import plotly.graph_objects as go
 
-from common import (ACCENT, GREYS, add_colour_band, asof_line, base_layout, card, claims_weekly, dates, model_csv,
+from common import (ACCENT, GREYS, WHATIF_FOOTER, add_colour_band, add_fan, add_whatif, asof_line, with_outlook, base_layout, card, claims_weekly, dates, model_csv,
                     model_output, pre_recession_averages, fmt_change, fmt_claims, fmt_date, fmt_month, fred,
                     fred_metadata, is_preliminary, last_time_as_extreme, line_chart, ordinal, percentile_text, plain,
                     prelim_label, signal, streak, value_on_or_before, vs_month, weekly_claims_chart)
@@ -42,33 +42,10 @@ def unemployment_chart(live: dict | None = None) -> dict:
     if live is None:
         return c
     fig = go.Figure(c["figure"])
-    f = live["fans"]["ur"]
-    hz = f["horizons"]
-    x = [f["latest_period"]] + [h["target_period"] for h in hz]
-    col = lambda k: [f["level"]] + [h[k] for h in hz]
+    ahead = add_fan(fig, live["fans"]["ur"], 1, ".1f", "%",
+                    lambda h: f"{fmt_month(h['target_period'])} ({h['horizon']} months"
+                              + (", lower confidence)" if h["horizon"] == 12 else ")"), low_conf=12)
     today = {"today": True, "forecast": True}
-    for lo, hi, label, alpha in [("q10", "q90", "Forecast: 80% band", 0.14), ("q25", "q75", "Forecast: 50% band", 0.30)]:
-        fig.add_trace(go.Scatter(x=x, y=col(hi), mode="lines", line=dict(width=0), showlegend=False,
-                                 hoverinfo="skip", meta={"role": "fan-edge", **today}))
-        fig.add_trace(go.Scatter(x=x, y=col(lo), mode="lines", line=dict(width=0), fill="tonexty",
-                                 fillcolor=f"rgba(42, 120, 214, {alpha})", name=label, hoverinfo="skip",
-                                 meta={"role": "fan", "alpha": alpha, **today}))
-    labels = [f"{fmt_month(h['target_period'])} ({h['horizon']} months"
-              + (", lower confidence)" if h["horizon"] == 12 else ")") for h in hz]
-    fig.add_trace(go.Scatter(
-        x=x, y=col("median"), name="Forecast: middle line", mode="lines+markers",
-        line=dict(color=ACCENT, width=2, dash="dash"), marker=dict(size=[0] + [7] * len(hz), color=ACCENT),
-        customdata=[["latest published", f["level"], f["level"], f["level"], f["level"]]]
-                   + [[lab, h["q10"], h["q25"], h["q75"], h["q90"]] for lab, h in zip(labels, hz)],
-        hovertemplate="%{customdata[0]}: middle %{y:.1f}%, 50% band %{customdata[2]:.1f}–%{customdata[3]:.1f}%, "
-                      "80% band %{customdata[1]:.1f}–%{customdata[4]:.1f}%<extra>Forecast</extra>",
-        meta={"role": "main", **today}))
-    # Horizon labels just above each 80% band
-    fig.add_trace(go.Scatter(
-        x=x[1:], y=[h["q90"] for h in hz], mode="text", showlegend=False, hoverinfo="skip",
-        text=[f"{h['horizon']} mo" + (" (lower confidence)" if h["horizon"] == 12 else "") for h in hz],
-        textposition=["top center"] * (len(hz) - 1) + ["top left"], textfont=dict(size=11),
-        meta={"role": "label", **today}))
     fm = live.get("fomc")
     if fm:
         released = f"{pd.Timestamp(fm['released']):%b %Y} projections" if fm.get("released") else "latest projections"
@@ -85,28 +62,14 @@ def unemployment_chart(live: dict | None = None) -> dict:
             error_y=dict(type="constant", value=n["range_pt"], thickness=1.5, width=6, color=ACCENT),
             hovertemplate=f"Nowcast for {fmt_month(n['month'])}: %{{y:.1f}}% (±{n['range_pt']:.1f})<extra></extra>",
             meta={"role": "main", **today}))
-    stress = live["stress"]["ur"]
-    for i, (label, pts) in enumerate(stress["scenarios"].items()):
-        kind = label.split(" ")[0]
-        fig.add_trace(go.Scatter(
-            x=[p["period"] for p in pts], y=[p["level"] for p in pts], mode="lines", visible=False,
-            name=f"What-if: a {kind} downturn starting now (not a forecast)",
-            line=dict(color=GREYS[i], width=1.8, dash="dashdot" if i else "dash"),
-            hovertemplate=f"What-if, {kind}: %{{y:.1f}}%<extra></extra>",
-            meta={"role": f"grey{i}", "whatif": True, "today": True, "forecast": True}))
-    fig.update_layout(showlegend=True)
-    c["figure"] = json.loads(fig.to_json())
-    c["ahead"] = (pd.Timestamp(x[-1]) + pd.Timedelta(days=20)).strftime("%Y-%m-%d")
-    c["whatif_ahead"] = max(p["period"] for pts in stress["scenarios"].values() for p in pts)
-    c["whatif"] = True
-    c["notes"] = ur_notes(live)
-    c["footer"] += (" Fan = our forecast range: 50% and 80% of outcomes in testing (2000–2026, excluding 2020) fell "
-                    "inside the bands. Since 2022 the middle line has run 0.1–0.3 pt below what happened. The 3, 6 and "
-                    "12-month ranges are joined by straight lines; 12 months is lower confidence. What-if paths repeat "
-                    "the 2001 and 2008 recessions from today's level; they are not forecasts. Forecast elements appear "
-                    "only when the time range includes today. FOMC median: Federal Reserve Board Summary of Economic "
-                    "Projections via FRED (UNRATEMD), shown for comparison and not offered for download.")
-    return c
+    whatif_ahead = add_whatif(fig, live["stress"]["ur"], 1, ".1f", "%")
+    return with_outlook(
+        c, fig, ahead, whatif_ahead, ur_notes(live),
+        " Fan = our forecast range: 50% and 80% of outcomes in testing (2000–2026, excluding 2020) fell inside the "
+        "bands. Since 2022 the middle line has run 0.1–0.3 pt below what happened. The 3, 6 and 12-month ranges are "
+        "joined by straight lines; 12 months is lower confidence." + WHATIF_FOOTER
+        + " FOMC median: Federal Reserve Board Summary of Economic Projections via FRED (UNRATEMD), shown for "
+        "comparison and not offered for download.")
 
 
 def ur_notes(live: dict) -> list[str]:
@@ -147,9 +110,10 @@ def score_panel(m: dict) -> dict:
         return {"available": False, "note": m["note"]}
     s = live["score"]
     d6 = s["display"]["6"]
-    ch = s["change_pt"]
-    change = ("unchanged vs. last week" if abs(ch) < 0.05 else
-              f"{'▲' if ch > 0 else '▼'} {abs(ch):.1f} pt vs. last week")
+    ch, label = s["change_pt"], s.get("compare_label", "vs. last week")
+    change = (f"unchanged {label}" if abs(ch) < 0.05 else f"{'▲' if ch > 0 else '▼'} {abs(ch):.1f} pt {label}")
+    if s.get("first_live_run"):
+        change = "First live run · " + change      # 3e-1 review: never present live vs. backtest as a plain change
     return {"available": True, "signal": signal(s["colour"]), "value": d6["text"], "words": d6["words"],
             "tooltip": d6["tooltip"], "change": change, "asof": asof_line(live), "definition": SCORE_DEFINITION,
             "drivers": [{"arrow": "↑" if d["direction"] == "up" else "↓", "text": d["text"]} for d in s["drivers"]],
@@ -321,6 +285,13 @@ def score_sentence(live: dict | None) -> str | None:
     s = live["score"]
     a, b = s["previous"]["display"]["text"], s["display"]["6"]["text"]
     colour = signal(s["colour"])["label"].lower()
+    if s.get("first_live_run"):
+        return (f"The early-warning score is {b} in its first live run (last week's backtest score: {a}); "
+                f"its colour is {colour}.")
+    label = s.get("compare_label", "vs. last week")
+    if label != "vs. last week":                   # the previous run was not a week earlier
+        return (f"The early-warning score is {b} ({fmt_change(s['change_pt'], 1, ' pt')} {label}); "
+                f"its colour is {colour}.")
     if a == b:
         return (f"The early-warning score was little changed at {b} ({fmt_change(s['change_pt'], 1, ' pt')} "
                 f"vs. last week); its colour is {colour}.")

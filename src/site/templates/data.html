@@ -33,6 +33,28 @@
   </section>
 </div>
 
+{%- if model_files %}
+<section class="card outlook-section" id="model" aria-labelledby="model-title">
+  <h2 id="model-title">Early-warning model</h2>
+  <p class="why">What the model on the <a href="outlook.html">Outlook</a> page produces. Model output, not official
+    statistics; each Excel file has an About sheet describing every column.</p>
+  <div class="table-scroll">
+  <table class="model-table">
+    <thead><tr><th>File</th><th>Contents</th><th>As of</th><th class="num">Rows</th><th>Download</th></tr></thead>
+    <tbody>
+      {%- for f in model_files %}
+      <tr><td>{{ f.name }}</td><td class="small">{{ f.contents }}</td><td>{{ f.asof }}</td><td class="num">{{ "{:,}".format(f.rows) }}</td>
+        <td class="nowrap"><a href="{{ f.csv }}" download>CSV</a> · <a href="{{ f.xlsx }}" download>XLSX</a></td></tr>
+      {%- endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p class="chart-footer">The FOMC median projection shown for comparison is FRED series
+    <a href="https://fred.stlouisfed.org/series/UNRATEMD">UNRATEMD</a> (Federal Reserve Board); it is not offered as a
+    download here.</p>
+</section>
+{%- endif %}
+
 <section class="card" aria-labelledby="files-title">
   <h2 id="files-title">All series and files</h2>
   <form class="filters" id="filters" role="search" aria-label="Filter the list">

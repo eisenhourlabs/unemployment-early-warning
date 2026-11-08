@@ -3,10 +3,13 @@ Job Losses page (frequency: how many people are losing jobs). Seven charts, in t
 Called by build_site.py.
 """
 
-import pandas as pd
+from datetime import datetime
 
-from common import (bars_with_average, claims_weekly, fred, line_chart, seasonal_chart, weekly_claims_chart,
-                    year_ago_change_pct)
+import pandas as pd
+import plotly.graph_objects as go
+
+from common import (WHATIF_FOOTER, add_whatif, bars_with_average, claims_weekly, fred, line_chart, model_output,
+                    ordinal, seasonal_chart, weekly_claims_chart, with_outlook, year_ago_change_pct)
 from overview import ic_rate_chart
 
 INTRO = ("How many people are losing jobs. State UI initial claims are the fastest signal, published every "
@@ -19,13 +22,39 @@ def initial_claims_sources(claims: pd.DataFrame) -> pd.Series:
     return claims.set_index("week_ended")["source_initial"]
 
 
-def build() -> dict:
+def score_driver_line(live: dict) -> str | None:
+    """Where new claims stand in the early-warning score, e.g. 'currently the largest downward pull'."""
+    parts = [c for c in live["score"]["contributions"] if abs(c["contribution"]) > 1e-9]
+    parts.sort(key=lambda c: -abs(c["contribution"]))
+    pos = next((i for i, c in enumerate(parts) if c["input"] == "claims_low"), None)
+    if pos is None:
+        return None
+    c = parts[pos]
+    which = "the largest" if pos == 0 else f"the {ordinal(pos + 1)}-largest"
+    return (f"In the early-warning score, new claims (vs. their 52-week low) are currently {which} "
+            f"{'upward push' if c['contribution'] > 0 else 'downward pull'}.")
+
+
+def ic_outlook(c: dict, live: dict) -> dict:
+    """Phase 3 on the initial-claims-rate chart: what-if paths (no fan) and the notes the design asks for."""
+    fig = go.Figure(c["figure"])
+    whatif_ahead = add_whatif(fig, live["stress"]["ic"], 100, ".1f", " per 10k")   # stored in %, shown per 10,000
+    notes = [n for n in [score_driver_line(live)] if n]
+    notes.append("We don't show a forecast range for initial claims: in testing it was no more accurate than assuming "
+                 "no change. The early-warning score (Overview, Outlook) is our forward view of new claims.")
+    return with_outlook(c, fig, None, whatif_ahead, notes,
+                        WHATIF_FOOTER.replace("from today's level", "from the latest 4-week average"))
+
+
+def build(built: datetime) -> dict:
     claims = claims_weekly()
     sources = initial_claims_sources(claims)
+    live = model_output(built)["live"]
     charts = []
 
-    # 1. SA initial claims rate (same chart as the Overview), full width
-    charts.append(ic_rate_chart(claims, wide=True))
+    # 1. SA initial claims rate (same chart as the Overview), full width; Phase 3: what-if paths and notes
+    ic = ic_rate_chart(claims, wide=True)
+    charts.append(ic_outlook(ic, live) if live else ic)
 
     # 2. SA initial claims level: 4-week average bold, weekly faint (FRED, from 1967)
     level = pd.DataFrame({"ic_sa": fred("ICSA"), "ic_sa_4wk": fred("IC4WSA")})

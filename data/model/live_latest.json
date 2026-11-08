@@ -1,6 +1,6 @@
 {
  "asof": "2026-11-08",
- "run_at": "2026-11-08 21:37 UTC",
+ "run_at": "2026-11-08 21:57 UTC",
  "model_year": 2026,
  "inputs": {
   "initial_claims_week": "2026-10-31",
@@ -62,6 +62,9 @@
     "tooltip": "2.4%"
    }
   },
+  "first_live_run": true,
+  "compare_label": "vs. last week's backtest score",
+  "live_runs": 1,
   "change_pt": -0.6205714660577427,
   "thresholds": {
    "amber_in": 0.2,
@@ -86,7 +89,7 @@
     "input": "temp_help",
     "direction": "up",
     "contribution": 0.2912987099284433,
-    "text": "Temporary-help jobs grew only 1.4% over six months, less than usual (pushes the score up)"
+    "text": "Temporary-help jobs grew only 1.4% over six months, less than its usual 2.9% (pushes the score up)"
    }
   ],
   "contributions": [
@@ -95,56 +98,72 @@
     "value": 0.0,
     "z": -0.14833311105553396,
     "weight": 0.4577690969,
-    "contribution": -0.06790231428825919
+    "contribution": -0.06790231428825919,
+    "mean": 0.0295102041,
+    "sentence": "Unemployment is close to its low of the past year"
    },
    {
     "input": "claims_low",
     "value": -0.011421319796954266,
     "z": -1.144133847988878,
     "weight": 1.0656945333,
-    "contribution": -1.2192971871652407
+    "contribution": -1.2192971871652407,
+    "mean": 0.0528146939,
+    "sentence": "New claims are near their lowest level of the past year"
    },
    {
     "input": "claims_yoy",
     "value": -0.13636363636363635,
     "z": -0.3717822663542542,
     "weight": 0.0,
-    "contribution": -0.0
+    "contribution": -0.0,
+    "mean": -0.0818471429,
+    "sentence": null
    },
    {
     "input": "cont_yoy",
     "value": -0.12220795892169445,
     "z": -0.14185973306692873,
     "weight": 0.0,
-    "contribution": -0.0
+    "contribution": -0.0,
+    "mean": -0.1004028571,
+    "sentence": null
    },
    {
     "input": "temp_help",
     "value": -0.014294892386765179,
     "z": 0.44531118180122387,
     "weight": 0.6541464078,
-    "contribution": 0.2912987099284433
+    "contribution": 0.2912987099284433,
+    "mean": -0.0286796178,
+    "sentence": "Temporary-help jobs grew only 1.4% over six months, less than its usual 2.9%"
    },
    {
     "input": "yield_curve",
     "value": 0.04,
     "z": 0.7633707925548803,
     "weight": 0.0,
-    "contribution": 0.0
+    "contribution": 0.0,
+    "mean": -0.8146734694,
+    "sentence": null
    },
    {
     "input": "mfg",
     "value": -26.633333333333336,
     "z": -1.0303578814114331,
     "weight": 0.4075431808,
-    "contribution": -0.4199153283527647
+    "contribution": -0.4199153283527647,
+    "mean": -13.0592787629,
+    "sentence": "Regional factory surveys are strong"
    },
    {
     "input": "nfci",
     "value": -0.46,
     "z": -0.11606445765180146,
     "weight": 0.9950399964,
-    "contribution": -0.11548877752401647
+    "contribution": -0.11548877752401647,
+    "mean": -0.3872847682,
+    "sentence": "Financial conditions are looser than average"
    }
   ],
   "intercept": -2.483163352688719

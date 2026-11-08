@@ -125,6 +125,79 @@ def add_colour_band(fig: go.Figure, dates_: pd.Series, colours: pd.Series, end) 
     fig.update_xaxes(anchor="free", position=0)   # date labels stay below the strip, not under it
 
 
+def add_fan(fig: go.Figure, f: dict, mult: float, fmt: str, unit: str, period_label, low_conf: int | None = None,
+            labels_below: bool = False) -> str:
+    """Forecast fan from the latest published level (live_latest.json 'fans' entry): 80% band (light), 50% band
+    (dark), dashed middle line with a dot at each horizon, joined by straight lines; a short label above each 80%
+    band. mult: display scale (e.g. 100 for 'per 10,000'); fmt: number format ('.1f'); unit: '%' or '';
+    period_label(h) -> text for the hover, e.g. 'Jan 2027 (3 months)'. labels_below: put the horizon labels under the
+    band (where reference-line labels sit at the chart's right edge above it). All traces carry meta.today / meta.forecast,
+    so site.js shows them only when the time range includes today. Returns the last forecast date."""
+    hz = f["horizons"]
+    x = [f["latest_period"]] + [h["target_period"] for h in hz]
+    col = lambda k: [f["level"] * mult] + [h[k] * mult for h in hz]
+    today = {"today": True, "forecast": True}
+    for lo, hi, label, alpha in [("q10", "q90", "Forecast: 80% band", 0.14), ("q25", "q75", "Forecast: 50% band", 0.30)]:
+        fig.add_trace(go.Scatter(x=x, y=col(hi), mode="lines", line=dict(width=0), showlegend=False,
+                                 hoverinfo="skip", meta={"role": "fan-edge", **today}))
+        fig.add_trace(go.Scatter(x=x, y=col(lo), mode="lines", line=dict(width=0), fill="tonexty",
+                                 fillcolor=f"rgba(42, 120, 214, {alpha})", name=label, hoverinfo="skip",
+                                 meta={"role": "fan", "alpha": alpha, **today}))
+    lev = f["level"] * mult
+    fig.add_trace(go.Scatter(
+        x=x, y=col("median"), name="Forecast: middle line", mode="lines+markers",
+        line=dict(color=ACCENT, width=2, dash="dash"), marker=dict(size=[0] + [7] * len(hz), color=ACCENT),
+        customdata=[["latest published", lev, lev, lev, lev]]
+                   + [[period_label(h), h["q10"] * mult, h["q25"] * mult, h["q75"] * mult, h["q90"] * mult] for h in hz],
+        hovertemplate=(f"%{{customdata[0]}}: middle %{{y:{fmt}}}{unit}, 50% band %{{customdata[2]:{fmt}}}–"
+                       f"%{{customdata[3]:{fmt}}}{unit}, 80% band %{{customdata[1]:{fmt}}}–%{{customdata[4]:{fmt}}}{unit}"
+                       "<extra>Forecast</extra>"),
+        meta={"role": "main", **today}))
+    short = "mo" if f["frequency"] == "M" else "wk"
+    side, edge = ("bottom", "q10") if labels_below else ("top", "q90")
+    fig.add_trace(go.Scatter(
+        x=x[1:], y=[h[edge] * mult for h in hz], mode="text", showlegend=False, hoverinfo="skip",
+        text=[f"{h['horizon']} {short}" + (" (lower confidence)" if h["horizon"] == low_conf else "") for h in hz],
+        textposition=[f"{side} center"] * (len(hz) - 1) + [f"{side} left"], textfont=dict(size=11),
+        meta={"role": "label", **today}))
+    return x[-1]
+
+
+def add_whatif(fig: go.Figure, stress: dict, mult: float, fmt: str, unit: str) -> str:
+    """The 2001-type and 2008-type what-if paths from today's level (dashed greys), hidden until the reader ticks
+    "Show what-if paths". Returns the last date they reach."""
+    last = stress["latest_period"]
+    for i, (label, pts) in enumerate(stress["scenarios"].items()):
+        kind = label.split(" ")[0]
+        fig.add_trace(go.Scatter(
+            x=[p["period"] for p in pts], y=[p["level"] * mult for p in pts], mode="lines", visible=False,
+            name=f"What-if: a {kind} downturn starting now (not a forecast)",
+            line=dict(color=GREYS[i], width=1.8, dash="dashdot" if i else "dash"),
+            hovertemplate=f"What-if, {kind}: %{{y:{fmt}}}{unit}<extra></extra>",
+            meta={"role": f"grey{i}", "whatif": True, "today": True, "forecast": True}))
+        last = max(last, pts[-1]["period"])
+    return last
+
+
+def with_outlook(c: dict, fig: go.Figure, ahead: str | None, whatif_ahead: str | None, notes: list[str],
+                 footer: str) -> dict:
+    """Put a chart's Phase 3 elements back into its card (figure, x-axis reach, what-if toggle, notes, footer).
+    ahead: last forecast date (None for a chart with what-if paths but no fan)."""
+    fig.update_layout(showlegend=True)
+    c["figure"] = json.loads(fig.to_json())
+    if ahead:
+        c["ahead"] = (pd.Timestamp(ahead) + pd.Timedelta(days=20)).strftime("%Y-%m-%d")
+    if whatif_ahead:
+        c["whatif"], c["whatif_ahead"] = True, whatif_ahead
+    c["notes"] = notes
+    c["footer"] += footer
+    return c
+
+
+WHATIF_FOOTER = (" What-if paths repeat the 2001 and 2008 recessions from today's level; they are not forecasts. "
+                 "Forecast elements appear only when the time range includes today.")
+
+
 def is_preliminary(source) -> bool:
     """True for weeks still coming from the news release (not yet in DOL's official ETA 539 report)."""
     return isinstance(source, str) and source.startswith("news release")

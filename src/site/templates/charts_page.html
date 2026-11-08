@@ -11,11 +11,11 @@
 <section class="card summary" aria-labelledby="summary-title">
   <h2 id="summary-title">Summary</h2>
   <p class="why">Sorted with the indicators moving toward layoff risk first (largest move relative to its usual
-    3-month moves first), then unchanged, then those moving away from risk. No colors yet: signal thresholds arrive
-    in Phase 3.</p>
+    3-month moves first), then unchanged, then those moving away from risk. Signal: the warning-trigger colour where
+    the indicator is one of the triggers (<a href="outlook.html#triggers">all triggers on the Outlook page</a>).</p>
   <div class="table-scroll">
   <table>
-    <thead><tr><th>Indicator</th><th>Latest</th><th>As of</th><th>3-month change</th><th>Direction</th><th>Percentile</th><th>Typical lead</th></tr></thead>
+    <thead><tr><th>Indicator</th><th>Latest</th><th>As of</th><th>3-month change</th><th>Direction</th><th>Percentile</th><th>Typical lead</th><th>Signal</th></tr></thead>
     <tbody>
       {%- for r in summary %}
       <tr>
@@ -27,15 +27,22 @@
         <td>{{ r.risk }}{% if r.yield_curve %}<sup>†</sup>{% endif %}</td>
         <td>{{ r.percentile }}{% if r.late_start %}<sup>*</sup>{% endif %}</td>
         <td>{{ r.lead }}</td>
+        <td class="signal-cell">
+          {%- if r.signal and r.signal.signal %}<span class="signal signal-sm signal-{{ r.signal.signal.colour }}"><span aria-hidden="true">{{ r.signal.signal.icon }}</span> {{ r.signal.signal.label }}</span>
+          <span class="block muted">{{ r.signal.note }}</span>
+          {%- elif r.signal and r.signal.context %}<span class="muted">{{ r.signal.context }}</span>
+          {%- if r.signal.detail %}<span class="block small">{{ r.signal.detail }}</span>{% endif %}
+          {%- else %}<span class="muted">—</span>{% endif %}</td>
       </tr>
       {%- endfor %}
     </tbody>
   </table>
   </div>
   <p class="chart-footer">Percentiles: share of monthly / weekly / daily values since 1990 at or below the latest.
-    <sup>*</sup> Series that start later use their own start (shown). <sup>†</sup> Yield curve: a falling or inverted
-    curve is treated as toward risk; in past cycles recessions often began after the curve had turned back up, so this
-    simple rule will be tested in Phase 3.</p>
+    <sup>*</sup> Series that start later use their own start (shown). <sup>†</sup> Yield curve: the Direction column
+    treats a falling curve as toward risk; the warning trigger (Signal) is amber while the curve has been inverted for 3+
+    months and red for the 12 months after such an inversion ends, because in past cycles recessions often began after
+    the curve had turned back up.</p>
 </section>
 {%- endif %}
 <div class="grid">

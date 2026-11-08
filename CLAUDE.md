@@ -71,7 +71,7 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 | `src/alerts/alerts.py` | Optional alerts (off) |
 | `src/model/` | Phase 3 modeling: `build_claims_history.py` (claims table from 1967), `alfred_fetcher.py` (past vintages), `realtime.py` (`as_known_on(series, date)` + Sahm check), `events.py` (event definition and list), `plot_events.py` (review chart), `current_fetcher.py` (long histories of never-revised series), `triggers.py` (8 Layer 1 triggers monthly, real-time), `backtest_triggers.py` (leads, false alarms, adds-warning), `plot_triggers.py` (status chart), `features.py` (score inputs), `score.py` (early-warning score: fit, out-of-sample test, sensitivity runs), `plot_score.py` (score charts), `score_followups.py` (3d Part A: drivers, NSA claims test, calibration, colour stability, 3/12-month scores), `forecast.py` (fans: baseline + event-path mixture, backtest, stress paths), `nowcast.py` (next UR release), `benchmarks.py` (FOMC SEP / SPF comparison), `plot_forecast.py` (forecast charts), `part0.py` (3e Part 0: coherence, live as-of inputs, bias report), `freeze_model.py` (writes the frozen model each January), `live.py` (one "as of" result set from the frozen model) |
 | `config/model_series.csv`, `config/event_notes.csv`, `config/triggers.csv` | Modeling series: ALFRED / first-release / current vintage, release lag; Troy's event rulings and notes; Layer 1 trigger thresholds |
-| `data/model/` | Modeling data: `claims_weekly.csv`, `alfred/` (vintages + coverage), `current/` (GS10, TB3MS, T10Y3MM full history), `events.csv`, `event_flags_monthly.csv`, `claims_leg_weekly.csv`, `triggers_monthly.csv`, `trigger_episodes.csv`, `trigger_leads.csv`, `trigger_summary.csv`, `status_comparison.csv`, `features_monthly.csv`, `score_*.csv`, `forecast_*.csv`, `stress_paths.csv`, `nowcast.csv`, `benchmark_summary.csv`, `frozen/model_<year>.json` (frozen model), `live_latest.json` + `score_display_weekly.csv` / `score_display_monthly.csv` (what the site reads) |
+| `data/model/` | Modeling data: `claims_weekly.csv`, `alfred/` (vintages + coverage), `current/` (GS10, TB3MS, T10Y3MM full history), `events.csv`, `event_flags_monthly.csv`, `claims_leg_weekly.csv`, `triggers_monthly.csv`, `trigger_episodes.csv`, `trigger_leads.csv`, `trigger_summary.csv`, `status_comparison.csv`, `features_monthly.csv`, `score_*.csv`, `forecast_*.csv`, `stress_paths.csv`, `nowcast.csv`, `benchmark_summary.csv`, `frozen/model_<year>.json` (frozen model), `live_latest.json` + `score_display_weekly.csv` / `score_display_monthly.csv` (what the site reads), `live_history.csv` (one row per live run) + `live_fans_history.csv` (each run's fans) |
 | `docs/model.md`, `reports/` | Phase 3 method and results (grows each stage); review charts (not on the site) |
 | `src/signals/`, `src/forecast/` | Phase 3: triggers, composite score, forecast fan |
 | `src/site/build_site.py` | Builds the "Unemployment Watch" website (Plotly + Jinja2) into `site/`: shared frame, renders each page |
@@ -219,10 +219,16 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   "Publish site" run 42526612819 green; Overview and Outlook live (Green, 2%). Until 3e-3 the cloud does not run
   live.py, so the score shows "not updated since Nov 8" once it is more than 9 days old (from about Nov 18): run
   live.py locally and push, or finish 3e-3 first.
+- 2026-11-08: Stage 3e-2 built locally on phase3a (not committed, not merged): live-run record (live_history.csv;
+  "first live run" / "vs. last week" labels), temp-help wording shared with the Leading page, Job Losses what-ifs +
+  notes, Duration 13/26-week fan + what-ifs, Leading Signal column, Data & Downloads "Early-warning model" section
+  (5 files), About line. Browser check: 757 pass on all 7 pages (contexts now closed per page). docs/model.md 7.2.
+  Waiting for Troy's review. Troy's item 3: after the Nov 12 claims release, run live.py, commit data\model, push
+  (only once 3e-2 is merged, or on main directly if it isn't).
 
 ## Next steps, in order
 Setup (steps 1-4), Phase 1, Phase 2 and the Phase 2 review fixes are done and live.
-1. docs/phase3e_design.md is APPROVED (decisions at its end). 3e-1 is done and live; next 3e-2, then 3e-3,
+1. docs/phase3e_design.md is APPROVED (decisions at its end). 3e-1 is done and live; 3e-2 built (awaiting review); then 3e-3,
    each reviewed locally before merging to main and publishing. Switch on the Actions pull-request setting in 3e-3.
    Push phase3a / merge to main only when he says so.
 2. Stage 3e per docs/phase3_plan.md. Stage 3e must also: show trigger signal colors for the panel (yield curve

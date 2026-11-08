@@ -3,9 +3,13 @@ Duration page (severity: how long unemployment lasts). Seven charts.
 Called by build_site.py.
 """
 
-import pandas as pd
+from datetime import datetime
 
-from common import DOL, claims_weekly, fred, line_chart, line_with_comparison, weekly_claims_chart
+import pandas as pd
+import plotly.graph_objects as go
+
+from common import (DOL, MODEL, WHATIF_FOOTER, add_fan, add_whatif, claims_weekly, fmt_date, fred, line_chart,
+                    line_with_comparison, model_output, weekly_claims_chart, with_outlook)
 from overview import cc_rate_chart
 
 INTRO = ("How long unemployment lasts. State UI continuing claims show it weekly; exhaustion and benefit duration "
@@ -19,8 +23,25 @@ def us_rows(filename: str, date_col: str) -> pd.DataFrame:
     return df[df.state == "US"].set_index(date_col)
 
 
-def build() -> dict:
+def cc_outlook(c: dict, live: dict) -> dict:
+    """Phase 3 on the continuing-claims-rate chart: the 13 and 26-week fan, what-if paths, and why 52 weeks is not
+    shown (its 80% band held too few outcomes in testing)."""
+    fig = go.Figure(c["figure"])
+    ahead = add_fan(fig, live["fans"]["cc"], 1, ".2f", "%",
+                    lambda h: f"week ending {fmt_date(h['target_period'])} ({h['horizon']} weeks)", labels_below=True)
+    whatif_ahead = add_whatif(fig, live["stress"]["cc"], 1, ".2f", "%")
+    ev = pd.read_csv(MODEL / "forecast_evaluation.csv")
+    row = ev[(ev.target == "cc") & (ev.horizon == 52) & (ev.subset == "2000-on excl. 2020")]
+    held = f" (80% bands held only {row.cover80.iloc[0] * 100:.0f}% of outcomes)" if len(row) else ""
+    notes = [f"52-week ranges are not shown: in testing they were too narrow{held}."]
+    return with_outlook(c, fig, ahead, whatif_ahead, notes,
+                        " Fan = our forecast range for the 4-week average at 13 and 26 weeks: 50% and 80% of outcomes "
+                        "in testing (2000–2026, excluding 2020) fell inside the bands." + WHATIF_FOOTER)
+
+
+def build(built: datetime) -> dict:
     claims = claims_weekly()
+    live = model_output(built)["live"]
     charts = []
 
     # 1. SA continuing claims rate (same chart as the Overview), with how closely it matches DOL's IUR
@@ -29,7 +50,7 @@ def build() -> dict:
     max_diff = (both.cc_rate_sa - both.iur_sa_published).abs().max()
     rate["footer"] += (f" Check: within {max_diff:.2f} pp of DOL's published insured unemployment rate in every "
                        f"week since {both.week_ended.dt.year.min()} (DOL rounds to 0.1).")
-    charts.append(rate)
+    charts.append(cc_outlook(rate, live) if live else rate)
 
     # 2. SA continued claims level: 4-week average bold, weekly faint (FRED, from 1967)
     sources = claims.set_index("week_ended")["source_continued"]

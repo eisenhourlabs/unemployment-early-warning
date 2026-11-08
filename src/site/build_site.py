@@ -153,9 +153,9 @@ def main() -> None:
     # Build every page's content before touching site/, so a failure leaves the old folder alone.
     ov = overview.build(built)
     ou = outlook.build(built)
-    jl = job_losses.build()
-    du = duration.build()
-    le = leading.build()
+    jl = job_losses.build(built)
+    du = duration.build(built)
+    le = leading.build(built)
     pages = [
         ("overview.html", "index.html",
          {**frame, **ov, "page": "overview", "title": "Overview", "calendar": release_calendar(),
