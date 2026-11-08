@@ -52,7 +52,7 @@
       <th>Latest value</th><th>Date</th><th>Updated / checked</th><th>Download</th></tr></thead>
     <tbody>
       {%- for r in rows %}
-      <tr data-search="{{ (r.name ~ ' ' ~ r.id)|lower }}" data-page="{{ r.page_label }}" data-source="{{ r.source }}"
+      <tr data-kind="{{ r.kind }}" data-search="{{ (r.name ~ ' ' ~ r.id)|lower }}" data-page="{{ r.page_label }}" data-source="{{ r.source }}"
           data-frequency="{{ r.frequency }}" data-state="{{ r.state }}"{% if r.state %} hidden{% endif %}>
         <td>{{ r.name }}</td>
         <td><code>{{ r.id }}</code></td>

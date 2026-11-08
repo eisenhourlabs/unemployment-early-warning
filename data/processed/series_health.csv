@@ -197,14 +197,14 @@ CFLMIPROBPLUS01PPADVANCE,Chicago Fed,3,monthly,2025-09-13,2026-10-17,22,45,0,,,,
 CFLMIPROBPLUS01PPFINAL,Chicago Fed,3,monthly,2025-09-13,2026-10-17,22,45,0,,,,ok,,OK
 CFLMIPROBPLUS02PPADVANCE,Chicago Fed,3,monthly,2025-09-13,2026-10-17,22,45,0,,,,ok,,OK
 CFLMIPROBPLUS02PPFINAL,Chicago Fed,3,monthly,2025-09-13,2026-10-17,22,45,0,,,,ok,,OK
-DOL:national_weekly_eta539.csv:ic_nsa,DOL,1,weekly,1995-01-07,2026-10-10,29,42,0,,1.38,,ok,,OK
-DOL:national_weekly_eta539.csv:ic_sa,DOL,1,weekly,1995-01-07,2026-10-10,29,42,0,,0.22,,ok,,OK
-DOL:national_weekly_eta539.csv:cc_nsa,DOL,1,weekly,1995-01-07,2026-10-10,29,42,0,,0.56,,ok,,OK
-DOL:national_weekly_eta539.csv:cc_sa,DOL,1,weekly,1995-01-07,2026-10-10,29,42,0,,0.91,,ok,,OK
-DOL:national_weekly.csv:ic_sa,DOL,1,weekly,1995-01-07,2026-10-31,8,14,0,,-0.67,,ok,,OK
-DOL:national_weekly.csv:cc_sa,DOL,1,weekly,1995-01-07,2026-10-24,15,21,0,,1.05,,ok,,OK
-DOL:claims_rates_weekly.csv:ic_rate_sa,DOL,1,weekly,1995-01-07,2026-10-31,8,14,0,,-0.67,,n/a,,OK
-DOL:claims_rates_weekly.csv:cc_rate_sa,DOL,1,weekly,1995-01-07,2026-10-24,15,21,0,,1.05,,n/a,,OK
+DOL:national_weekly_eta539.csv:ic_nsa,DOL,1,weekly,1971-01-02,2026-10-10,29,42,0,,1.38,,ok,,OK
+DOL:national_weekly_eta539.csv:ic_sa,DOL,1,weekly,1971-01-02,2026-10-10,29,42,0,,0.22,,ok,,OK
+DOL:national_weekly_eta539.csv:cc_nsa,DOL,1,weekly,1971-01-02,2026-10-10,29,42,0,,0.56,,ok,,OK
+DOL:national_weekly_eta539.csv:cc_sa,DOL,1,weekly,1971-01-02,2026-10-10,29,42,0,,0.91,,ok,,OK
+DOL:national_weekly.csv:ic_sa,DOL,1,weekly,1971-01-02,2026-10-31,8,14,0,,-0.67,,ok,,OK
+DOL:national_weekly.csv:cc_sa,DOL,1,weekly,1971-01-02,2026-10-24,15,21,0,,1.05,,ok,,OK
+DOL:claims_rates_weekly.csv:ic_rate_sa,DOL,1,weekly,1971-01-02,2026-10-31,8,14,0,,-0.67,,n/a,,OK
+DOL:claims_rates_weekly.csv:cc_rate_sa,DOL,1,weekly,1971-01-02,2026-10-24,15,21,0,,1.05,,n/a,,OK
 DOL:ar539.csv:ic_state_ui,DOL,4,weekly,1995-01-07,2026-10-31,8,14,0,,,53/53 (2026-10-31),ok,,OK
 DOL:ar5159.csv:fp_state_ui_total,DOL,2,monthly,1995-01-31,2026-09-30,39,75,0,,,12/53 (2026-10-31),ok,,OK
 DOL:ar218.csv:actual_avg_weeks,DOL,2,quarterly,1995-03-31,2026-06-30,131,200,0,,,52/53 (2026-09-30),ok,,OK

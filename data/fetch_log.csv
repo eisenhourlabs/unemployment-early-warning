@@ -2399,3 +2399,9 @@ run_utc,series_id,status
 2026-11-08T04:27:40+00:00,"CALENDAR:Jobs report (unemployment rate, payrolls)",ok
 2026-11-08T04:27:40+00:00,"CALENDAR:JOLTS (job openings, hires, layoffs)",ok
 2026-11-08T04:27:40+00:00,CALENDAR:Chicago Fed Labor Market Indicators,ok
+2026-11-08T14:10:05+00:00,DOL_ETA539_NATIONAL,updated: 2911 rows; 1253 new periods
+2026-11-08T14:10:06+00:00,DOL_NATIONAL_WEEKLY,"updated: 2914 weeks; official through IC 2026-10-10 / CC 2026-10-10; preliminary IC weeks ['2026-10-17', '2026-10-24', '2026-10-31'], CC weeks ['2026-10-17', '2026-10-24']"
+2026-11-08T14:11:06+00:00,CALENDAR:Weekly jobless claims,ok
+2026-11-08T14:11:06+00:00,"CALENDAR:Jobs report (unemployment rate, payrolls)",ok
+2026-11-08T14:11:06+00:00,"CALENDAR:JOLTS (job openings, hires, layoffs)",ok
+2026-11-08T14:11:06+00:00,CALENDAR:Chicago Fed Labor Market Indicators,ok

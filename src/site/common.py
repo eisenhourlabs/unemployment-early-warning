@@ -360,23 +360,15 @@ def pre_recession_averages(s: pd.Series) -> list[tuple[str, float]]:
 
 
 def add_reference_lines(fig: go.Figure, refs: list[tuple[str, float]], x0: str, x1: str, fmt: str) -> None:
-    """Dotted grey horizontal lines across the whole chart, one legend entry for all of them, and a label at
-    the right edge. Lines whose values are within 4% of each other share one label so the text never overlaps.
-    meta.ref tells site.js to keep these lines inside the y-axis whatever dates are shown."""
+    """Dotted grey horizontal lines across the whole chart, with one legend entry for all of them.
+    meta.ref tells site.js to keep these lines inside the y-axis whatever dates are shown. The labels at the
+    right edge are placed by site.js each time the view changes (layout.meta.refs), merging labels that would
+    sit closer than about one line of text, so they never overlap at any zoom."""
     for i, (label, v) in enumerate(refs):
         fig.add_trace(go.Scatter(x=[x0, x1], y=[v, v], mode="lines", name="Pre-recession averages (dotted)",
                                  legendgroup="refs", showlegend=(i == 0), hoverinfo="skip",
                                  line=dict(color=GREYS[1], width=1.2, dash="dot"), meta={"role": "grey1", "ref": True}))
-    groups = []
-    for label, v in sorted(refs, key=lambda r: r[1]):
-        if groups and abs(v - groups[-1][-1][1]) <= 0.04 * max(abs(v), 1e-9):
-            groups[-1].append((label, v))
-        else:
-            groups.append([(label, v)])
-    for g in groups:
-        text = " · ".join(f"{label} {format(v, fmt)}" for label, v in g)
-        fig.add_annotation(xref="paper", x=1, xanchor="right", y=max(v for _, v in g), yanchor="bottom",
-                           text=text, showarrow=False, font=dict(size=10, color="#52514e"))
+    fig.update_layout(meta={"refs": [{"text": f"{label} {format(v, fmt)}", "value": v} for label, v in refs]})
 
 
 def add_marker(fig: go.Figure, when: str, text: str) -> None:
