@@ -39,8 +39,9 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 - Add indicators by adding rows to `config/series_catalog.csv`, not by hard-coding series in scripts.
 - Keep data vintages (`data/vintages/`); backtests must use data as it was known at the time.
   EXCEPTION: DOL data (`data/processed/dol/`) keeps only the latest figures, with no vintages. Each run
-  overwrites revised history and logs the revision in `docs/data_revisions.md`. For real-time backtests of
-  national claims, use the FRED vintages of ICSA/CCSA/ICNSA/CCNSA instead.
+  overwrites revised history and logs the revision in `docs/data_revisions.md`. Backtests use current-vintage
+  claims, cut back by their release lag (plan decision 5); FRED's claims vintages (from 2009 only) are used just to
+  measure and state the revision effect. Revised monthly series use ALFRED vintages via `src/model/realtime.py`.
 - DOL state files (ar539 / ar5159 / ar218) start in 1995; the national ETA 539 report starts in 1971, when
   covered employment (the claims-rate denominator) begins. Rates before 1978 are not strictly comparable
   (UI coverage expansion); the rate charts mark it.
@@ -68,6 +69,10 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 | `docs/data_revisions.md` | Automatic log of DOL revisions |
 | `docs/dashboard_requirements.md` | What the Phase 2 dashboard must show |
 | `src/alerts/alerts.py` | Optional alerts (off) |
+| `src/model/` | Phase 3 modeling: `build_claims_history.py` (claims table from 1967), `alfred_fetcher.py` (past vintages), `realtime.py` (`as_known_on(series, date)` + Sahm check), `events.py` (event definition and list), `plot_events.py` (review chart) |
+| `config/model_series.csv`, `config/event_notes.csv` | Modeling series: ALFRED or current vintage, release lag; one-line notes per event |
+| `data/model/` | Modeling data: `claims_weekly.csv`, `alfred/` (vintages + coverage), `events.csv`, `event_flags_monthly.csv`, `claims_leg_weekly.csv` |
+| `docs/model.md`, `reports/` | Phase 3 method and results (grows each stage); review charts (not on the site) |
 | `src/signals/`, `src/forecast/` | Phase 3: triggers, composite score, forecast fan |
 | `src/site/build_site.py` | Builds the "Unemployment Watch" website (Plotly + Jinja2) into `site/`: shared frame, renders each page |
 | `src/site/common.py` | Shared site pieces: data reading, formats, statistics, recession shading, chart builders |
@@ -98,6 +103,8 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 - Build the site: `python src\site\build_site.py`; preview: `python -m http.server 8000 --directory site`,
   then open http://localhost:8000 (Ctrl+C stops the server)
 - Check the built site in a browser (once: `pip install -r requirements-dev.txt`): `python src\checks\check_site.py`
+- Phase 3 modeling data, in order: `python src\model\build_claims_history.py`, `python src\model\alfred_fetcher.py`
+  (~1 min), `python src\model\realtime.py` (Sahm check), `python src\model\events.py`, `python src\model\plot_events.py`
 
 ## Status (2026-11-07)
 - Phase 0 done: folders, catalog (35 active rows), footprint weights, FRED fetcher (tested only against
@@ -155,12 +162,19 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 - Watch: on 2026-11-08 ~03:55 UTC oui.doleta.gov briefly failed its certificate check (hostname mismatch) from
   this PC; it passed again minutes later. If a DOL step fails in a run, check this first.
 
+- 2026-11-08: Phase 3 plan approved (docs/phase3_plan.md). Stage 3a built locally on branch `phase3a` (not pushed,
+  website unchanged): claims table from 1967 (rates from 1971; DOL has no covered employment before 1971), ALFRED
+  vintages for 7 monthly series (TEMPHELPS / JOLTS only from 2010-11, PERMIT from 1999), `as_known_on` (matches
+  FRED SAHMREALTIME in 97.7% of months), event list: 15 events since 1967 (8 recession-linked, 6 scares, 2020
+  excluded from fitting), docs/model.md, reports/events.png. Waiting for Troy's sign-off on the event list.
+
 ## Next steps, in order
 Setup (steps 1-4), Phase 1, Phase 2 and the Phase 2 review fixes are done and live.
-1. Phase 3: signals and forecast. Backtest thresholds on 2001, 2008-09, 2020 and recent data (real-time FRED
-   vintages for national claims); composite green / amber / red early-warning score on the Overview; forecast fan
-   (3-6 months priority, 12 months shown) on the unemployment rate chart; signal colors on the Leading page (its
-   risk_direction column and the yield-curve caveat are the starting point). Plan with Troy first.
+1. Phase 3 stage 3a sign-off: Troy decides the four questions in docs/model.md section 3 (do scares count; 1979
+   start; event #7; event #10), then merge `phase3a` into main and push when he says "push".
+2. Stage 3b (triggers): compute the Layer 1 rules historically with `as_known_on`, lead-time and false-alarm table;
+   measure the claims revision effect with FRED's 2009+ claims vintages. Plan with Troy first.
+3. Stages 3c-3e per docs/phase3_plan.md.
 Open items to watch: first real Thursday run (2026-11-12); ETA 539 allowed age (42 days); Chicago Fed LMI terms of use;
 DOL certificate glitch seen once on 2026-11-08.
 

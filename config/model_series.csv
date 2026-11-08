@@ -1,0 +1,14 @@
+series_id,vintage_source,release_lag_days,notes
+# release_lag_days = days from the observation's date (FRED's date: 1st of the month, or the Saturday ending the week) to publication. Used only where there is no vintage. Monthly lags = 95th percentile of ALFRED first releases (2025 shutdown delays are the only longer ones)
+UNRATE,alfred,40,Monthly; FRED dates a month by its 1st day. Employment Situation comes out on about the first Friday of the next month (at most ~40 days after the 1st)
+PAYEMS,alfred,40,Same release as UNRATE
+TEMPHELPS,alfred,40,Same release as UNRATE; ALFRED vintages start 2011-01
+AWHMAN,alfred,40,Same release as UNRATE
+PERMIT,alfred,52,New residential construction release (~18th of the next month); ALFRED vintages start 1999-08
+JTSLDR,alfred,77,JOLTS comes out about 5-6 weeks after the month ends; ALFRED vintages start 2010-08
+JTSHIR,alfred,77,Same release as JTSLDR
+ICSA,current,5,Weekly claims: FRED dates the week by its Saturday end; released the following Thursday. DOL claims stay current-vintage (decision 2026-11-08)
+IC4WSA,current,5,Same release as ICSA
+CCSA,current,12,Continuing claims run one week behind initial claims in the same Thursday release
+ic_rate_sa,current,5,SA initial claims rate (data/model/claims_weekly.csv); from 1971
+cc_rate_sa,current,12,SA continuing claims rate (data/model/claims_weekly.csv); from 1971

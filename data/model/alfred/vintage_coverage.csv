@@ -1,0 +1,8 @@
+series_id,vintages,first_vintage,last_vintage,first_observation,rows,first_release_lag_median_days,first_release_lag_max_days,release_lag_days_config,config_covers_95pct_of_releases
+UNRATE,801,1960-03-15,2026-11-06,1948-01-01,2200,34,80,40,True
+PAYEMS,861,1955-05-06,2026-11-06,1939-01-01,13694,35,80,40,True
+TEMPHELPS,190,2011-01-07,2026-11-06,1990-01-01,2017,34,80,40,True
+AWHMAN,780,1961-11-03,2026-11-06,1932-01-01,4104,34,80,40,True
+PERMIT,625,1999-08-17,2026-10-27,1960-01-01,2374,47,130,52,True
+JTSLDR,195,2010-08-11,2026-11-03,2000-12-01,753,68,99,77,True
+JTSHIR,195,2010-08-11,2026-11-03,2000-12-01,882,68,99,77,True
