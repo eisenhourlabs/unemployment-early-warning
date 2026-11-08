@@ -1,0 +1,27 @@
+{#- Pieces shared by several pages. Import with:  {% from "_macros.html" import chart_card %} -#}
+
+{% macro chart_card(c) -%}
+<section class="card chart-card{% if c.wide %} wide{% endif %}" aria-labelledby="{{ c.id }}-title">
+  <h2 id="{{ c.id }}-title">{{ c.title }}</h2>
+  <p class="why">{{ c.why }}</p>
+  {%- if c.fixed %}
+  <p class="fixed-note">Fixed view: by week of year, whatever the time setting.</p>
+  {%- endif %}
+  <div class="chart" id="chart-{{ c.id }}" role="img" aria-label="{{ c.title }} chart"></div>
+  <p class="chart-footer">{{ c.footer }}</p>
+  <div class="card-actions">
+    <div class="menu">
+      <button type="button" class="btn" data-csv-menu="{{ c.id }}" aria-expanded="false">Download CSV ▾</button>
+      <div class="menu-list" hidden>
+        {%- if c.fixed %}
+        <button type="button" data-csv="{{ c.id }}" data-scope="full">Years shown</button>
+        {%- else %}
+        <button type="button" data-csv="{{ c.id }}" data-scope="visible">Visible range</button>
+        <button type="button" data-csv="{{ c.id }}" data-scope="full">Full history</button>
+        {%- endif %}
+      </div>
+    </div>
+    <button type="button" class="btn" data-png="{{ c.id }}">Download image</button>
+  </div>
+</section>
+{%- endmacro %}

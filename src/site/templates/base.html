@@ -17,10 +17,7 @@
   <div class="wrap topbar-inner">
     <a class="brand" href="index.html">Unemployment Watch</a>
     <nav class="pages" aria-label="Pages">
-      {%- set pages = [("overview", "Overview", "index.html"), ("job-losses", "Job Losses", ""),
-                       ("duration", "Duration", ""), ("leading", "Leading", ""),
-                       ("data", "Data", ""), ("about", "About", "")] %}
-      {%- for key, label, href in pages %}
+      {%- for key, label, href in nav %}
         {%- if href %}
       <a href="{{ href }}"{% if key == page %} aria-current="page"{% endif %}>{{ label }}</a>
         {%- else %}

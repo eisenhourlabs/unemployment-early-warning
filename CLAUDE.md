@@ -67,8 +67,10 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 | `docs/dashboard_requirements.md` | What the Phase 2 dashboard must show |
 | `src/alerts/alerts.py` | Optional alerts (off) |
 | `src/signals/`, `src/forecast/` | Phase 3: triggers, composite score, forecast fan |
-| `src/site/build_site.py` | Builds the "Unemployment Watch" website (Plotly + Jinja2) from the data files into `site/` |
-| `src/site/templates/`, `src/site/static/` | Page templates (`base.html` = shared frame) and the site's CSS / JavaScript (time control, dark mode, downloads) |
+| `src/site/build_site.py` | Builds the "Unemployment Watch" website (Plotly + Jinja2) into `site/`: shared frame, renders each page |
+| `src/site/common.py` | Shared site pieces: data reading, formats, statistics, recession shading, chart builders |
+| `src/site/overview.py`, `src/site/job_losses.py` | One module per page: its charts, tiles and text |
+| `src/site/templates/`, `src/site/static/` | Templates (`base.html` = shared frame, `_macros.html` = chart card, `charts_page.html` = chart-grid pages) and the site's CSS / JavaScript (time control, dark mode, downloads) |
 | `site/` | Built website (not committed; rebuilt and published to GitHub Pages by the workflow) |
 | `src/checks/check_site.py` | Browser check of the built site (Playwright + Edge; PC only, `requirements-dev.txt`) |
 | `docs/phase2_design.md` | Approved Phase 2 design (pages, charts, conventions, time control) |
@@ -123,16 +125,18 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   Browser check passes locally (desktop, phone, dark mode, time control, downloads). GitHub Pages switched
   on (Source: GitHub Actions); first publish green in run 42438518785 (refresh, build, deploy).
   Live site: https://eisenhourlabs.github.io/unemployment-early-warning/
+- 2026-11-07: Stage 1 review fixes live (run 42439932036). Stage 2 built locally: Job Losses page (7 charts),
+  PAYEMS / UEMPLT5 history from 1948, site code split into page modules; browser check passes on both pages.
+  Waiting for Troy's review before pushing.
 
 ## Next steps, in order
 Setup (steps 1-4) and Phase 1 are done. Phase 2 is built in stages; Troy reviews each one locally before the next.
-1. Phase 2 Stage 1 review: site frame + Overview + publishing (live since 2026-11-07; Troy's review of the page).
-2. Stage 2: Job Losses page (7 charts, docs/phase2_design.md).
-3. Stage 3: Duration page (6 charts).
-4. Stage 4: Leading Indicators page (summary table + 8 charts).
-5. Stage 5: Data & Downloads page (catalog, CSV/XLSX per series, bundles, stable links; DOL downloads per
+1. Phase 2 Stage 2 review: Job Losses page (built 2026-11-07; push and republish after Troy's review).
+2. Stage 3: Duration page (6 charts, docs/phase2_design.md).
+3. Stage 4: Leading Indicators page (summary table + 8 charts).
+4. Stage 5: Data & Downloads page (catalog, CSV/XLSX per series, bundles, stable links; DOL downloads per
    docs/dashboard_requirements.md). Chicago Fed data not offered until its terms are confirmed.
-6. Stage 6: About page (definitions, sources, update schedule, revision policy, disclaimer).
+5. Stage 6: About page (definitions, sources, update schedule, revision policy, disclaimer).
 
 ## Where planning lives
 The full plan, roadmap and decisions are kept in Troy's Claude project ("Unemployment Correlations"),

@@ -9,7 +9,9 @@
 
   var data = JSON.parse(document.getElementById("page-data").textContent);
   var charts = data.charts.map(function (c) {
-    return { id: c.id, title: c.title, figure: c.figure, table: c.table, el: document.getElementById("chart-" + c.id) };
+    // fixed: [from, to] for a chart that ignores the time control; zero: y-axis always includes 0
+    return { id: c.id, title: c.title, figure: c.figure, table: c.table, fixed: c.fixed, zero: c.zero,
+             el: document.getElementById("chart-" + c.id) };
   });
   var phone = window.matchMedia("(max-width: 759px)");
   var current = { key: data.defaultRange, from: null, to: null };   // the page's time setting
@@ -17,8 +19,10 @@
   // ---------------------------------------------------------------- colors per theme (same tokens as style.css)
   var THEMES = {
     light: { accent: "#2a78d6", faint: "rgba(42,120,214,0.35)", rgb: "42,120,214", bg: "#fcfcfb", text: "#52514e",
+             greys: ["#6d6c67", "#93928c", "#b9b8b2"],
              grid: "#e8e7e3", axis: "#c8c7c2", recession: "rgba(120,120,120,0.16)", hoverBg: "#ffffff", hoverText: "#0b0b0b" },
     dark:  { accent: "#3987e5", faint: "rgba(57,135,229,0.40)", rgb: "57,135,229", bg: "#1a1a19", text: "#c3c2b7",
+             greys: ["#b5b4ad", "#8a8983", "#62615c"],
              grid: "#2c2c29", axis: "#4a4a45", recession: "rgba(200,200,200,0.10)", hoverBg: "#262624", hoverText: "#f0efec" }
   };
   function themeName() { return document.documentElement.dataset.theme === "dark" ? "dark" : "light"; }
@@ -29,7 +33,8 @@
     var f = JSON.parse(JSON.stringify(fig));
     f.data.forEach(function (tr) {
       var role = (tr.meta && tr.meta.role) || "";
-      var color = role.indexOf("faint") === 0 ? t.faint : t.accent;
+      var color = role.indexOf("faint") === 0 ? t.faint
+                : role.indexOf("grey") === 0 ? t.greys[+role.slice(4)] : t.accent;
       if (tr.line && role !== "fan-edge" && role !== "fan") tr.line.color = color;
       if (tr.marker) tr.marker.color = color;
       if (role === "fan") tr.fillcolor = "rgba(" + t.rgb + "," + tr.meta.alpha + ")";
@@ -40,10 +45,18 @@
     L.xaxis = Object.assign({}, L.xaxis, { linecolor: t.axis, tickcolor: t.axis });
     L.yaxis = Object.assign({}, L.yaxis, { gridcolor: t.grid });
     L.hoverlabel = { bgcolor: t.hoverBg, bordercolor: t.axis, font: { color: t.hoverText } };
-    (L.shapes || []).forEach(function (s) { s.fillcolor = t.recession; });
+    (L.shapes || []).forEach(function (s) {
+      if (s.type === "line") s.line = Object.assign({}, s.line, { color: t.axis });   // zero lines
+      else s.fillcolor = t.recession;                                                 // recession bands
+    });
+    (L.annotations || []).forEach(function (a) { a.font = Object.assign({}, a.font, { color: t.text }); });
     // Phones: no drag-to-zoom (it would block scrolling the page); tap still shows values.
     L.dragmode = phone.matches ? false : "zoom";
-    if (phone.matches) L.margin = Object.assign({}, L.margin, { l: 44, r: 8 });
+    if (phone.matches) {
+      // Narrower margins on phones, but keep room for end-of-line labels (charts with a wide right margin)
+      L.margin = Object.assign({}, L.margin, { l: 44, r: L.margin && L.margin.r > 16 ? L.margin.r : 8 });
+      if (L.xaxis.dtick === "M1") L.xaxis.dtick = "M2";   // every other month, so labels stay level
+    }
     delete L.template;
     return f;
   }
@@ -62,6 +75,7 @@
   }
   // The [from, to] window for one chart under the page setting.
   function windowFor(chart) {
+    if (chart.fixed) return chart.fixed;      // e.g. the seasonal chart: always Jan to Dec
     var k = current.key, today = data.today;
     var years = { "1y": 1, "2y": 2, "5y": 5, "10y": 10, "20y": 20 }[k];
     if (years) return [yearsBefore(today, years), today];
@@ -72,7 +86,7 @@
   }
 
   // Lowest and highest value of the visible lines between two dates, with a little padding.
-  function yRange(gd, x0, x1) {
+  function yRange(gd, x0, x1, zero) {
     var lo = Infinity, hi = -Infinity;
     gd.data.forEach(function (tr) {
       if (tr.visible === false || tr.visible === "legendonly" || !tr.y) return;
@@ -84,13 +98,14 @@
       }
     });
     if (lo === Infinity) return null;
+    if (zero) { lo = Math.min(lo, 0); hi = Math.max(hi, 0); }   // bars and % changes keep the zero line in view
     var pad = (hi - lo) * 0.08 || Math.abs(hi) * 0.1 || 1;
     return [lo - pad, hi + pad];
   }
 
   var busy = false;   // true while this script changes a chart, so our own changes don't trigger the listeners
   function setView(chart, x0, x1) {
-    var gd = chart.el, y = yRange(gd, x0, x1);
+    var gd = chart.el, y = yRange(gd, x0, x1, chart.zero);
     var update = { "xaxis.range": [x0, x1] };
     if (y) update["yaxis.range"] = y; else update["yaxis.autorange"] = true;
     busy = true;
@@ -161,7 +176,7 @@
     f.layout.xaxis.range = w;
     var config = { responsive: true, displayModeBar: false, doubleClick: false, displaylogo: false };
     return Plotly.newPlot(chart.el, f.data, f.layout, config).then(function (gd) {
-      var y = yRange(gd, w[0], w[1]);
+      var y = yRange(gd, w[0], w[1], chart.zero);
       if (y) { busy = true; return Plotly.relayout(gd, { "yaxis.range": y }).then(function () { busy = false; return gd; }); }
       return gd;
     }).then(function (gd) {
@@ -227,7 +242,7 @@
   }
   function downloadCsv(chart, scope) {
     var rows = chart.table.rows, name = chart.id;
-    if (scope === "visible") {
+    if (scope === "visible" && !chart.fixed) {
       var r = chart.el.layout.xaxis.range, x0 = String(r[0]).slice(0, 10), x1 = String(r[1]).slice(0, 10);
       rows = rows.filter(function (row) { return row[0] >= x0 && row[0] <= x1; });
       name += "_" + x0 + "_to_" + x1;
