@@ -52,7 +52,18 @@ ALPHAS = [0.3, 1.0, 3.0, 10.0, 30.0, 100.0, 300.0, 1000.0, 3000.0]   # ridge pen
 CV_BLOCKS = 5
 DRAWS = 4000
 CLIP = 4.0
-BACKTEST_FROM = "2000-01-01"
+BACKTEST_FROM = "2000-01-01"       # first origin scored (evaluation always uses 2000 on); "--from 1985" for Part 0
+# Command-line options (Part 0, stage 3e):
+#   --from YEAR   also produce fans from YEAR (pre-2000 fans are used only to choose the blend weight in part0.py)
+#   --option gap  add a lightly penalized gap term (level minus its 36-month average); outputs get a "_gap" suffix
+#   --live        add the live origin from data/model/live_asof.csv (inputs as of the refresh date)
+ARGS = sys.argv[1:]
+if "--from" in ARGS:
+    BACKTEST_FROM = f"{ARGS[ARGS.index('--from') + 1]}-01-01"
+OPTION = ARGS[ARGS.index("--option") + 1] if "--option" in ARGS else "base"
+SUFFIX = "" if OPTION == "base" else f"_{OPTION}"
+LIVE = "--live" in ARGS
+GAP_SCALE = 5.0    # the gap column is multiplied by 5 after standardizing: ridge then penalizes it 25 times less
 # An event in progress takes the deterioration weight to 1 only once it has lasted this many months; before that the
 # usual probability-weighted mixture applies (stage 3d review: avoids leaning on recession paths during short scares,
 # which rarely last 3 months).
@@ -152,7 +163,10 @@ def event_paths(ser: Series, ev: pd.DataFrame, max_k: int):
 # ---------------------------------------------------------------------------------------------------
 def standardize(train, rows):
     mean, sd = train.mean(), train.std().replace(0, np.nan)
-    return ((rows - mean) / sd).clip(-CLIP, CLIP).fillna(0.0)
+    z = ((rows - mean) / sd).clip(-CLIP, CLIP).fillna(0.0)
+    if "gap" in z:
+        z["gap"] = z["gap"] * GAP_SCALE           # lightly penalized (option "gap")
+    return z
 
 
 def fit_baseline(X: pd.DataFrame, y: pd.Series, gap_months: int):
@@ -175,6 +189,12 @@ def fit_baseline(X: pd.DataFrame, y: pd.Series, gap_months: int):
         r = np.concatenate(res)
         if best is None or np.mean(r ** 2) < best[1]:
             best = (a, np.mean(r ** 2), r)
+    if best is None:
+        # Too few training origins for the CV folds (only the earliest pre-2000 re-fits): a fixed, fairly strong
+        # penalty, with in-sample residuals (slightly too narrow) as the noise.
+        alpha = 100.0
+        model = Ridge(alpha=alpha).fit(standardize(X, X), y)
+        return model, X, y.values - model.predict(standardize(X, X)), alpha
     alpha, _, resid = best
     model = Ridge(alpha=alpha).fit(standardize(X, X), y)
     return model, X, resid, alpha
@@ -183,9 +203,15 @@ def fit_baseline(X: pd.DataFrame, y: pd.Series, gap_months: int):
 # ---------------------------------------------------------------------------------------------------
 def main() -> None:
     F, P, ev, ur_final, weekly = load()
+    live_asof = None
+    if LIVE:
+        lv = pd.read_csv(MODEL / "live_asof.csv").iloc[0]
+        live_asof = pd.Timestamp(lv["asof"])      # lv["asof"], not lv.asof (a pandas method)
+        F.loc[live_asof] = lv[FEATURES].astype(float).values
+        P.loc[live_asof, ["p3", "p6", "p12"]] = [lv.p3, lv.p6, lv.p12]
     library_ev = ev[ev.group != "2020"]
-    last_month = F.index[-1]
-    origins_all = pd.date_range("1968-03-01", last_month, freq="MS")
+    last_month = F.index[F.index.day == 1][-1]          # last month-end origin (the live row is not a month start)
+    origins_all = list(pd.date_range("1968-03-01", last_month, freq="MS")) + ([live_asof] if LIVE else [])
     rows, evals_raw = [], []
     paths_out = []
 
@@ -204,8 +230,12 @@ def main() -> None:
             if m < pd.Timestamp(ser.first):
                 continue
             d = m + pd.offsets.MonthEnd(0)
-            L, y0, _ = ser.known(d)
-            facts[m] = (d, L, y0)
+            if m == live_asof:
+                d = live_asof                          # the live origin uses the refresh date itself
+            L, y0, s_known = ser.known(d)
+            # gap = level minus its 36-month average (claims: in logs, over 156 weeks)
+            gap = (y0 - s_known.iloc[-36:].mean()) if ser.freq == "M" else (np.log(y0) - np.log(s_known.iloc[-156:]).mean())
+            facts[m] = (d, L, y0, gap)
 
         for h in ser.horizons:
             hm = months_for(ser.freq, h)
@@ -217,12 +247,12 @@ def main() -> None:
                 covid = (m <= COVID[1]) and (m + pd.DateOffset(months=hm) >= COVID[0] - pd.DateOffset(months=1))
                 return in_prog, starts, covid
 
-            for year in range(2000, last_month.year + 1):
+            for year in range(pd.Timestamp(BACKTEST_FROM).year, last_month.year + 1):
                 refit = pd.Timestamp(f"{year}-01-01")
                 # Values as known at the re-fit date (unemployment rate: that day's vintage).
                 _, _, known_series = ser.known(refit - pd.Timedelta(days=1))
                 Xtr, ytr, clim = [], [], []
-                for m, (d, L, y0) in facts.items():
+                for m, (d, L, y0, gap) in facts.items():
                     if d >= refit:
                         break
                     T = ser.step(L, h)
@@ -234,7 +264,10 @@ def main() -> None:
                     dy = ser.change(y0, known_series[T])
                     clim.append(dy)                                   # climatology: all regimes
                     if not in_prog and not starts:                    # baseline: quiet origins only
-                        Xtr.append(pd.concat([F.loc[m], pd.Series({"level": ser.change(1, y0) if ser.scale == "log" else y0})]).rename(m))
+                        extra = {"level": ser.change(1, y0) if ser.scale == "log" else y0}
+                        if OPTION == "gap":
+                            extra["gap"] = gap
+                        Xtr.append(pd.concat([F.loc[m], pd.Series(extra)]).rename(m))
                         ytr.append(dy)
                 Xtr = pd.DataFrame(Xtr)
                 ytr = pd.Series(ytr, index=Xtr.index)
@@ -243,9 +276,12 @@ def main() -> None:
 
                 # Forecasts for the origins of this year.
                 for m in [x for x in facts if x.year == year and x >= pd.Timestamp(BACKTEST_FROM)]:
-                    d, L, y0 = facts[m]
+                    d, L, y0, gap = facts[m]
                     T = ser.step(L, h)
-                    x = pd.concat([F.loc[m], pd.Series({"level": ser.change(1, y0) if ser.scale == "log" else y0})]).to_frame().T
+                    extra = {"level": ser.change(1, y0) if ser.scale == "log" else y0}
+                    if OPTION == "gap":
+                        extra["gap"] = gap
+                    x = pd.concat([F.loc[m], pd.Series(extra)]).to_frame().T
                     base_pred = float(model.predict(standardize(Xref, x))[0])
                     in_prog, starts, covid = regime(m)
                     # Event paths known by this origin (path observed far enough).
@@ -305,9 +341,11 @@ def main() -> None:
         print(f"{name}: done")
 
     bt = pd.DataFrame(rows)
-    bt.to_csv(MODEL / "forecast_backtest.csv", index=False, date_format="%Y-%m-%d")
-    pd.DataFrame(paths_out).to_csv(MODEL / "forecast_paths.csv", index=False)
+    bt.to_csv(MODEL / f"forecast_backtest{SUFFIX}.csv", index=False, date_format="%Y-%m-%d")
     evaluate(bt)
+    if SUFFIX:
+        return                                  # option runs: backtest + evaluation only
+    pd.DataFrame(paths_out).to_csv(MODEL / "forecast_paths.csv", index=False)
     events_table(bt, ev)
     current_and_stress(bt, ev, ur_final, weekly)
 
@@ -333,7 +371,8 @@ def block_boot(values: np.ndarray, block: int, stat, reps=2000):
 
 def evaluate(bt: pd.DataFrame):
     rows = []
-    for (t, h), g in bt[bt.realized.notna()].groupby(["target", "horizon"], sort=False):
+    scored = bt[bt.realized.notna() & (pd.to_datetime(bt.origin) >= pd.Timestamp("2000-01-01"))]   # evaluation: 2000 on
+    for (t, h), g in scored.groupby(["target", "horizon"], sort=False):
         hm = g.horizon_months.iloc[0]
         for subset, gg in [("2000-on excl. 2020", g[~g.covid_window]), ("2020 window", g[g.covid_window])]:
             if len(gg) == 0:
@@ -364,7 +403,7 @@ def evaluate(bt: pd.DataFrame):
                 r["gate_pass"] = bool(abs(r["cover50"] - 0.5) <= 0.10 and abs(r["cover80"] - 0.8) <= 0.10 and r["rmse_ratio"] < 1)
             rows.append(r)
     out = pd.DataFrame(rows)
-    out.to_csv(MODEL / "forecast_evaluation.csv", index=False)
+    out.to_csv(MODEL / f"forecast_evaluation{SUFFIX}.csv", index=False)
     pd.set_option("display.width", 250)
     pd.set_option("display.max_columns", 40)
     print(out.round(3).to_string(index=False))

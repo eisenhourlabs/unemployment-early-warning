@@ -292,8 +292,9 @@ def main() -> None:
     for h in (3, 12):
         S.HORIZON = h                                       # score.py's functions read this setting
         t_h = S.target(F.index, ev)
-        p_h, _, _ = S.run_oos(F, t_h, status, feats, 2000, nonneg=True)
+        p_h, _, _ = S.run_oos(F, t_h, status, feats, 1980, nonneg=True)   # 1980-99 = pseudo out of sample
         idx = p_h.index[t_h.loc[p_h.index, "usable"].values]
+        idx = idx[idx >= "2000-01-01"]                                    # skill reported for 2000 on
         y = t_h.loc[idx, "y"]
         b, b0 = S.brier(p_h.logit.loc[idx], y), S.brier(p_h.base.loc[idx], y)
         a5.append({"horizon_months": h, "brier": round(b, 4), "skill": round(1 - b / b0, 3),

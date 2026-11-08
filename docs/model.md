@@ -1079,3 +1079,114 @@ ahead: ours 0.24 vs. SPF 0.20), and the conclusion stands.
 - the 2001-type and 2008-type stress paths for all three targets, labeled what-ifs;
 - the FOMC SEP marker;
 - the methodology text from A1 and 5.10.
+
+### 6.x Part 0: fixes from the stage 3d review (stage 3e preparation)
+
+Script: `src/model/part0.py` (`prep` before the forecasts, `report` after). `forecast.py` gained three options:
+`--from 1985` (fans before 2000, used only to choose a blend weight), `--option gap`, and `--live`.
+
+#### 0.1 Late-cycle bias
+
+**Late-cycle origin:** the unemployment rate, as known that day, is within 0.5 point of its 24-month low, and no event
+started in the previous 24 months. The same flag is used for the continuing-claims fans. Error = outcome minus the fan
+median (positive = median too low). The 90% intervals come from a moving-block bootstrap (blocks = the horizon).
+
+| Target | h | Late-cycle, all origins | Late-cycle, quiet origins | Late-cycle, 2022–26 only |
+| --- | --- | --- | --- | --- |
+| Unemployment rate (pt) | 3 mo | −0.01 (−0.05 to +0.02), n=137 | −0.02 (−0.06 to +0.02) | **+0.13** (+0.06 to +0.20), n=17 |
+| | 6 mo | −0.03 (−0.11 to +0.04) | −0.05 (−0.14 to +0.01) | **+0.25** (+0.11 to +0.37), n=15 |
+| | 12 mo | −0.10 (−0.33 to +0.06) | **−0.26** (−0.47 to −0.15) | **+0.30** (+0.30 to +0.34), n=15 |
+| Continuing claims rate (pt) | 13 wk | −0.01 (−0.02 to +0.01) | −0.01 (−0.03 to 0.00) | **+0.05** (+0.03 to +0.10) |
+| | 26 wk | −0.02 (−0.05 to +0.02) | −0.04 (−0.08 to −0.01) | **+0.12** (+0.11 to +0.21) |
+
+**What it says:**
+- **Across all late-cycle periods since 2000, the median is *not* biased low.** In quiet late-cycle months it was slightly
+  too *high* (12 months: 0.26 point).
+- **The downward lean is specific to 2022–26.** In those years unemployment drifted up slowly (3.4% → 4.3%) without a
+  qualifying event, so the baseline's "quiet times" pull and the low event probabilities kept the median too low:
+  by 0.13 / 0.25 / 0.30 point for the unemployment rate.
+- That rests on about 15 overlapping origins, roughly one or two independent observations. The narrow intervals
+  understate the uncertainty.
+
+**Fixes tested, 2000–2026 excluding 2020** (adopt only if RMSE ratio and pinball skill stay within ~0.02 and coverage
+within ~3 points, and the late-cycle bias falls):
+
+| Option | UR 3 / 6 / 12: RMSE ratio | UR pinball skill | UR 80% coverage | CC 13 / 26: RMSE ratio | 2022–26 bias, UR 3 / 6 / 12 | Verdict |
+| --- | --- | --- | --- | --- | --- | --- |
+| Base (3d) | 0.80 / 0.74 / 0.73 | 0.23 / 0.28 / 0.31 | 82 / 79 / 77 | 0.87 / 0.84 | +0.13 / +0.25 / +0.30 | kept |
+| (a) Blend toward no-change (weights chosen on 1985–1999 only: UR 0.50 / 0.45 / 0.20, CC 0.70 / 0.70) | 0.87 / 0.82 / 0.76 | 0.18 / 0.22 / 0.27 | 81 / 78 / 76 | 0.94 / 0.94 | +0.05 / +0.14 / +0.26 | **rejected**: accuracy −0.04 to −0.10, CC coverage −8 points |
+| (b) Gap term (level minus 36-month average, penalized 25× less) | 0.80 / 0.75 / 0.74 | 0.22 / 0.25 / 0.26 | 82 / 78 / 74 | 0.87 / 0.83 | +0.18 / +0.26 / +0.26 | **rejected**: 12-month pinball −0.05, coverage −3.5 points, bias not reduced |
+
+**Today's fans under each option** (live origin, 8 November 2026; unemployment rate 4.1% for October):
+
+| Option | UR 3 mo: median (80%) | UR 6 mo | UR 12 mo | CC 13 wk | CC 26 wk |
+| --- | --- | --- | --- | --- | --- |
+| Base (kept) | 3.94 (3.70–4.20) | 3.84 (3.50–4.14) | 3.67 (3.16–4.69) | 1.07 (1.02–1.13) | 1.04 (0.97–1.14) |
+| (a) Blend | 4.02 (3.78–4.28) | 3.96 (3.62–4.26) | 3.76 (3.24–4.77) | 1.10 (1.05–1.16) | 1.09 (1.02–1.18) |
+| (b) Gap term | 3.94 (3.70–4.21) | 3.84 (3.47–4.14) | 3.69 (3.05–4.73) | 1.07 (1.01–1.12) | 1.02 (0.95–1.11) |
+
+**Decision:** neither fix adopted. The methodology page will say that in 2022–26 the fan's median ran 0.1–0.3 point
+below what happened. Users should read the downward lean of today's median with that in mind, and look at the band
+rather than the median line.
+
+#### 0.2 Coherent probabilities
+
+Every month: p3 = min(p3, p6), p12 = max(p12, p6). The adjusted values feed the fans. The raw values are kept in
+`score_horizons.csv` as `p3_raw` / `p12_raw`.
+
+| Probability | Months changed, 1980– (2000–) | Largest change | Brier 2000–, raw → adjusted |
+| --- | --- | --- | --- |
+| 3-month | 22 (8) | 0.04 | 0.0546 → 0.0545 |
+| 12-month | 119 (66) | 0.32 | 0.1720 → 0.1727 |
+
+The 12-month model occasionally fell below the 6-month one, mainly in fast-moving months. Forcing coherence costs a
+little 12-month accuracy (+0.0007 Brier), a fair price for probabilities that never contradict each other on the page.
+
+#### 0.3 Live origin
+
+The live run uses everything published by the **refresh date**, not the last month end. `part0.py prep` writes
+`live_asof.csv` (every score input, the three probabilities, the latest unemployment rate), and `forecast.py --live` adds
+it as an origin. Score, fans and stress paths therefore start from the same values.
+
+On 8 November 2026:
+- unemployment rate **4.1%** (October, released 6 November);
+- initial claims week ending 31 October; continuing claims week ending 24 October;
+- temp help: October now shows a 1.4% six-month rise.
+
+| | Month-end origin (31 October) | Live origin (8 November) |
+| --- | --- | --- |
+| Score (6-month) | 2.4% | **1.8%** |
+| 3-month / 12-month probability | 0.5% / 37% | 0.4% / 32% |
+| UR level the fan starts from | 4.2% (September) | **4.1% (October)** |
+| UR fan 3 / 6 / 12 mo, median | 4.04 / 3.94 / 3.80 | 3.94 / 3.84 / 3.67 |
+| UR 12-month 80% band | 3.26–4.91 | 3.16–4.69 |
+| CC 13 / 26 wk, median | 1.07 / 1.04 | 1.07 / 1.04 |
+
+Nowcast: the next nowcast (November 2026) can only be made once claims for the reference week ending 14 November are
+out (initial on 19 November, continuing on 26 November). Until then the page says "next nowcast available after 26
+November".
+
+#### 0.4 Today's median vs. the FOMC
+
+The September 2026 SEP median for the Q4 2026 unemployment rate is **4.1%** (FRED `UNRATEMD`, vintage 2026-09-16). Our
+live median for Q4 2026 is **4.05%**: October's published 4.1%, and about 4.05% and 4.0% for November and December. The
+December 80% range is 3.84–4.17%.
+
+The two are 0.05 point apart, less than one rounding step of the published rate and well inside our range. Ours leans a
+little lower for two reasons:
+- our baseline is fitted on quiet periods, in which unemployment has tended to edge down;
+- today's 3- and 6-month event probabilities are very low.
+
+The FOMC figure also predates the September and October releases. Section 0.1 shows that in 2022–26 our median ran low,
+so the FOMC's flat path is a reasonable reminder that the gap may be our downward lean rather than information.
+
+#### 0.5 Small items
+
+- **In-progress rule:** the 3-month in-progress rule (3d decision 5) was chosen *after* seeing the 2000–2026 results. It
+  is not a pure out-of-sample choice, and its small accuracy gain should be read that way.
+- **Nowcast range:** ±0.2 point contained the first release in **82%** of 311 releases (2000–2026 excluding March–December
+  2020). The range covering 80% is ±0.19, so **±0.2 is the right label** for an "about 80%" range.
+
+  | Range | ±0.1 | ±0.15 | ±0.2 | ±0.25 | ±0.3 |
+  | --- | --- | --- | --- | --- | --- |
+  | Coverage | 49% | 69% | 82% | 90% | 93% |

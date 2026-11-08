@@ -194,6 +194,7 @@ def current(cur, stress, act, evl):
 
 if __name__ == "__main__":
     bt = pd.read_csv(MODEL / "forecast_backtest.csv")
+    bt = bt[pd.to_datetime(bt.origin) >= "2000-01-01"]     # pre-2000 fans exist only to choose part0's blend weight
     evl = pd.read_csv(MODEL / "forecast_evaluation.csv")
     ev = pd.read_csv(MODEL / "events.csv", dtype={"start_month": str, "end_month": str})
     act = actual_series()

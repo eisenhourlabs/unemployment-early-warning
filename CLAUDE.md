@@ -69,7 +69,7 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 | `docs/data_revisions.md` | Automatic log of DOL revisions |
 | `docs/dashboard_requirements.md` | What the Phase 2 dashboard must show |
 | `src/alerts/alerts.py` | Optional alerts (off) |
-| `src/model/` | Phase 3 modeling: `build_claims_history.py` (claims table from 1967), `alfred_fetcher.py` (past vintages), `realtime.py` (`as_known_on(series, date)` + Sahm check), `events.py` (event definition and list), `plot_events.py` (review chart), `current_fetcher.py` (long histories of never-revised series), `triggers.py` (8 Layer 1 triggers monthly, real-time), `backtest_triggers.py` (leads, false alarms, adds-warning), `plot_triggers.py` (status chart), `features.py` (score inputs), `score.py` (early-warning score: fit, out-of-sample test, sensitivity runs), `plot_score.py` (score charts), `score_followups.py` (3d Part A: drivers, NSA claims test, calibration, colour stability, 3/12-month scores), `forecast.py` (fans: baseline + event-path mixture, backtest, stress paths), `nowcast.py` (next UR release), `benchmarks.py` (FOMC SEP / SPF comparison), `plot_forecast.py` (forecast charts) |
+| `src/model/` | Phase 3 modeling: `build_claims_history.py` (claims table from 1967), `alfred_fetcher.py` (past vintages), `realtime.py` (`as_known_on(series, date)` + Sahm check), `events.py` (event definition and list), `plot_events.py` (review chart), `current_fetcher.py` (long histories of never-revised series), `triggers.py` (8 Layer 1 triggers monthly, real-time), `backtest_triggers.py` (leads, false alarms, adds-warning), `plot_triggers.py` (status chart), `features.py` (score inputs), `score.py` (early-warning score: fit, out-of-sample test, sensitivity runs), `plot_score.py` (score charts), `score_followups.py` (3d Part A: drivers, NSA claims test, calibration, colour stability, 3/12-month scores), `forecast.py` (fans: baseline + event-path mixture, backtest, stress paths), `nowcast.py` (next UR release), `benchmarks.py` (FOMC SEP / SPF comparison), `plot_forecast.py` (forecast charts), `part0.py` (3e Part 0: coherence, live as-of inputs, bias report) |
 | `config/model_series.csv`, `config/event_notes.csv`, `config/triggers.csv` | Modeling series: ALFRED / first-release / current vintage, release lag; Troy's event rulings and notes; Layer 1 trigger thresholds |
 | `data/model/` | Modeling data: `claims_weekly.csv`, `alfred/` (vintages + coverage), `current/` (GS10, TB3MS, T10Y3MM full history), `events.csv`, `event_flags_monthly.csv`, `claims_leg_weekly.csv`, `triggers_monthly.csv`, `trigger_episodes.csv`, `trigger_leads.csv`, `trigger_summary.csv`, `status_comparison.csv`, `features_monthly.csv`, `score_*.csv`, `forecast_*.csv`, `stress_paths.csv`, `nowcast.csv`, `benchmark_summary.csv` |
 | `docs/model.md`, `reports/` | Phase 3 method and results (grows each stage); review charts (not on the site) |
@@ -108,7 +108,8 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   `python src\model\plot_events.py`, `python src\model\triggers.py` (~15 s), `python src\model\backtest_triggers.py`,
   `python src\model\plot_triggers.py`, `python src\model\features.py` (~2 min), `python src\model\score.py` (~2 min),
   `python src\model\plot_score.py`, `python src\model\score_followups.py` (~2 min), `python src\model\forecast.py` (~4 min),
-  `python src\model\nowcast.py`, `python src\model\benchmarks.py <path to SPF medianLevel.xlsx>`, `python src\model\plot_forecast.py`
+  `python src\model\part0.py prep`, `python src\model\forecast.py --from 1985 --live` (and `--option gap` for the Part 0 test),
+  `python src\model\part0.py report`, `python src\model\nowcast.py`, `python src\model\benchmarks.py <path to SPF medianLevel.xlsx>`, `python src\model\plot_forecast.py`
 
 ## Status (2026-11-07)
 - Phase 0 done: folders, catalog (35 active rows), footprint weights, FRED fetcher (tested only against
@@ -199,11 +200,15 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   above 35%, colour hysteresis 20/15 and 50/40, initial-claims fans not shown, in-progress rule needs 3 months,
   nowcast shown, FOMC SEP marker allowed. Site shows: UR fans 3/6/12, continuing claims fans 13/26 wk, nowcast,
   stress paths, score.
+- 2026-11-08: Stage 3d approved and pushed. Part 0 done (docs/model.md 6.x): no general late-cycle bias, 2022-26 median
+  ran low (stated, not fixed: both fixes failed the rule); coherent p3<=p6<=p12 in the fans; live origin on the refresh
+  date (part0.py prep + forecast.py --live); nowcast +/-0.2 = 82% coverage. Phase 3e design brief drafted:
+  docs/phase3e_design.md. Waiting for Troy's approval; no site changes yet.
 
 ## Next steps, in order
 Setup (steps 1-4), Phase 1, Phase 2 and the Phase 2 review fixes are done and live.
-1. Stage 3e (site), plan with Troy first, when he says to start. Push phase3a / merge to main only when he says so.
-   Use docs/model.md section 6 "Stage 3d decisions (final)" for what the site shows and how.
+1. Troy approves docs/phase3e_design.md (4 decisions at its end), then build 3e-1 / 3e-2 / 3e-3 as proposed there.
+   Push phase3a / merge to main only when he says so.
 2. Stage 3e per docs/phase3_plan.md. Stage 3e must also: show trigger signal colors for the panel (yield curve
    labeled "long lead, often 12+ months"; NFCI caveat "real-time only since 2011"); move temp help and manufacturing
    surveys to the Leading page as context only (not counted in the overall status); use the new overall rule; state
