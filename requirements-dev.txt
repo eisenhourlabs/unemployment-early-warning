@@ -3,4 +3,3 @@
 -r requirements.txt
 playwright==1.64.1
 matplotlib==3.11.2  # review charts in reports/ (Phase 3 modeling); not used by the site
-scikit-learn==1.9.1  # Phase 3 score: penalized logistic regression (src/model/score.py); moves to requirements.txt in stage 3e

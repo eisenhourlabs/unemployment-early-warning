@@ -90,9 +90,14 @@ def history_chart(live: dict, built: datetime) -> dict | None:
                              mode="lines", line=dict(color=ACCENT, width=2), meta={"role": "main"},
                              hovertemplate="%{y:.0f}%<extra>Out of sample</extra>"))
     s = live["score"]
-    fig.add_trace(go.Scatter(x=[live["asof"]], y=[s["p6"] * 100], name="Live (this week)", mode="markers",
-                             marker=dict(size=9, color=ACCENT), meta={"role": "main"},
-                             hovertemplate="%{y:.1f}%<extra>Live</extra>"))
+    # Live runs: every archived run (live_history.csv), then this one; the latest gets the large dot
+    runs = model_csv("live_history.csv", "asof")
+    pts = {} if runs is None else {d.strftime("%Y-%m-%d"): v * 100 for d, v in zip(runs["asof"], runs.p6)}
+    pts[live["asof"]] = s["p6"] * 100
+    xs = sorted(pts)
+    fig.add_trace(go.Scatter(x=xs, y=[pts[d] for d in xs], name="Live runs (weekly)", mode="lines+markers",
+                             line=dict(color=ACCENT, width=2), marker=dict(size=[5] * (len(xs) - 1) + [9], color=ACCENT),
+                             meta={"role": "main"}, hovertemplate="%{y:.1f}%<extra>Live</extra>"))
     x0 = m.month.iloc[0].strftime("%Y-%m-%d")
     for v in (20, 50):
         fig.add_trace(go.Scatter(x=[x0, today.strftime("%Y-%m-%d")], y=[v, v], mode="lines", showlegend=False,

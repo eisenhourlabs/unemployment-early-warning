@@ -29,10 +29,16 @@ Writes:
   data/model/score_display_monthly.csv monthly 3 / 6 / 12-month scores since 1980 with the colour (Outlook history):
                                        1980-1999 "pseudo out of sample", 2000 on "out of sample"
 
-Stage 3e-1 runs this on the PC; stage 3e-3 adds it to the weekly workflow with a create-only archive.
-Run it (after the fetchers and the Phase 3 modeling chain; uses today's date unless one is given):
-    python src/model/live.py
-    python src/model/live.py 2026-11-08
+  data/archive/YYYY/<date>_ic<week>_ur<month>.json   (--archive only) the permanent record of each live run, opened
+                                       create-only: the run FAILS rather than overwrite an existing file
+  data/model/live_status.json          (--archive only) the last attempt: new run, skipped (no new inputs) or failed
+
+The "Refresh data" workflow runs it with --archive after every refresh; it does real work only when there is a new
+claims week or unemployment month (Thursday claims, jobs report). On the PC, run it without --archive to preview.
+    python src/model/live.py                         (preview, today)
+    python src/model/live.py 2026-11-08              (preview, a given date)
+    python src/model/live.py --archive               (what the workflow runs)
+    python src/model/live.py --record-failure "why"  (the workflow, when the model's inputs could not be refreshed)
 """
 
 import json
@@ -60,6 +66,8 @@ WEEKLY_OUT = MODEL / "score_display_weekly.csv"
 MONTHLY_OUT = MODEL / "score_display_monthly.csv"
 RUNS = MODEL / "live_history.csv"                   # one row per live run (re-running a date replaces its row)
 FANS_HISTORY = MODEL / "live_fans_history.csv"     # every live run's fans (the forecast archive download)
+STATUS = MODEL / "live_status.json"                 # the last attempt: ok / skipped / failed
+ARCHIVE = ROOT / "data" / "archive"                 # permanent, create-only: one file per live run
 SEED = 20261108                                     # fixed seed: same inputs give the same fans
 PANEL = ["sahm", "claims_vs_low", "cont_claims_yoy", "yield_curve", "nfci"]
 CONTEXT = ["temp_help", "mfg_surveys"]
@@ -446,11 +454,94 @@ def fomc(asof: pd.Timestamp, ur_fan: dict) -> dict | None:
 
 
 # ===================================================================================================
-def main() -> None:
-    asof = pd.Timestamp(sys.argv[1]) if len(sys.argv) > 1 else pd.Timestamp.today().normalize()
+# Archive (stage 3e-3): one permanent file per live run, never overwritten
+# ===================================================================================================
+def archive_name(asof: pd.Timestamp, inputs: dict) -> str:
+    """data/archive/YYYY/YYYY-MM-DD_ic<claims week>_ur<YYYY-MM>.json: run date plus the inputs it used."""
+    return f"{asof:%Y}/{asof:%Y-%m-%d}_ic{inputs['initial_claims_week']}_ur{inputs['unemployment_month'][:7]}.json"
+
+
+def write_archive(archive_dir: Path, name: str, payload: dict) -> Path:
+    """Write a NEW archive file. Opened in create-only mode ("x"): if the file already exists this raises
+    FileExistsError, so the run fails instead of overwriting a past result (tests/test_live_archive.py)."""
+    path = archive_dir / name
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "x", encoding="utf-8") as f:
+        json.dump(payload, f, indent=1, allow_nan=False, default=float)
+    return path
+
+
+def latest_archived_inputs(archive_dir: Path) -> tuple[str | None, str | None, str | None]:
+    """(file name, claims week, unemployment month) of the newest archived run, or Nones if there is none."""
+    files = sorted(archive_dir.glob("*/*.json"))
+    if not files:
+        return None, None, None
+    i = json.loads(files[-1].read_text(encoding="utf-8"))["inputs"]
+    return files[-1].name, i["initial_claims_week"], i["unemployment_month"]
+
+
+def current_inputs(asof: pd.Timestamp) -> dict:
+    """The newest initial-claims week and unemployment-rate month published by the run date."""
+    ic4 = as_known_on("IC4WSA", asof).dropna()
+    cc = as_known_on("CCSA", asof).dropna()
+    ur = as_known_on("UNRATE", asof).dropna()
+    return {"initial_claims_week": f"{ic4.index[-1]:%Y-%m-%d}", "continuing_claims_week": f"{cc.index[-1]:%Y-%m-%d}",
+            "unemployment_month": f"{ur.index[-1]:%Y-%m-%d}", "unemployment_rate": float(ur.iloc[-1])}
+
+
+def has_new_inputs(now: dict, archived: tuple) -> bool:
+    """A live run is made only when there is a new claims week or a new unemployment month since the last archived
+    run (design brief, step 1): in practice once each Thursday and once after each jobs report."""
+    _, week, month = archived
+    return week is None or now["initial_claims_week"] > week or now["unemployment_month"] > month
+
+
+def write_status(status: dict) -> None:
+    """data/model/live_status.json: the last attempt, so the site can say 'model run failed' straight away."""
+    STATUS.write_text(json.dumps(status, indent=1), encoding="utf-8")
+
+
+# ===================================================================================================
+# Alerts (built, off unless ALERTS_ENABLED=true): colour change under the hysteresis rule
+# ===================================================================================================
+SITE_URL = "https://eisenhourlabs.github.io/unemployment-early-warning"
+
+
+def colour_alert(result: dict) -> tuple[str, str] | None:
+    """(subject, body) when the displayed colour differs from the previous week's, else None (design brief text)."""
+    s = result["score"]
+    new, old = s["colour"], s["previous"]["colour"]
+    if new == old:
+        return None
+    t = s["thresholds"]
+    rule = {"green": f"It stays green until it reaches {t['amber_in']:.0%} (amber).",
+            "amber": f"It entered amber at {t['amber_in']:.0%}; it stays amber until it falls below {t['amber_out']:.0%} "
+                     f"or rises to {t['red_in']:.0%} (red).",
+            "red": f"It entered red at {t['red_in']:.0%}; it stays red until it falls below {t['red_out']:.0%}."}[new]
+    week = pd.Timestamp(result["inputs"]["initial_claims_week"])
+    drivers_txt = "; ".join(d["text"][0].lower() + d["text"][1:].replace(" the score", "") for d in s["drivers"])
+    body = (f"The 6-month early-warning score is {s['display']['6']['number']} "
+            f"(last week {s['previous']['display']['number']}), as of claims for the week ending "
+            f"{week.day} {week:%b %Y}.\n{rule}\nMain drivers: {drivers_txt}.\nDetails: {SITE_URL}/outlook.html")
+    return f"Unemployment Watch: early-warning colour changed to {new.upper()}", body
+
+
+# ===================================================================================================
+def run(asof: pd.Timestamp, archive: bool) -> dict | None:
     fz = load_frozen(asof)
-    print(f"Live run as of {asof:%Y-%m-%d} with the {fz['model_year']} frozen model")
+    print(f"Live run as of {asof:%Y-%m-%d} with the {fz['model_year']} frozen model"
+          + (" (archive mode)" if archive else " (preview: no archive, run record unchanged)"))
     disp = fz["display"]
+    now = current_inputs(asof)
+    if archive:
+        last = latest_archived_inputs(ARCHIVE)
+        if not has_new_inputs(now, last):
+            print(f"  No new claims week or unemployment month since the archived run {last[0]} "
+                  f"(claims week {now['initial_claims_week']}, unemployment {now['unemployment_month'][:7]}): "
+                  "nothing to do; the site keeps the last run.")
+            write_status({"last_attempt": f"{asof:%Y-%m-%d}", "ok": True, "result": "skipped: no new inputs",
+                          "last_run": last[0]})
+            return None
 
     # ---- score ----
     x = features_at(asof)
@@ -477,18 +568,10 @@ def main() -> None:
         c["sentence"] = (None if c["value"] is None or abs(c["contribution"]) < 1e-9 else   # zero weight: no direction
                          driver_sentence(c["input"], c["value"], c["contribution"] > 0, c.get("mean")))
 
-    # ---- the "as of" facts every panel prints ----
-    ic4 = as_known_on("IC4WSA", asof).dropna()
-    cc = as_known_on("CCSA", asof).dropna()
-    ur = as_known_on("UNRATE", asof).dropna()
-    inputs = {"initial_claims_week": f"{ic4.index[-1]:%Y-%m-%d}", "continuing_claims_week": f"{cc.index[-1]:%Y-%m-%d}",
-              "unemployment_month": f"{ur.index[-1]:%Y-%m-%d}", "unemployment_rate": float(ur.iloc[-1]),
-              "values": {k: (None if v is None or (isinstance(v, float) and math.isnan(v)) else float(v))
-                         for k, v in x.items() if k in fz["score"]["features"]}}
-
+    inputs = {**now, "values": {k: (None if v is None or (isinstance(v, float) and math.isnan(v)) else float(v))
+                                for k, v in x.items() if k in fz["score"]["features"]}}
     rng = np.random.default_rng(SEED)
     fans = {name: fan(fz, name, x, probs, asof, rng) for name in fz["forecast"]["targets"]}
-
     result = {
         "asof": f"{asof:%Y-%m-%d}",
         "run_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
@@ -514,22 +597,37 @@ def main() -> None:
         "nowcast": nowcast(fz, asof),
         "fomc": fomc(asof, fans["ur"]),
     }
+    if archive:
+        # Archive FIRST: if this run's file already exists, stop here before touching anything else.
+        path = write_archive(ARCHIVE, archive_name(asof, inputs), result)
+        print(f"  archived {path.relative_to(ROOT)}")
     OUT.write_text(json.dumps(result, indent=1, allow_nan=False, default=float), encoding="utf-8")
 
-    # ---- record the run (re-running the same date replaces its rows) ----
-    n = result["nowcast"]
-    runs.loc[asof, ["p3", "p6", "p12", "colour", "model_year", "initial_claims_week", "unemployment_month",
-                    "nowcast_month", "nowcast", "run_at"]] = [
-        probs["p3"], probs["p6"], probs["p12"], colour, fz["model_year"], inputs["initial_claims_week"],
-        inputs["unemployment_month"], n["month"], n.get("value"), result["run_at"]]
-    runs.sort_index().to_csv(RUNS, date_format="%Y-%m-%d", index_label="asof")
-    rows = [{"asof": result["asof"], "target": name, "label": f["label"], "latest_period": f["latest_period"],
-             "level_at_origin": f["level"], **{k: h[k] for k in ("horizon", "horizon_months", "target_period", "q10",
-                                                                 "q25", "median", "q75", "q90", "deterioration_weight")}}
-            for name, f in fans.items() for h in f["horizons"]]
-    hist = pd.read_csv(FANS_HISTORY) if FANS_HISTORY.exists() else pd.DataFrame(columns=list(rows[0]))
-    hist = pd.concat([hist[hist["asof"] != result["asof"]], pd.DataFrame(rows)])   # hist["asof"]: .asof is a pandas method.sort_values(["asof", "target", "horizon"])
-    hist.to_csv(FANS_HISTORY, index=False)
+    # ---- the run record (archive mode only; re-running the same date replaces its rows) ----
+    if archive:
+        n = result["nowcast"]
+        runs.loc[asof, ["p3", "p6", "p12", "colour", "model_year", "initial_claims_week", "unemployment_month",
+                        "nowcast_month", "nowcast", "run_at"]] = [
+            probs["p3"], probs["p6"], probs["p12"], colour, fz["model_year"], inputs["initial_claims_week"],
+            inputs["unemployment_month"], n["month"], n.get("value"), result["run_at"]]
+        runs.sort_index().to_csv(RUNS, date_format="%Y-%m-%d", index_label="asof")
+        rows = [{"asof": result["asof"], "target": name, "label": f["label"], "latest_period": f["latest_period"],
+                 "level_at_origin": f["level"], **{k: h[k] for k in ("horizon", "horizon_months", "target_period", "q10",
+                                                                     "q25", "median", "q75", "q90",
+                                                                     "deterioration_weight")}}
+                for name, f in fans.items() for h in f["horizons"]]
+        hist = pd.read_csv(FANS_HISTORY) if FANS_HISTORY.exists() else pd.DataFrame(columns=list(rows[0]))
+        hist = pd.concat([hist[hist["asof"] != result["asof"]], pd.DataFrame(rows)])   # hist["asof"]: .asof is a method
+        hist.sort_values(["asof", "target", "horizon"]).to_csv(FANS_HISTORY, index=False)
+        write_status({"last_attempt": f"{asof:%Y-%m-%d}", "ok": True, "result": "new live run",
+                      "last_run": path.name})
+        alert = colour_alert(result)
+        if alert:
+            sys.path.insert(0, str(ROOT / "src" / "alerts"))
+            from alerts import send_alert      # prints the message instead of sending while ALERTS_ENABLED is off
+            send_alert(*alert)
+        else:
+            print(f"  colour unchanged ({colour}): no alert")
 
     # ---- print a summary ----
     s = result["score"]
@@ -550,8 +648,33 @@ def main() -> None:
     if result["fomc"]:
         print(f"  FOMC Q4 {result['fomc']['year']}: {result['fomc']['value']} ({result['fomc']['released']}); "
               f"ours {result['fomc']['our_q4_median']:.2f}")
-    print(f"Wrote {OUT.relative_to(ROOT)}, {WEEKLY_OUT.relative_to(ROOT)}, {MONTHLY_OUT.relative_to(ROOT)}, "
-          f"{RUNS.relative_to(ROOT)}, {FANS_HISTORY.relative_to(ROOT)}")
+    print(f"Wrote {OUT.relative_to(ROOT)}, {WEEKLY_OUT.relative_to(ROOT)}, {MONTHLY_OUT.relative_to(ROOT)}"
+          + (f", {RUNS.relative_to(ROOT)}, {FANS_HISTORY.relative_to(ROOT)}" if archive else ""))
+    return result
+
+
+def main() -> None:
+    """python src/model/live.py [YYYY-MM-DD] [--archive]
+    --archive (the workflow): only if there is a new claims week or unemployment month; writes the permanent archive
+    file (create-only), the run record and the status, and prints a colour-change alert. Without it: a preview that
+    refreshes the site's files but leaves the archive and run record alone."""
+    if "--record-failure" in sys.argv:
+        # The workflow could not refresh the model's inputs: don't run on stale data, just record the failure so
+        # the site says "model run failed" and keeps the last good values.
+        reason = sys.argv[sys.argv.index("--record-failure") + 1] if len(sys.argv) > sys.argv.index("--record-failure") + 1 else ""
+        write_status({"last_attempt": f"{pd.Timestamp.today():%Y-%m-%d}", "ok": False, "result": f"failed: {reason}"})
+        print(f"Recorded a failed model step ({reason}); the site keeps the last good run.")
+        return
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    archive = "--archive" in sys.argv
+    asof = pd.Timestamp(args[0]) if args else pd.Timestamp.today().normalize()
+    try:
+        run(asof, archive)
+    except Exception as e:
+        if archive:
+            write_status({"last_attempt": f"{asof:%Y-%m-%d}", "ok": False,
+                          "result": f"failed: {type(e).__name__}: {str(e)[:200]}"})
+        raise
 
 
 if __name__ == "__main__":

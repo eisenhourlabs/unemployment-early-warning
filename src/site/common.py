@@ -81,10 +81,45 @@ def model_output(built) -> dict:
         live = _json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError):
         return {"live": None, "note": "Early-warning score not available: the model output is missing."}
-    age = (pd.Timestamp(built).tz_localize(None).normalize() - pd.Timestamp(live["asof"])).days
-    note = (f"Score not updated since {fmt_date(live['asof'])}: the weekly model run has not completed since then."
-            if age > MODEL_MAX_AGE_DAYS else "")
-    return {"live": live, "note": note}
+    from zoneinfo import ZoneInfo
+    today = pd.Timestamp(pd.Timestamp(built).tz_convert(ZoneInfo("America/Chicago")).date())
+    asof = pd.Timestamp(live["asof"])
+    notes = []
+    # 1. The last model run failed (data/model/live_status.json, written by live.py --archive): say so at once.
+    try:
+        status = _json.loads((MODEL / "live_status.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        status = {}
+    if status.get("ok") is False and status.get("last_attempt", "") > live["asof"]:
+        notes.append(f"Score not updated since {fmt_date(asof)}: the model run of {fmt_date(status['last_attempt'])} "
+                     "failed. The values shown are from the last good run.")
+    elif (today - asof).days > MODEL_MAX_AGE_DAYS:
+        notes.append(f"Score not updated since {fmt_date(asof)}: the weekly model run has not completed since then.")
+    # 2. A release is past due and its data have not arrived (shutdowns, delays): the score keeps its last value.
+    claims_delayed = False
+    now_ct = pd.Timestamp(built).tz_convert(ZoneInfo("America/Chicago"))
+    thursday = today - pd.Timedelta(days=(today.weekday() - 3) % 7)          # the latest Thursday, today included
+    if thursday == today and (now_ct.hour, now_ct.minute) < (7, 30):        # released 8:30 am ET = 7:30 am CT
+        thursday -= pd.Timedelta(days=7)
+    expected_week = thursday - pd.Timedelta(days=5)                           # its report covers the week to Saturday
+    try:
+        latest_week = fred("ICSA").index[-1]
+    except OSError:
+        latest_week = expected_week
+    if latest_week < expected_week:
+        claims_delayed = True
+        notes.append(f"Release delayed: the weekly claims report due {fmt_date(thursday)} has not been published; "
+                     "the score keeps its last value.")
+    n = live.get("nowcast") or {}
+    if n.get("release_date") and today > pd.Timestamp(n["release_date"]):
+        try:
+            latest_month = fred("UNRATE").index[-1]
+        except OSError:
+            latest_month = pd.Timestamp(n["month"])
+        if latest_month < pd.Timestamp(n["month"]):
+            notes.append(f"Release delayed: the {pd.Timestamp(n['month']):%B} jobs report (scheduled "
+                         f"{fmt_date(n['release_date'])}) has not been published.")
+    return {"live": live, "note": " ".join(notes), "claims_delayed": claims_delayed}
 
 
 def model_csv(name: str, date_col: str) -> pd.DataFrame | None:

@@ -5,8 +5,13 @@ Turn on by setting ALERTS_ENABLED=true in config/.env (or as a GitHub secret), p
   TEAMS_WEBHOOK_URL  - an incoming-webhook URL for a Teams channel, or
   ALERT_EMAIL_TO, SMTP_HOST, SMTP_USER, SMTP_PASSWORD - for email.
 
-Phase 3 will call send_alert() when the early-warning score changes color or a red trigger fires.
-While alerts are off, send_alert() just prints what it would have sent.
+Two alerts are wired (Phase 3e):
+  - colour change of the early-warning score under the hysteresis rule: src/model/live.py calls send_alert();
+  - failed refresh: the "Refresh data" workflow runs  python src/alerts/alerts.py --refresh-failed  when a step fails
+    (it reads the workflow's step results from STEPS_JSON and the run link from RUN_URL).
+While alerts are off, send_alert() just prints what it would have sent, so the workflow log shows the exact text.
+In GitHub, alerts follow the repository VARIABLE ALERTS_ENABLED (Settings -> Secrets and variables -> Actions ->
+Variables); when it is not set they are off.
 """
 import os
 import smtplib
@@ -45,5 +50,27 @@ def send_alert(subject: str, body: str) -> None:
             s.send_message(msg)
 
 
+def refresh_failed_message() -> tuple[str, str]:
+    """The failed-refresh alert (design brief text): which step failed, and the date of the results still shown."""
+    import json
+    from datetime import datetime, timezone
+    steps = json.loads(os.environ.get("STEPS_JSON") or "{}")
+    failed = [name.replace("_", " ") for name, st in steps.items() if st.get("outcome") == "failure"]
+    where = f'step "{failed[0]}"' + (f" (and {len(failed) - 1} more)" if len(failed) > 1 else "") if failed else "a step"
+    try:
+        last = json.loads((ROOT / "data" / "model" / "live_latest.json").read_text(encoding="utf-8"))["asof"]
+        last_good = datetime.strptime(last, "%Y-%m-%d").strftime("%a %d %b %Y")
+    except (OSError, ValueError, KeyError):
+        last_good = "the last successful run"
+    today = datetime.now(timezone.utc).strftime("%a %d %b %Y")
+    body = (f"The refresh run of {today} failed at {where}. The site still shows the results as of {last_good}.\n"
+            f"Run log: {os.environ.get('RUN_URL', '(link not available)')}")
+    return "Unemployment Watch: weekly refresh failed", body
+
+
 if __name__ == "__main__":
-    send_alert("Test alert", "If alerts are off, this only prints.")
+    import sys
+    if "--refresh-failed" in sys.argv:
+        send_alert(*refresh_failed_message())
+    else:
+        send_alert("Test alert", "If alerts are off, this only prints.")

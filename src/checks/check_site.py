@@ -577,6 +577,10 @@ def check_phase3(browser, base) -> None:
           "Data: FOMC median named as a FRED reference, not offered as a file")
     page.goto(base + "about.html")
     check(page.locator("#updates a[href='outlook.html#methodology']").count() == 1, "About: Updates links to the methodology")
+    about = page.inner_text("main")
+    check("No forecast yet" not in about and page.locator("a[href='outlook.html']").count() >= 1,
+          "About: no 'No forecast yet'; points to the Outlook page")
+    check("manual" in about, "About: says which model steps are manual")
     check(not errors, f"no browser errors {errors[:3] if errors else ''}")
     page.context.close()
 

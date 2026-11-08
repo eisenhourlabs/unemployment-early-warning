@@ -1,0 +1,115 @@
+# January re-fit of the early-warning model (stage 3e-3). Re-runs the whole modeling chain on everything known on
+# 1 January, writes the new frozen model (data/model/frozen/model_<year>.json) and a summary of what changed
+# (reports/refit_<year>.md), and opens a PULL REQUEST for review. Nothing changes on the site until the pull request
+# is merged: the weekly live run always uses the newest frozen model on main.
+#
+# Needs the repository setting "Allow GitHub Actions to create and approve pull requests"
+# (Settings -> Actions -> General -> Workflow permissions).
+name: Re-fit model
+
+on:
+  schedule:
+    - cron: "0 15 15 1 *"     # 15 January, ~9:00 am CT (after the December jobs report and early-January data)
+  push:
+    branches: [refit-dry-run] # a TEST run: push a branch with this name to try the workflow before it is on main
+  workflow_dispatch:
+    inputs:
+      year:
+        description: "Model year (blank = this year). The model uses everything known on 1 January of that year."
+        required: false
+        default: ""
+      test_run:
+        description: "Test run: branch refit-<year>-test and a [TEST] pull request title"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write             # push the refit branch
+  pull-requests: write        # open the pull request
+
+concurrency:                  # never at the same time as a data refresh
+  group: refresh-data
+  cancel-in-progress: false
+
+jobs:
+  refit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.ref_name }}   # main for the real re-fit; the dry-run branch for a test
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.15"
+      - run: pip install -r requirements.txt
+      - name: Settings for this run
+        id: cfg
+        run: |
+          YEAR="${{ inputs.year }}"; [ -z "$YEAR" ] && YEAR=$(date -u +%Y)
+          # A test: the "test_run" box, or a push to the refit-dry-run branch. Its pull request goes to the branch it ran
+          # from (so it shows only the re-fit's changes) and is titled [TEST]; a real re-fit goes to main.
+          TEST=false; { [ "${{ inputs.test_run }}" = "true" ] || [ "${{ github.event_name }}" = "push" ]; } && TEST=true
+          SUFFIX=""; BASE=main; TITLE="Re-fit model $YEAR"
+          if [ "$TEST" = "true" ]; then SUFFIX="-test"; BASE="${{ github.ref_name }}"; TITLE="[TEST] Re-fit model $YEAR"; fi
+          echo "year=$YEAR" >> "$GITHUB_OUTPUT"
+          echo "branch=refit-$YEAR$SUFFIX" >> "$GITHUB_OUTPUT"
+          echo "base=$BASE" >> "$GITHUB_OUTPUT"
+          echo "title=$TITLE" >> "$GITHUB_OUTPUT"
+          echo "Re-fit year $YEAR on branch refit-$YEAR$SUFFIX, pull request into $BASE ($TITLE)"
+      - name: Keep the current model and backtest results for the comparison
+        run: |
+          mkdir -p /tmp/old
+          OLD=$(ls data/model/frozen/model_*.json | sort | tail -1)
+          echo "Comparing against $OLD"
+          cp "$OLD" /tmp/old/model_old.json
+          cp data/model/score_results.csv data/model/forecast_evaluation.csv data/model/events.csv /tmp/old/
+      # The modeling chain, in the order of CLAUDE.md (charts are skipped: they are review aids on the PC).
+      - name: Data (claims history, all real-time vintages, long histories)
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+        run: |
+          python src/model/build_claims_history.py
+          python src/model/alfred_fetcher.py
+          python src/model/current_fetcher.py
+      - name: Events (a new event will show in the summary and needs review before merging)
+        run: python src/model/events.py
+      - name: Triggers and score inputs
+        run: |
+          python src/model/triggers.py
+          python src/model/backtest_triggers.py
+          python src/model/features.py
+      - name: Score and follow-ups (out-of-sample backtest)
+        run: |
+          python src/model/score.py
+          python src/model/score_followups.py
+          python src/model/part0.py prep
+      - name: Forecast fans and nowcast (backtest)
+        run: |
+          python src/model/forecast.py
+          python src/model/nowcast.py
+      - name: Freeze the new model
+        run: python src/model/freeze_model.py ${{ steps.cfg.outputs.year }}
+      - name: Summary of what changed
+        run: python src/model/refit_summary.py ${{ steps.cfg.outputs.year }} /tmp/old
+      - name: Push the branch and open the pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH="${{ steps.cfg.outputs.branch }}"
+          YEAR="${{ steps.cfg.outputs.year }}"
+          TITLE="${{ steps.cfg.outputs.title }}"
+          git config user.name "refit-bot"
+          git config user.email "refit-bot@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add data/ reports/refit_$YEAR.md
+          git commit -m "$TITLE: frozen model, backtests and summary"
+          git push --force origin "$BRANCH"
+          {
+            echo "Automatic re-fit of the early-warning model (workflow run ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})."
+            echo
+            echo "**Nothing on the site changes until this is merged.** Review the summary below; if the gate or the event list flags anything, fix that before merging."
+            echo
+            cat "reports/refit_$YEAR.md"
+          } > /tmp/pr_body.md
+          gh pr create --base "${{ steps.cfg.outputs.base }}" --head "$BRANCH" --title "$TITLE" --body-file /tmp/pr_body.md

@@ -1,5 +1,6 @@
-# Runs the data fetchers in GitHub's cloud on a schedule, saves new data back to the repository,
-# then rebuilds the Unemployment Watch website and publishes it to GitHub Pages.
+# Runs the data fetchers in GitHub's cloud on a schedule, runs the early-warning model when there is a new claims
+# week or jobs report, saves everything back to the repository, then rebuilds the Unemployment Watch website and
+# publishes it to GitHub Pages.
 # Three jobs run one after another: refresh (data) -> build (website) -> deploy (publish).
 # If the build fails, deploy is skipped and the previous website stays online.
 # Times are UTC. Central Time = UTC-6 in winter (UTC-5 in summer), so runs land about an hour
@@ -11,7 +12,12 @@ on:
     - cron: "45 13 * * 1-5"   # weekdays ~7:45 am CT (after 7:30 am CT releases)
     - cron: "0 16 * * 1-5"    # weekdays ~10:00 am CT (catches 9:00 am CT releases)
     - cron: "35 13 * * 4"     # Thursday ~7:35 am CT, right after weekly jobless claims
-  workflow_dispatch: {}       # adds a "Run workflow" button for manual runs
+  workflow_dispatch:          # adds a "Run workflow" button for manual runs
+    inputs:
+      publish:
+        description: "Publish the site at the end (untick for a test run on a branch)"
+        type: boolean
+        default: true
 
 permissions:
   contents: write             # lets the job commit the refreshed data files
@@ -35,37 +41,73 @@ jobs:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
         run: python src/fetchers/wait_for_claims.py 5 60
       - name: Fetch FRED series
+        id: fetch_fred
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
         run: python src/fetchers/fred_fetcher.py
       - name: Fetch Chicago Fed Labor Market Indicators (Tier 3; logs failures, never fails the run)
+        id: fetch_chicagofed
         if: ${{ !cancelled() }}
         run: python src/fetchers/chicagofed_fetcher.py
       # DOL steps run even if an earlier step failed (!cancelled), so one outage doesn't block the rest.
       - name: Fetch DOL national weekly claims (ETA 539)
+        id: dol_national
         if: ${{ !cancelled() }}
         run: python src/fetchers/dol_national.py
       - name: Fetch DOL state files (ar539, ar5159, ar218)
+        id: dol_state
         if: ${{ !cancelled() }}
         run: python src/fetchers/dol_state.py
       - name: Build merged weekly table (adds preliminary news-release weeks)
+        id: dol_recent_weeks
         if: ${{ !cancelled() }}
         run: python src/fetchers/dol_recent_weeks.py
       - name: Calculate claims rates, exhaustion rate and duration
+        id: dol_rates
         if: ${{ !cancelled() }}
         run: python src/transforms/dol_rates.py
       - name: Check DOL data (fails if DOL and FRED claims differ by more than 1%)
+        id: dol_checks
         if: ${{ !cancelled() }}
         run: python src/checks/dol_checks.py
       - name: Release calendar for the website (never fails)
+        id: release_calendar
         if: ${{ !cancelled() }}
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
         run: python src/fetchers/release_calendar.py
       - name: Data-quality checks and series-health summary (fails only if a Tier 1 series is stale or missing)
+        id: data_quality
         if: ${{ !cancelled() }}
         run: python src/checks/data_quality.py
+      # ---- Early-warning model (stage 3e-3). Uses the FROZEN model (data/model/frozen/): nothing is re-fitted here.
+      - name: Tests (live-run archive is create-only; new-inputs rule)
+        id: tests
+        if: ${{ !cancelled() }}
+        run: python -m unittest discover -s tests -v
+      - name: Model inputs (claims history, real-time vintages, Treasury rates, trigger history)
+        id: model_inputs
+        if: ${{ !cancelled() }}
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+        run: |
+          python src/model/build_claims_history.py
+          python src/model/alfred_fetcher.py UNRATE TEMPHELPS GACDFSA066MSFRBPHI GACDISA066MSFRBNY NFCI
+          python src/model/current_fetcher.py
+          python src/model/triggers.py
+      # Runs only when there is a new claims week or unemployment month since the last archived run (otherwise it
+      # says so and stops). Writes a NEW file under data/archive/ and FAILS rather than overwrite an existing one.
+      - name: Early-warning model (live run; archive; colour-change alert, printed while alerts are off)
+        id: model_step
+        if: ${{ !cancelled() && steps.tests.outcome == 'success' && steps.model_inputs.outcome == 'success' }}
+        env:
+          ALERTS_ENABLED: ${{ vars.ALERTS_ENABLED || 'false' }}
+        run: python src/model/live.py --archive
+      - name: Record that the model could not run (the site then says so and keeps the last good values)
+        if: ${{ !cancelled() && (steps.tests.outcome == 'failure' || steps.model_inputs.outcome == 'failure') }}
+        run: python src/model/live.py --record-failure "model inputs could not be refreshed"
       - name: Commit new data (if any)
+        id: commit
         if: ${{ !cancelled() }}         # save whatever succeeded; the run still shows red if a step failed
         run: |
           git config user.name "data-bot"
@@ -73,6 +115,13 @@ jobs:
           git add data/ docs/data_revisions.md
           git diff --cached --quiet || git commit -m "Data refresh $(date -u +%Y-%m-%dT%H:%MZ)"
           git push
+      - name: Alert on a failed refresh (prints the message while alerts are off)
+        if: ${{ failure() }}
+        env:
+          ALERTS_ENABLED: ${{ vars.ALERTS_ENABLED || 'false' }}
+          STEPS_JSON: ${{ toJSON(steps) }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: python src/alerts/alerts.py --refresh-failed
 
   # Build the website from the data just saved. Runs even if a data step failed (the site then shows
   # the stale-data badge), but not if the run was cancelled.
@@ -85,7 +134,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: main                     # the newest commit, including the data-bot's refresh
+          ref: ${{ github.ref_name }}   # the newest commit of this branch (main on schedule), with the data-bot's refresh
       - uses: actions/setup-python@v7
         with:
           python-version: "3.15"
@@ -100,7 +149,8 @@ jobs:
   # Publish. Runs only if the build succeeded, so a broken build never replaces the live site.
   deploy:
     needs: build
-    if: ${{ !cancelled() && needs.build.result == 'success' }}
+    # A manual run with "publish" unticked (a test run on a branch) stops before this.
+    if: ${{ !cancelled() && needs.build.result == 'success' && (github.event_name != 'workflow_dispatch' || inputs.publish) }}
     runs-on: ubuntu-latest
     permissions:
       pages: write                      # allowed to publish to GitHub Pages
