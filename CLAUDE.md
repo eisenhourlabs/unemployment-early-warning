@@ -214,12 +214,15 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   score 1.77%, fan baselines to 4 decimals); Overview score panel (colour with label + icon, drivers, 2-year weekly line
   with colour strip), unemployment-rate fan + FOMC marker + nowcast note + what-if toggle (fans only in today's view);
   new Outlook page (history since 1980, horizons, triggers, forecasts, track record, methodology). Browser check
-  extended (Phase 3 section): 733 checks pass on all 7 pages. docs/model.md 7.1. Waiting for Troy's local review.
-  Until 3e-3 the cloud does not run live.py: after a merge the score would show "not updated since" once 9 days old.
+  extended (Phase 3 section): 733 checks pass on all 7 pages. docs/model.md 7.1.
+- 2026-11-08: Stage 3e-1 approved by Troy; phase3a (all Phase 3 work so far) fast-forwarded into main and pushed;
+  "Publish site" run 42526612819 green; Overview and Outlook live (Green, 2%). Until 3e-3 the cloud does not run
+  live.py, so the score shows "not updated since Nov 8" once it is more than 9 days old (from about Nov 18): run
+  live.py locally and push, or finish 3e-3 first.
 
 ## Next steps, in order
 Setup (steps 1-4), Phase 1, Phase 2 and the Phase 2 review fixes are done and live.
-1. docs/phase3e_design.md is APPROVED (decisions at its end). 3e-1 is built (awaiting review); then 3e-2, then 3e-3,
+1. docs/phase3e_design.md is APPROVED (decisions at its end). 3e-1 is done and live; next 3e-2, then 3e-3,
    each reviewed locally before merging to main and publishing. Switch on the Actions pull-request setting in 3e-3.
    Push phase3a / merge to main only when he says so.
 2. Stage 3e per docs/phase3_plan.md. Stage 3e must also: show trigger signal colors for the panel (yield curve
