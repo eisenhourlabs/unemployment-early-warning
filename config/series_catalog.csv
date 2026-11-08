@@ -50,3 +50,4 @@ NYFED_HHDC,Transition into serious delinquency,NY Fed,nyfed_excel,quarterly,5,le
 PSAVERT,Personal saving rate,BEA,fred,monthly,5,leading,credit_stress,leading,,public,,,future
 DSPIC96,Real disposable personal income,BEA,fred,monthly,5,coincident,credit_stress,coincident,,public,,,future
 DRTSCLCC,Net % banks tightening card standards,Federal Reserve SLOOS,fred,quarterly,5,leading,credit_stress,2-4 qtrs,,public,,,future
+UNRATEMD,"FOMC median projection, unemployment rate (Q4 average)",Federal Reserve Board (FOMC Summary of Economic Projections),fred,annual,4,benchmark,overview,,,reference-only,2015-01-01,"Median of FOMC participants' projections for the Q4-average unemployment rate, updated with each SEP (four a year). Shown as a marker on the unemployment-rate chart and in the Outlook forecast table, with its release date; not offered as a download (Phase 3e design brief)",active

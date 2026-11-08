@@ -36,7 +36,9 @@ def reference_saturday(month: pd.Timestamp) -> pd.Timestamp:
     return d12 + pd.Timedelta(days=(5 - d12.weekday()) % 7)
 
 
-def main() -> None:
+def release_table() -> pd.DataFrame:
+    """One row per published month since 1968: the prior published value, the first release, and the claims
+    changes between reference weeks. Used here and by freeze_model.py (the frozen nowcast coefficients)."""
     a = _alfred("UNRATE")
     first = a.sort_values("realtime_start").groupby("date").first()           # first release of each month
     first = first[first.index >= "1968-01-01"]
@@ -61,7 +63,14 @@ def main() -> None:
                      "reference_week": sat_m})
     df = pd.DataFrame(rows).set_index("month")
     df["change"] = df.first_release - df.prior_value
-    X = ["months_since", "d_log_initial", "d_log_continuing"]
+    return df
+
+
+X = ["months_since", "d_log_initial", "d_log_continuing"]
+
+
+def main() -> None:
+    df = release_table()
     preds = []
     for m in df.index[df.index >= "2000-01-01"]:
         train = df[(df.released < df.loc[m, "released"]) & (df.index < m)]

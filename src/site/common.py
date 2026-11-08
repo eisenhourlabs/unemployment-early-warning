@@ -35,6 +35,13 @@ FAINT = "rgba(42, 120, 214, 0.35)"   # the accent, see-through: weekly values be
 GREYS = ["#6d6c67", "#93928c", "#b9b8b2"]   # comparison years: most recent (darkest) to oldest (lightest)
 RECESSION_FILL = "rgba(120, 120, 120, 0.16)"
 AXIS = "#c8c7c2"
+# Phase 3 risk signal: the only place green / amber / red appear. Always shown with a text label and an icon,
+# never colour alone. site.js and style.css hold the matching dark-mode versions.
+SIGNAL = {"green": "#1f7a3a", "amber": "#b76e00", "red": "#c0392b"}
+SIGNAL_ICON = {"green": "●", "amber": "▲", "red": "■"}
+SIGNAL_LABEL = {"green": "Green", "amber": "Amber", "red": "Red"}
+MODEL = ROOT / "data" / "model"
+MODEL_MAX_AGE_DAYS = 9          # a weekly run older than this shows a "not updated" note
 
 
 # ===========================================================================
@@ -61,6 +68,61 @@ def claims_weekly() -> pd.DataFrame:
     for col in ["ic_rate_sa", "ic_rate_sa_4wk"]:
         df[col + "_per10k"] = df[col] * 100
     return df
+
+
+def model_output(built) -> dict:
+    """The live model result set (data/model/live_latest.json, from src/model/live.py), with a status note.
+
+    Missing or stale output never breaks the build: {"live": None, "note": ...} when the file is missing or
+    unreadable; the last good values plus a note when it is older than MODEL_MAX_AGE_DAYS."""
+    import json as _json
+    path = MODEL / "live_latest.json"
+    try:
+        live = _json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {"live": None, "note": "Early-warning score not available: the model output is missing."}
+    age = (pd.Timestamp(built).tz_localize(None).normalize() - pd.Timestamp(live["asof"])).days
+    note = (f"Score not updated since {fmt_date(live['asof'])}: the weekly model run has not completed since then."
+            if age > MODEL_MAX_AGE_DAYS else "")
+    return {"live": live, "note": note}
+
+
+def model_csv(name: str, date_col: str) -> pd.DataFrame | None:
+    """A model display file (score_display_weekly.csv etc.), or None if missing."""
+    path = MODEL / name
+    return pd.read_csv(path, parse_dates=[date_col]) if path.exists() else None
+
+
+def asof_line(live: dict) -> str:
+    """'As of Nov 8, 2026: initial claims through week ending Oct 31, 2026; unemployment rate through Oct 2026'"""
+    i = live["inputs"]
+    return (f"As of {fmt_date(live['asof'])}: claims through week ending {fmt_date(i['initial_claims_week'])} "
+            f"(continuing claims {fmt_date(i['continuing_claims_week'])}); unemployment rate through "
+            f"{fmt_month(i['unemployment_month'])}")
+
+
+def signal(colour: str) -> dict:
+    """Label, icon and CSS class for a colour (green / amber / red)."""
+    return {"colour": colour, "label": SIGNAL_LABEL.get(colour, "—"), "icon": SIGNAL_ICON.get(colour, "")}
+
+
+def add_colour_band(fig: go.Figure, dates_: pd.Series, colours: pd.Series, end) -> None:
+    """A thin strip under the plot showing the displayed colour over time (one rectangle per run of a colour).
+    The y-axis is moved up (domain 0.1-1) so the strip never covers the line."""
+    runs, start, prev = [], None, None
+    for d, c in zip(dates_, colours):
+        if c != prev:
+            if prev is not None:
+                runs.append((start, d, prev))
+            start, prev = d, c
+    if prev is not None:
+        runs.append((start, pd.Timestamp(end), prev))
+    for a, b, c in runs:
+        fig.add_shape(type="rect", xref="x", yref="paper", x0=pd.Timestamp(a).strftime("%Y-%m-%d"),
+                      x1=pd.Timestamp(b).strftime("%Y-%m-%d"), y0=0, y1=0.055, line_width=0,
+                      fillcolor=SIGNAL[c], layer="above", name=f"sig-{c}")
+    fig.update_yaxes(domain=[0.1, 1])
+    fig.update_xaxes(anchor="free", position=0)   # date labels stay below the strip, not under it
 
 
 def is_preliminary(source) -> bool:
@@ -273,7 +335,12 @@ def card(id, title, why, footer, fig, columns, rows, wide=False, fixed=None, zer
         raise RuntimeError(f"Chart {id} has no data")   # something upstream broke: stop the build
     return {"id": id, "title": title, "why": why, "footer": footer, "wide": wide, "fixed": fixed, "zero": zero,
             "downloadable": downloadable,
-            "figure": json.loads(fig.to_json()), "table": {"columns": columns, "rows": rows}}
+            "figure": json.loads(fig.to_json()), "table": {"columns": columns, "rows": rows},
+            # Phase 3 extras (set by the page module when a chart has forecast elements):
+            #   ahead        last date the forecast reaches; in today's view the x-axis runs to it
+            #   whatif_ahead last date of the what-if paths (x-axis end while the what-if toggle is on)
+            #   whatif       True shows the "Show what-if paths" toggle; notes: extra lines under the chart
+            "ahead": None, "whatif_ahead": None, "whatif": False, "notes": [], "fixed_note": None}
 
 
 def split_preliminary(d: pd.DataFrame, source_col: str):

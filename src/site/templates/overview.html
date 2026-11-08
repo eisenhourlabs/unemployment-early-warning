@@ -4,21 +4,53 @@
 {% from "_macros.html" import chart_card %}
 
 {% block content %}
-<div class="grid top-row">
-  <section class="card score-placeholder" aria-label="Early-warning score">
-    <h2>Early-warning score</h2>
-    <p>The green / amber / red layoff-risk score and the 3–6 and 12-month forecast arrive in Phase 3,
-       once thresholds are backtested on 2001, 2008–09 and 2020.</p>
-  </section>
-  <section class="card changes" aria-labelledby="changes-title">
-    <h2 id="changes-title">What changed this week</h2>
-    <ul>
-      {%- for s in sentences %}
-      <li>{{ s }}</li>
-      {%- endfor %}
-    </ul>
-  </section>
-</div>
+<section class="card score-panel" aria-labelledby="score-title">
+  <div class="score-head">
+    <h2 id="score-title">Early-warning score</h2>
+    {%- if score.available %}<p class="score-asof">{{ score.asof }}</p>{% endif %}
+  </div>
+  {%- if score.note %}
+  <p class="model-note" role="status">⚠ {{ score.note }}</p>
+  {%- endif %}
+  {%- if score.available %}
+  <div class="score-body">
+    <div class="score-main">
+      <p class="score-line">
+        <span class="signal signal-{{ score.signal.colour }}"><span aria-hidden="true">{{ score.signal.icon }}</span> {{ score.signal.label }}</span>
+        <span class="score-value" title="{{ score.tooltip }}">{{ score.value }}</span>
+        <span class="score-unit">{% if score.words %}chance of a new deterioration in the next 6 months{% else %}chance in the next 6 months{% endif %}</span>
+      </p>
+      <p class="score-change">{{ score.change }}</p>
+      <p class="why">{{ score.definition }}</p>
+      <h3>What's moving it</h3>
+      <ul class="drivers">
+        {%- for d in score.drivers %}
+        <li><span class="arrow" aria-hidden="true">{{ d.arrow }}</span> {{ d.text }}</li>
+        {%- endfor %}
+      </ul>
+      <p class="score-link"><a href="outlook.html">Details, other horizons and track record → Outlook</a></p>
+    </div>
+    {%- if charts.score %}
+    <div class="score-chart">
+      <h3>{{ charts.score.title }}</h3>
+      <div class="chart chart-small" id="chart-{{ charts.score.id }}" role="img" aria-label="{{ charts.score.title }} chart"></div>
+      <p class="chart-footer">Dotted: weekly scores re-computed for each past Thursday with only the data known that
+        day and that year's model (backtest). Solid: live runs. Strip: the colour shown, with its rule (amber from 20%
+        until below 15%; red from 50% until below 40%).</p>
+    </div>
+    {%- endif %}
+  </div>
+  {%- endif %}
+</section>
+
+<section class="card changes" aria-labelledby="changes-title">
+  <h2 id="changes-title">What changed this week</h2>
+  <ul>
+    {%- for s in sentences %}
+    <li>{{ s }}</li>
+    {%- endfor %}
+  </ul>
+</section>
 
 <div class="tiles">
   {%- for t in tiles %}
@@ -38,7 +70,7 @@
 <p class="note">Tiles and percentiles use full history whatever the time setting: the share of all past
   observations at or below the latest value.</p>
 
-<div class="grid">
+<div class="grid charts-grid">
   {{ chart_card(charts.unemployment) }}
   {{ chart_card(charts.ic) }}
   {{ chart_card(charts.cc) }}

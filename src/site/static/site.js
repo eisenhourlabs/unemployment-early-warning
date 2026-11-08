@@ -10,7 +10,9 @@
   var data = JSON.parse(document.getElementById("page-data").textContent);
   var charts = data.charts.map(function (c) {
     // fixed: [from, to] for a chart that ignores the time control; zero: y-axis always includes 0
+    // ahead: last date a forecast reaches (Phase 3); whatifAhead: last date of the what-if paths
     return { id: c.id, title: c.title, figure: c.figure, table: c.table, fixed: c.fixed, zero: c.zero,
+             ahead: c.ahead, whatifAhead: c.whatif_ahead, whatif: false,
              el: document.getElementById("chart-" + c.id) };
   });
   var phone = window.matchMedia("(max-width: 759px)");
@@ -20,10 +22,15 @@
   var THEMES = {
     light: { accent: "#2a78d6", faint: "rgba(42,120,214,0.35)", rgb: "42,120,214", bg: "#fcfcfb", text: "#52514e",
              greys: ["#6d6c67", "#93928c", "#b9b8b2"],
-             grid: "#e8e7e3", axis: "#c8c7c2", recession: "rgba(120,120,120,0.16)", hoverBg: "#ffffff", hoverText: "#0b0b0b" },
+             grid: "#e8e7e3", axis: "#c8c7c2", recession: "rgba(120,120,120,0.16)", hoverBg: "#ffffff", hoverText: "#0b0b0b",
+             // Phase 3: the risk signal (colour strip) and the event shading on the score history
+             sig: { green: "#1f7a3a", amber: "#b76e00", red: "#c0392b" },
+             events: { recession: "rgba(42,120,214,0.13)", scare: "rgba(214,120,42,0.16)" } },
     dark:  { accent: "#3987e5", faint: "rgba(57,135,229,0.40)", rgb: "57,135,229", bg: "#1a1a19", text: "#c3c2b7",
              greys: ["#b5b4ad", "#8a8983", "#62615c"],
-             grid: "#2c2c29", axis: "#4a4a45", recession: "rgba(200,200,200,0.10)", hoverBg: "#262624", hoverText: "#f0efec" }
+             grid: "#2c2c29", axis: "#4a4a45", recession: "rgba(200,200,200,0.10)", hoverBg: "#262624", hoverText: "#f0efec",
+             sig: { green: "#4cb46a", amber: "#e8a33d", red: "#ef6b5e" },
+             events: { recession: "rgba(90,160,240,0.18)", scare: "rgba(240,160,90,0.18)" } }
   };
   function themeName() { return document.documentElement.dataset.theme === "dark" ? "dark" : "light"; }
 
@@ -37,7 +44,10 @@
                 : role.indexOf("grey") === 0 ? t.greys[+role.slice(4)] : t.accent;
       if (tr.line && role !== "fan-edge" && role !== "fan") tr.line.color = color;
       if (tr.marker) tr.marker.color = color;
+      if (tr.error_y) tr.error_y.color = color;
       if (role === "fan") tr.fillcolor = "rgba(" + t.rgb + "," + tr.meta.alpha + ")";
+      if (role === "label") tr.textfont = Object.assign({}, tr.textfont, { color: t.text });
+      if (tr.fillpattern) tr.fillpattern = Object.assign({}, tr.fillpattern, { fgcolor: t.greys[1] });
     });
     var L = f.layout;
     L.paper_bgcolor = t.bg; L.plot_bgcolor = t.bg;
@@ -46,7 +56,10 @@
     L.yaxis = Object.assign({}, L.yaxis, { gridcolor: t.grid });
     L.hoverlabel = { bgcolor: t.hoverBg, bordercolor: t.axis, font: { color: t.hoverText } };
     (L.shapes || []).forEach(function (s) {
+      var name = s.name || "";
       if (s.type === "line") s.line = Object.assign({}, s.line, { color: t.axis });   // zero lines
+      else if (name.indexOf("sig-") === 0) s.fillcolor = t.sig[name.slice(4)];         // colour strip (risk signal)
+      else if (name.indexOf("event-") === 0) s.fillcolor = t.events[name.slice(6)];    // event shading
       else s.fillcolor = t.recession;                                                 // recession bands
     });
     (L.annotations || []).forEach(function (a) { a.font = Object.assign({}, a.font, { color: t.text }); });
@@ -74,7 +87,7 @@
     return first;
   }
   // The [from, to] window for one chart under the page setting.
-  function windowFor(chart) {
+  function baseWindow(chart) {
     if (chart.fixed) return chart.fixed;      // e.g. the seasonal chart: always Jan to Dec
     var k = current.key, today = data.today;
     var years = { "1y": 1, "2y": 2, "5y": 5, "10y": 10, "20y": 20 }[k];
@@ -84,12 +97,34 @@
     var view = data.recessionViews.filter(function (v) { return v.key === k; })[0];
     return view ? [view.start, view.end] : [yearsBefore(today, 5), today];
   }
+  // "Today's view" = the window reaches today. Only then are forecast elements (fans, nowcast, FOMC marker,
+  // what-if paths) shown, and the x-axis runs on to where the forecast (or the what-if paths) end.
+  function showsToday(w) { return w[1] >= data.today; }
+  function windowFor(chart) {
+    var w = baseWindow(chart);
+    if (chart.fixed || !chart.ahead || !showsToday(w)) return w;
+    var end = chart.whatif && chart.whatifAhead > chart.ahead ? chart.whatifAhead : chart.ahead;
+    return [w[0], end > w[1] ? end : w[1]];
+  }
+  // Which traces are visible in a window: forecast elements (meta.today) only in today's view; what-if paths
+  // (meta.whatif) only while the toggle is on. A line the reader hid by clicking the legend stays hidden.
+  function visibility(chart, w) {
+    var today = showsToday(w);
+    return chart.el.data.map(function (tr) {
+      var m = tr.meta || {};
+      if (m.whatif) return today && chart.whatif;
+      if (m.today) return today ? (tr.visible === "legendonly" ? "legendonly" : true) : false;
+      return tr.visible === undefined ? true : tr.visible;
+    });
+  }
 
   // Lowest and highest value of the visible lines between two dates, with a little padding.
-  function yRange(gd, x0, x1, zero) {
+  // vis: the visibility each trace is about to get (defaults to its current one).
+  function yRange(gd, x0, x1, zero, vis) {
     var lo = Infinity, hi = -Infinity;
-    gd.data.forEach(function (tr) {
-      if (tr.visible === false || tr.visible === "legendonly" || !tr.y) return;
+    gd.data.forEach(function (tr, ti) {
+      var v = vis ? vis[ti] : tr.visible;
+      if (v === false || v === "legendonly" || !tr.y || (tr.meta && tr.meta.noscale)) return;
       for (var i = 0; i < tr.x.length; i++) {
         var x = String(tr.x[i]).slice(0, 10), y = tr.y[i];
         var always = tr.meta && tr.meta.ref;   // reference lines (pre-recession averages) always stay in view
@@ -126,13 +161,19 @@
   }
 
   var busy = false;   // true while this script changes a chart, so our own changes don't trigger the listeners
+  function hasTodayTraces(chart) {
+    return chart.el.data.some(function (tr) { return tr.meta && (tr.meta.today || tr.meta.whatif); });
+  }
   function setView(chart, x0, x1) {
-    var gd = chart.el, y = yRange(gd, x0, x1, chart.zero);
+    var gd = chart.el;
+    var vis = hasTodayTraces(chart) ? visibility(chart, [x0, x1]) : null;
+    var y = yRange(gd, x0, x1, chart.zero, vis);
     var update = { "xaxis.range": [x0, x1] };
     if (y) update["yaxis.range"] = y; else update["yaxis.autorange"] = true;
     if (gd.layout.meta && gd.layout.meta.refs) update.annotations = refLabels(gd, y);
     busy = true;
-    return Plotly.relayout(gd, update).then(function () { busy = false; }, function () { busy = false; });
+    var done = function () { busy = false; };
+    return (vis ? Plotly.update(gd, { visible: vis }, update) : Plotly.relayout(gd, update)).then(done, done);
   }
   function applyPageRange() {
     return Promise.all(charts.map(function (c) { var w = windowFor(c); return setView(c, w[0], w[1]); }));
@@ -172,7 +213,7 @@
         customForm.hidden = !customForm.hidden;
         b.setAttribute("aria-expanded", String(!customForm.hidden));
         if (!customForm.hidden && !customForm.elements.from.value) {
-          var w = windowFor(charts[0]);
+          var w = baseWindow(charts.filter(function (c) { return !c.fixed; })[0] || charts[0]);
           customForm.elements.from.value = w[0];
           customForm.elements.to.value = w[1];
         }
@@ -199,14 +240,7 @@
     f.layout.xaxis.range = w;
     var config = { responsive: true, displayModeBar: false, doubleClick: false, displaylogo: false };
     return Plotly.newPlot(chart.el, f.data, f.layout, config).then(function (gd) {
-      var y = yRange(gd, w[0], w[1], chart.zero);
-      if (y) {
-        var first = { "yaxis.range": y };
-        if (gd.layout.meta && gd.layout.meta.refs) first.annotations = refLabels(gd, y);
-        busy = true;
-        return Plotly.relayout(gd, first).then(function () { busy = false; return gd; });
-      }
-      return gd;
+      return setView(chart, w[0], w[1]).then(function () { return gd; });   // y-axis, visibility, labels
     }).then(function (gd) {
       // The reader zoomed one chart by dragging: rescale its y-axis to the new dates.
       gd.on("plotly_relayout", function (ev) {
@@ -313,6 +347,17 @@
       downloadPng(byId(t.dataset.png));
     }
   });
+  // "Show what-if paths (not a forecast)": shows or hides the stress paths of one chart. They only appear in
+  // today's view; while they show, the x-axis runs on to where they end.
+  document.addEventListener("change", function (e) {
+    var box = e.target.closest("input[data-whatif]");
+    if (!box) return;
+    var chart = byId(box.dataset.whatif);
+    chart.whatif = box.checked;
+    var w = windowFor(chart);
+    setView(chart, w[0], w[1]);
+  });
+
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape") document.querySelectorAll(".menu-list").forEach(function (m) { m.hidden = true; });
   });
@@ -321,5 +366,10 @@
   readUrl();
   markButtons();
   markToggle();
+  // A browser may restore a ticked what-if box after a reload: start from what the box shows.
+  document.querySelectorAll("input[data-whatif]").forEach(function (b) {
+    var c = byId(b.dataset.whatif);
+    if (c) c.whatif = b.checked;
+  });
   Promise.all(charts.map(draw)).then(function () { document.body.dataset.ready = "true"; });
 })();

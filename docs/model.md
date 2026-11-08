@@ -1190,3 +1190,35 @@ so the FOMC's flat path is a reasonable reminder that the gap may be our downwar
   | Range | ±0.1 | ±0.15 | ±0.2 | ±0.25 | ±0.3 |
   | --- | --- | --- | --- | --- | --- |
   | Coverage | 49% | 69% | 82% | 90% | 93% |
+
+## 7. Stage 3e: the model on the site
+
+### 7.1 Stage 3e-1: frozen model, live run, Overview and Outlook
+
+**Frozen model** (`src/model/freeze_model.py` → `data/model/frozen/model_<year>.json`). Re-fits exactly what the backtest
+fitted in January of the model year, with only what was known on 1 January:
+- score: 3, 6 and 12-month final models (standardizing mean / sd, weights ≥ 0, intercept, penalty);
+- fans: baselines for the horizons shown (UR 3 / 6 / 12, CC 13 / 26 weeks) with their CV residuals, and every past event
+  path (2020 excluded);
+- stress paths (#9, #12) for all three targets; nowcast coefficients (all releases before 1 January, 2020 excluded);
+- the colour and display rules and the 2000-on base rates (7.5 / 15.3 / 30.4%).
+
+**Live run** (`src/model/live.py [date]`): one result set as of the run date (`data/model/live_latest.json`), plus
+`score_display_weekly.csv` (weekly backtest + live, with the hysteresis colour) and `score_display_monthly.csv`
+(1980 on). Nothing is re-estimated.
+
+**Checks against stage 3d / Part 0 (as of 8 November 2026):**
+
+| Item | Part 0 (forecast.py --live) | live.py |
+| --- | --- | --- |
+| Score 3 / 6 / 12 months | 0.37% / 1.77% / 31.9% | identical |
+| UR fan baseline 3 / 6 / 12 | 3.957 / 3.843 / 3.596 | identical (4 decimals) |
+| UR 3 / 6 / 12 median (80% band) | 3.94 (3.70–4.20) / 3.84 (3.50–4.14) / 3.67 (3.16–4.69) | 3.94 (3.70–4.20) / 3.83 (3.52–4.14) / 3.67 (3.16–4.76) |
+| CC 13 / 26 median | 1.07 / 1.04 | 1.07 / 1.05 |
+| Our Q4 2026 median vs. FOMC 4.1% | 4.05 | 4.05 |
+
+The fan differences are simulation noise: the UR 12-month 90th percentile ranges 4.68–4.79 across 12 seeds.
+
+**Today (8 November 2026):** 6-month score 2% (1.77%), green, −0.6 pt vs. last week. Drivers: new claims near their
+52-week low (down), strong factory surveys (down), temp help growing only 1.4% over six months (up). All Layer 1 triggers
+green. Nowcast for November waits for the reference-week claims (after 26 November).

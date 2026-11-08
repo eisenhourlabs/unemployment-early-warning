@@ -5,9 +5,15 @@
   <h2 id="{{ c.id }}-title">{{ c.title }}</h2>
   <p class="why">{{ c.why }}</p>
   {%- if c.fixed %}
-  <p class="fixed-note">Fixed view: by week of year, whatever the time setting.</p>
+  <p class="fixed-note">{{ c.fixed_note or "Fixed view: by week of year, whatever the time setting." }}</p>
+  {%- endif %}
+  {%- if c.whatif %}
+  <label class="whatif-toggle"><input type="checkbox" data-whatif="{{ c.id }}"> Show what-if paths (not a forecast)</label>
   {%- endif %}
   <div class="chart" id="chart-{{ c.id }}" role="img" aria-label="{{ c.title }} chart"></div>
+  {%- for n in c.notes %}
+  <p class="chart-note">{{ n }}</p>
+  {%- endfor %}
   <p class="chart-footer">{{ c.footer }}</p>
   {%- if c.downloadable %}
   <div class="card-actions">

@@ -110,7 +110,8 @@ def excluded() -> list[dict]:
     """Active catalog rows that are never offered for download, with the reason."""
     reasons = {"citation-required": "copyrighted; charted with its required citation but not redistributed",
                "check-terms": "terms of use not yet confirmed",
-               "restricted": "licence does not allow redistribution"}
+               "restricted": "licence does not allow redistribution",
+               "reference-only": "a published forecast, shown only as a comparison marker on the charts"}
     return [{"name": r["name"], "id": r["series_id"], "reason": reasons.get(r["license"], r["license"])}
             for r in catalog().values() if r["status"] == "active" and r["license"] != "public"]
 

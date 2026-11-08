@@ -10,7 +10,9 @@ Edge without a window (Playwright drives the browser), and checks on each page:
      page address; a shared link opens the same range;
   4. the CSV and image downloads work;
   5. at phone width (400 px) nothing is wider than the screen and charts sit in one column.
-Plus, on the first page: custom dates and dark mode.
+Plus, on the first page: custom dates and dark mode. Phase 3 (Overview and Outlook): every colour has its text label
+and icon; forecast elements (fans, nowcast, FOMC marker) show only when the time range includes today; the what-if
+toggle shows and hides the stress paths.
 Screenshots (desktop and phone, per page) are saved to the folder given (default: site_check/ in your
 temp folder).
 
@@ -58,10 +60,11 @@ STATE_JS = """() => [...document.querySelectorAll('.chart')].map(gd => {
   const r = gd.layout.xaxis.range.map(v => String(v).slice(0, 10));
   let lo = Infinity, hi = -Infinity, n = 0, last = '';
   gd.data.forEach(tr => {
-    if (tr.visible === 'legendonly' || !tr.y) return;
+    const m = tr.meta || {};
+    if (tr.visible === 'legendonly' || tr.visible === false || !tr.y || m.noscale) return;
     tr.x.forEach((x, i) => {
       x = String(x).slice(0, 10); const y = tr.y[i];
-      if (y !== null && x > last) last = x;
+      if (y !== null && x > last && !m.forecast) last = x;
       const always = tr.meta && tr.meta.ref;
       if (y === null || (!always && (x < r[0] || x > r[1]))) return;
       n++; lo = Math.min(lo, y); hi = Math.max(hi, y);
@@ -79,11 +82,27 @@ def years_before(d: str, n: int) -> str:
         return date(y - n, m, 28).isoformat()
 
 
+TODAY = None   # the page's "today" (set per page)
+
+
+def view_end(spec, x1, whatif=False):
+    """Where a chart's x-axis should end: charts with a forecast run on to its end in today's view (and to the
+    end of the what-if paths while those are shown), as site.js does."""
+    if not spec.get("ahead") or x1 < TODAY:
+        return x1
+    end = spec["whatif_ahead"] if whatif and spec.get("whatif_ahead", "") > spec["ahead"] else spec["ahead"]
+    return max(end, x1)
+
+
+def first_x(spec):
+    return min(str(tr["x"][0])[:10] for tr in spec["figure"]["data"] if tr.get("x"))
+
+
 def expect_window(state, specs, x0, x1, label):
     """Every chart shows [x0, x1] (fixed-view charts keep their own range) and its y-axis hugs the
     visible data: covers it, includes zero where required, and adds no more than 25% extra."""
     for c, spec in zip(state, specs):
-        want = spec["fixed"] or [x0, x1]
+        want = spec["fixed"] or [x0, view_end(spec, x1)]
         check(c["x"] == want, f"{label}: {c['id']} shows {want[0]} to {want[1]} (got {c['x'][0]} to {c['x'][1]})")
         if c["n"]:
             lo, hi = c["lo"], c["hi"]
@@ -103,8 +122,10 @@ def check_page(browser, url, name, shots_prefix, first_page):
     print(f"\n=== {name} ===\nLoad")
     page.goto(url)
     page.wait_for_selector("body[data-ready=true]", timeout=30000)
+    global TODAY
     pdata = json.loads(page.locator("#page-data").text_content())
     specs, today = pdata["charts"], pdata["today"]
+    TODAY = today
     state = page.evaluate(STATE_JS)
     check(not errors, f"no browser errors {errors[:3] if errors else ''}")
     check(len(state) == len(specs) and len(state) > 0, f"{len(state)} charts drawn")
@@ -113,11 +134,17 @@ def check_page(browser, url, name, shots_prefix, first_page):
         check(c["n"] > 10, f"{c['id']}: {c['n']} data points in view")
         if not spec["fixed"]:
             check(c["last"] == rows[-1][0], f"{c['id']}: last date on chart {c['last']} = last date in data {rows[-1][0]}")
-    expect_window(state, specs, years_before(today, 5), today, "default 5Y")
+    if pdata["defaultRange"] == "max":
+        for c, spec in zip(state, specs):
+            want = spec["fixed"] or [first_x(spec), view_end(spec, today)]
+            check(c["x"] == want, f"default Max: {c['id']} shows {want[0]} to {want[1]} (got {c['x']})")
+    else:
+        expect_window(state, specs, years_before(today, 5), today, "default 5Y")
     page.screenshot(path=str(SHOTS / f"{shots_prefix}_desktop.png"), full_page=True)
 
     print("Drag-zoom and no runaway redraws")
     target = next(s for s in specs if not s["fixed"])["id"]
+    baseline_x0 = next(c for c in state if c["id"] == f"chart-{target}")["x"][0]
     page.locator(f"#chart-{target}").scroll_into_view_if_needed()   # the mouse can only drag what is on screen
     box = page.locator(f"#chart-{target} .nsewdrag").bounding_box()
     page.mouse.move(box["x"] + box["width"] * 0.55, box["y"] + box["height"] / 2)
@@ -126,7 +153,7 @@ def check_page(browser, url, name, shots_prefix, first_page):
     page.mouse.up()
     page.wait_for_timeout(600)
     zoomed = next(c for c in page.evaluate(STATE_JS) if c["id"] == f"chart-{target}")
-    check(zoomed["x"][0] > years_before(today, 5), f"drag-zoom on {target} narrows the dates ({zoomed['x']})")
+    check(zoomed["x"][0] > baseline_x0, f"drag-zoom on {target} narrows the dates ({zoomed['x']})")
     if zoomed["n"]:
         fits = zoomed["y"][0] <= zoomed["lo"] and zoomed["y"][1] >= zoomed["hi"]
         check(fits, f"drag-zoom on {target} rescales the y-axis to the zoomed dates")
@@ -151,7 +178,7 @@ def check_page(browser, url, name, shots_prefix, first_page):
             expect_window(state, specs, years_before(today, years), today, key)
         else:   # Max: each chart from its own first date
             for c, spec in zip(state, specs):
-                want = spec["fixed"] or [spec["figure"]["data"][0]["x"][0], today]
+                want = spec["fixed"] or [first_x(spec), view_end(spec, today)]
                 check(c["x"] == want, f"max: {c['id']} shows {want[0]} to {want[1]} (got {c['x']})")
 
     print("Shared link")
@@ -174,7 +201,7 @@ def check_page(browser, url, name, shots_prefix, first_page):
     check(len(lines) > 10 and dates[0] >= "2007-01-01" and dates[-1] <= "2011-12-31",
           f"CSV visible range ({normal}): {len(lines) - 1} rows, {dates[0]} to {dates[-1]}")
     for spec in specs:
-        if spec["fixed"]:
+        if spec["fixed"] and spec.get("downloadable", True):
             page.click(f"[data-csv-menu='{spec['id']}']")
             with page.expect_download() as dl:
                 page.click(f"[data-csv='{spec['id']}'][data-scope='full']")
@@ -219,7 +246,7 @@ def check_page(browser, url, name, shots_prefix, first_page):
     check(overflow <= 0, f"phone: page is not wider than the screen (overflow {overflow} px)")
     widths = pp.evaluate("[...document.querySelectorAll('.card')].map(c => Math.round(c.getBoundingClientRect().right))")
     check(max(widths) <= 400, f"phone: every card fits within 400 px (rightmost edge {max(widths)} px)")
-    cols = pp.evaluate("getComputedStyle(document.querySelector('main .grid:last-of-type')).gridTemplateColumns")
+    cols = pp.evaluate("getComputedStyle([...document.querySelectorAll('main .grid')].pop()).gridTemplateColumns")
     check(len(cols.split()) == 1, f"phone: charts in one column ({cols})")
     pp.screenshot(path=str(SHOTS / f"{shots_prefix}_phone.png"), full_page=True)
     check(not errors, f"no browser errors at the end {errors[:3] if errors else ''}")
@@ -383,6 +410,93 @@ def check_wording() -> None:
     check(not hits, f"{len(pages)} pages free of 'footprint', state counts and unexplained 'IUI' {hits[:3]}")
 
 
+# For each chart: visibility of its forecast elements (meta.today) and what-if paths (meta.whatif), and its x-range.
+TODAY_JS = """() => [...document.querySelectorAll('.chart')].map(gd => ({id: gd.id,
+  today: gd.data.filter(t => t.meta && t.meta.today && !t.meta.whatif).map(t => t.visible === undefined ? true : t.visible),
+  whatif: gd.data.filter(t => t.meta && t.meta.whatif).map(t => t.visible === undefined ? true : t.visible),
+  x: gd.layout.xaxis.range.map(v => String(v).slice(0, 10))}))"""
+
+
+def check_phase3(browser, base) -> None:
+    """Early-warning score (Overview, Outlook): colour labels, 'as of' lines, forecast elements only in today's view,
+    the what-if toggle, and no blank-value words ('nan', 'None') anywhere on the two pages."""
+    import re
+
+    print("\n=== Phase 3: early-warning score and forecast elements ===")
+    page = browser.new_context(viewport={"width": 1280, "height": 900}).new_page()
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    page.goto(base + "index.html")
+    page.wait_for_selector("body[data-ready=true]")
+    pdata = json.loads(page.locator("#page-data").text_content())
+    ur_spec = next(s for s in pdata["charts"] if s["id"] == "unemployment-rate")
+
+    def labels():
+        return page.eval_on_selector_all(".signal", "els => els.map(e => e.textContent.trim().replace(/\\s+/g, ' '))")
+
+    good = lambda ts: len(ts) >= 1 and all(re.fullmatch(r"[●▲■] (Green|Amber|Red)", t) for t in ts)
+    sig = labels()
+    check(good(sig), f"Overview: the colour shows its text label and icon {sig}")
+    check(page.locator(".score-value").inner_text().strip() != "", "Overview: score value shown")
+    check("As of" in page.locator(".score-asof").inner_text(), "Overview: score panel has its 'As of' line")
+    check(page.locator(".drivers li").count() == 3, f"Overview: 3 drivers listed ({page.locator('.drivers li').count()})")
+    check("early-warning score" in page.locator(".changes").inner_text(), "Overview: 'What changed' has the score sentence")
+
+    def ur_state():
+        return next(c for c in page.evaluate(TODAY_JS) if c["id"] == "chart-unemployment-rate")
+
+    st = ur_state()
+    check(len(st["today"]) >= 4 and all(v is True for v in st["today"]),
+          f"5Y: fan, middle line and FOMC marker shown ({len(st['today'])} elements)")
+    check(st["whatif"] and all(v is False for v in st["whatif"]), "5Y: what-if paths hidden until the box is ticked")
+    check(st["x"][1] == ur_spec["ahead"], f"5Y: unemployment chart runs on to the forecast end {ur_spec['ahead']} (got {st['x'][1]})")
+    for key in ["2008-09", "2001", "2020"]:
+        page.click(f".timecontrol > button[data-range='{key}']")
+        page.wait_for_timeout(300)
+        st = ur_state()
+        check(all(v is False for v in st["today"] + st["whatif"]), f"{key}: forecast elements hidden (history only)")
+    page.click(".timecontrol > button[data-range='custom']")
+    page.fill("#tc-custom input[name=from]", "2015-01-01")
+    page.fill("#tc-custom input[name=to]", "2019-12-31")
+    page.click("#tc-custom button[type=submit]")
+    page.wait_for_timeout(300)
+    check(all(v is False for v in ur_state()["today"]), "custom 2015-2019: forecast elements hidden")
+    page.click(".timecontrol > button[data-range='1y']")
+    page.wait_for_timeout(300)
+    check(all(v is True for v in ur_state()["today"]), "1Y: forecast elements back")
+    page.check("input[data-whatif='unemployment-rate']")
+    page.wait_for_timeout(300)
+    st = ur_state()
+    check(st["whatif"] and all(v is True for v in st["whatif"]), "what-if box ticked: both what-if paths shown")
+    check(st["x"][1] == ur_spec["whatif_ahead"], f"what-if shown: x-axis runs to {ur_spec['whatif_ahead']} (got {st['x'][1]})")
+    page.screenshot(path=str(SHOTS / "overview_whatif.png"), full_page=False,
+                    clip={"x": 0, "y": page.locator("#card-unemployment-rate").bounding_box()["y"], "width": 1280, "height": 620})
+    page.click(".timecontrol > button[data-range='2008-09']")
+    page.wait_for_timeout(300)
+    check(all(v is False for v in ur_state()["whatif"]), "2008-09 with the box ticked: what-if paths still hidden")
+    page.uncheck("input[data-whatif='unemployment-rate']")
+    page.click(".timecontrol > button[data-range='5y']")
+    page.wait_for_timeout(300)
+    check(all(v is False for v in ur_state()["whatif"]), "box unticked: what-if paths hidden again")
+    text = page.inner_text("main")
+    check(not re.search(r"\b(nan|NaN|None|undefined)\b", text), "Overview: no 'nan' / 'None' in the page text")
+
+    page.goto(base + "outlook.html")
+    page.wait_for_selector("body[data-ready=true]")
+    sig = labels()
+    check(good(sig) and len(sig) >= 7, f"Outlook: {len(sig)} colours, each with its text label and icon")
+    panel = page.locator("#trt-title ~ .table-scroll tbody tr:not(.muted)").count()
+    context = page.locator("#trt-title ~ .table-scroll tbody tr.muted").count()
+    check(panel == 5 and context == 2, f"Outlook: 5 panel triggers and 2 context rows ({panel}, {context})")
+    body = page.inner_text("main")
+    for words in ["long lead, often 12+ months", "real-time history only since 2011", "lower confidence",
+                  "not counted in the overall status", "Backtest (tested on history; not live forecasts)"]:
+        check(words in body, f"Outlook: says '{words}'")
+    check(page.locator(".method details").count() >= 8, f"Outlook: {page.locator('.method details').count()} methodology sections")
+    check(not re.search(r"\b(nan|NaN|None|undefined)\b", body), "Outlook: no 'nan' / 'None' in the page text")
+    check(not errors, f"no browser errors {errors[:3] if errors else ''}")
+
+
 def main() -> int:
     if not (SITE / "index.html").exists():
         sys.exit("site/index.html not found: run python src/site/build_site.py first")
@@ -397,6 +511,8 @@ def main() -> int:
         nav.close()
         check(len(links) >= 1, f"top bar links: {links}")
         check_wording()
+        if "outlook.html" in links:
+            check_phase3(browser, base)
         for i, href in enumerate(links):
             if href == "data.html":
                 check_data_page(browser, base + href, base)

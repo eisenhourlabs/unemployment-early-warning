@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+{#- Outlook page (Phase 3): the early-warning score, triggers, forecasts, track record and methodology. -#}
+{% from "_macros.html" import chart_card %}
+
+{% block content %}
+<div class="page-intro">
+  <h1>Outlook: the early-warning score and forecast ranges</h1>
+  <p>What the model says about the next 3 to 12 months, how it got there, and how it has done in testing. Model output,
+    not official statistics or an official forecast.</p>
+</div>
+
+{%- if not available %}
+<section class="card outlook-head"><p class="model-note" role="status">⚠ {{ note }}</p></section>
+{%- else %}
+<section class="card outlook-head" aria-labelledby="head-title">
+  <div class="score-head">
+    <h2 id="head-title">Early-warning score</h2>
+    <p class="score-asof">{{ asof }}</p>
+  </div>
+  {%- if note %}<p class="model-note" role="status">⚠ {{ note }}</p>{% endif %}
+  <p class="score-line">
+    <span class="signal signal-{{ signal.colour }}"><span aria-hidden="true">{{ signal.icon }}</span> {{ signal.label }}</span>
+    <span class="score-value" title="{{ tooltip }}">{{ value }}</span>
+    <span class="score-unit">chance of a new claims breakout or a rise in unemployment within 6 months</span>
+  </p>
+</section>
+
+<div class="grid">
+  {%- for c in charts %}
+  {{ chart_card(c) }}
+  {%- endfor %}
+</div>
+
+<div class="outlook-cards">
+  <section class="card" id="horizons" aria-labelledby="hz-title">
+    <h2 id="hz-title">Other horizons</h2>
+    <p class="why">The same model for windows of 3, 6 and 12 months, beside how often an event has started within such a
+      window since 2000. A longer window always has at least the chance of a shorter one.</p>
+    <div class="table-scroll">
+    <table class="model-table compact">
+      <thead><tr><th>Window</th><th class="num">Chance</th><th class="num">Long-run average</th><th></th></tr></thead>
+      <tbody>
+        {%- for h in horizons %}
+        <tr><td>{{ h.label }}</td><td class="num" title="{{ h.tooltip }}">{{ h.value }}</td><td class="num">{{ h.base }}</td>
+          <td class="muted small">{{ h.comment }}</td></tr>
+        {%- endfor %}
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <section class="card" id="triggers" aria-labelledby="tr-title">
+    <h2 id="tr-title">Warning triggers (Layer 1)</h2>
+    <p class="score-line"><span class="muted">Overall:</span>
+      <span class="signal signal-sm signal-{{ triggers.overall.colour }}"><span aria-hidden="true">{{ triggers.overall.icon }}</span> {{ triggers.overall.label }}</span></p>
+    <p class="why">{{ triggers.rule }} Simple rules, each tested on 1967–2026; the score above weighs the same measures
+      together.</p>
+  </section>
+</div>
+
+<section class="card outlook-section" aria-labelledby="trt-title">
+  <h2 id="trt-title">Trigger detail</h2>
+  <div class="table-scroll">
+  <table class="model-table">
+    <thead><tr><th>#</th><th>Trigger</th><th>Rule</th><th class="num">Value</th><th>Colour</th><th>Last change</th></tr></thead>
+    <tbody>
+      {%- for r in triggers.panel %}
+      <tr><td>{{ r.n }}</td><td>{{ r.name }}{% if r.note %}<span class="block muted">{{ r.note }}</span>{% endif %}</td>
+        <td class="small">{{ r.rule }}</td><td class="num">{{ r.value }}</td>
+        <td><span class="signal signal-sm signal-{{ r.signal.colour }}"><span aria-hidden="true">{{ r.signal.icon }}</span> {{ r.signal.label }}</span></td>
+        <td class="small">{{ r.change }}</td></tr>
+      {%- endfor %}
+      {%- for r in triggers.context %}
+      <tr class="muted"><td>{{ r.n }}</td><td>{{ r.name }}<span class="block">context: not counted in the overall status</span></td>
+        <td class="small">{{ r.rule }}</td><td class="num">{{ r.value }}</td><td>—</td><td class="small"></td></tr>
+      {%- endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p class="chart-footer">* The NFCI is revised after first publication; its values as published at the time exist only
+    from 2011, so earlier tests use revised values. Monthly triggers are judged as of each month's last day with the data
+    published by then; "this week" = today's run.</p>
+</section>
+
+<section class="card outlook-section" aria-labelledby="fc-title">
+  <h2 id="fc-title">Forecasts</h2>
+  <p class="why">Middle value and ranges that held 50% and 80% of outcomes in testing. Shown only for the targets and
+    horizons that passed the test (bands about right and more accurate than assuming no change).</p>
+  <div class="table-scroll">
+  <table class="model-table">
+    <thead><tr><th>Target</th><th>Horizon</th><th class="num">Middle</th><th class="num">50% range</th><th class="num">80% range</th><th>Benchmark</th></tr></thead>
+    <tbody>
+      {%- for r in forecasts %}
+      <tr><td>{{ r.target }}</td><td>{{ r.horizon }}</td><td class="num">{{ r.median }}</td><td class="num">{{ r.b50 }}</td>
+        <td class="num">{{ r.b80 }}</td><td class="small">{{ r.bench }}</td></tr>
+      {%- endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p class="chart-footer">Professional forecasters' consensus has been a better single-number forecast than our middle
+    value; the value of these ranges is their width and their tilt toward downturns. Since 2022 the middle line has run
+    0.1–0.3 pt below what happened. Not shown: initial-claims forecasts (no more accurate than assuming no change in
+    testing) and 52-week continuing-claims ranges (too narrow in testing). FOMC median: FRED series
+    <a href="https://fred.stlouisfed.org/series/UNRATEMD">UNRATEMD</a>, for comparison only.</p>
+</section>
+
+<section class="card outlook-section" id="track" aria-labelledby="tk-title">
+  <h2 id="tk-title">Track record</h2>
+  <h3>Live</h3>
+  <p class="why">What we said 3 and 6 months ago vs. what happened, from the first archived live run. First entries from
+    {{ first_live }}.</p>
+  {%- if backtest %}
+  <h3>Backtest (tested on history; not live forecasts)</h3>
+  <p class="why">Score, {{ backtest.score.months }} months from 2000 to 2026, each scored by a model fitted only on
+    earlier data: Brier score {{ backtest.score.brier }} vs. {{ backtest.score.base }} for always predicting the average
+    (skill {{ backtest.score.skill }}). Amber warnings: {{ backtest.score.amber_real }} followed by an event,
+    {{ backtest.score.amber_false }} false ({{ backtest.false_ambers }}). Red: {{ backtest.score.red_real }} followed by an
+    event, {{ backtest.score.red_false }} false ({{ backtest.false_reds }}).</p>
+  <div class="table-scroll">
+  <table class="model-table">
+    <thead><tr><th>Event</th><th>Start</th><th>Type</th><th class="num">Warning at amber</th><th class="num">Warning at red</th>
+      <th class="num">Fans inside 80% range, 6 months before</th><th class="num">3 months before</th></tr></thead>
+    <tbody>
+      {%- for e in backtest.events %}
+      <tr><td>{{ e.event }}</td><td>{{ e.start }}</td><td>{{ e.kind }}</td><td class="num">{{ e.amber }}</td>
+        <td class="num">{{ e.red }}</td><td class="num">{{ e.fan6 }}</td><td class="num">{{ e.fan3 }}</td></tr>
+      {%- endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p class="chart-footer">Warning = months between the colour first showing and the event's start; "on since" = the colour
+    was already showing from an earlier, unresolved warning. Fans: of the 5 forecasts shown on this site (unemployment rate
+    at 3, 6 and 12 months, continuing claims rate at 13 and 26 weeks), how many outcomes fell inside the 80% range.</p>
+  <div class="table-scroll">
+  <table class="model-table">
+    <thead><tr><th>Forecast, 2000–2026 excluding 2020</th><th class="num">Error vs. no change</th><th class="num">Inside 50% range</th>
+      <th class="num">Inside 80% range</th><th class="num">80%, around events</th></tr></thead>
+    <tbody>
+      {%- for f in backtest.fans %}
+      <tr><td>{{ f.label }}</td><td class="num">{{ f.ratio }}</td><td class="num">{{ f.c50 }}</td><td class="num">{{ f.c80 }}</td>
+        <td class="num">{{ f.c80_event }}</td></tr>
+      {%- endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p class="chart-footer">Error vs. no change: root-mean-square error of our middle value divided by that of assuming no
+    change (below 1 = better). Targets: 50% and 80%. "Around events": forecasts made during an event or just before one
+    started. Every forecast failed in 2020; it is reported separately in the method notes.</p>
+  {%- endif %}
+</section>
+
+<section class="card outlook-section method" id="methodology" aria-labelledby="me-title">
+  <h2 id="me-title">Methodology</h2>
+  <details>
+    <summary>What counts as an event</summary>
+    <p>An event starts in the first month that either of two things happens, measured on today's data:</p>
+    <ul>
+      <li><strong>Claims breakout:</strong> the SA initial claims 4-week average is 25% or more above its lowest value of
+        the previous 52 weeks.</li>
+      <li><strong>Unemployment rise:</strong> the unemployment rate's 3-month average is 0.5 point or more above its
+        lowest 3-month average of the previous 12 months (the shape of the Sahm rule).</li>
+    </ul>
+    <p>It ends once both have been off for 6 months. Since 1967 there have been 15 events: 8 linked to a recession (or an
+      early signal of one), 6 scares, and 2020. Scares count as events: for a lender, a sharp short jump in new claims
+      matters even if no recession follows.</p>
+  </details>
+  <details>
+    <summary>Inputs and their weights (today)</summary>
+    <p>A penalized logistic regression of "an event starts within 6 months" on eight measures, each standardized; weights
+      are constrained to be zero or positive, re-fitted every January (this year's fit: January {{ model_year }}, using only
+      what was known then). A positive contribution pushes the score up.</p>
+    <div class="table-scroll">
+    <table class="model-table">
+      <thead><tr><th>Input</th><th class="num">Today</th><th class="num">Weight</th><th class="num">Contribution (log-odds)</th></tr></thead>
+      <tbody>
+        {%- for r in weights.rows %}
+        <tr><td>{{ r.name }}</td><td class="num">{{ r.value }}</td><td class="num">{{ r.weight }}</td><td class="num">{{ r.contribution }}</td></tr>
+        {%- endfor %}
+        <tr><td>Intercept</td><td></td><td></td><td class="num">{{ weights.intercept }}</td></tr>
+        <tr><td><strong>Total</strong></td><td></td><td></td><td class="num"><strong>{{ weights.total }} → {{ weights.p }}</strong></td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>Inputs with zero weight add nothing beyond the others this year (claims vs. a year ago and continuing claims have
+      never carried weight beside the claims-vs.-low measure).</p>
+  </details>
+  <details>
+    <summary>How the colour is set</summary>
+    <p>Amber starts at {{ (thresholds.amber_in * 100) | round | int }}% and stays until the score falls below
+      {{ (thresholds.amber_out * 100) | round | int }}%; red starts at {{ (thresholds.red_in * 100) | round | int }}% and
+      stays until it falls below {{ (thresholds.red_out * 100) | round | int }}%. The colour is worked out from the stored
+      history, not from this week's number alone, so it does not flicker around a threshold. The amber level was chosen
+      on 1968–1999 data only (about one false amber per real warning) and then tested from 2000.</p>
+  </details>
+  <details>
+    <summary>Why the score was high in 2024–26</summary>
+    <p>From late 2024 through 2025 the score was often elevated without a new event following. Three things drove it:
+      temporary-help employment was falling (the largest push in most months); the Sahm indicator stayed in the 0.3–0.5
+      range after the mid-2024 rise in unemployment; and initial claims had several short jumps above their 52-week low,
+      the largest in October 2024 (Hurricanes Helene and Milton and the Boeing strike) and in June and September 2025.
+      The red reading of June 2025 (85%) combined a 13% rise in claims above their low with a 1.6% six-month fall in
+      temp-help jobs, on top of a Sahm indicator of 0.27 and weak factory surveys; claims eased the next month and the
+      score fell to 25%. In each case the inputs moved the way they have before past downturns, but not far or long
+      enough. A high probability that doesn't materialise is part of how a probability behaves.</p>
+  </details>
+  <details>
+    <summary>The 2022 claims-revision effect</summary>
+    <p>The score is tested on today's claims figures. With claims as they were first published, its 2010–2026 skill falls
+      from +0.20 to −0.23. Almost all of that is 2022: first-published claims rose 36–46% above their March 2022 low,
+      against 2–6% after the Labor Department's 2023 revision of the seasonal factors. In real time the score would have
+      been 77–99% from June 2022 to January 2023, a false red that today's figures hide. Outside 2022–23 the effect is
+      smaller, but first-published claims still add false ambers. Live readings use claims as first published, so treat a
+      sudden claims-driven jump with some caution until the next revisions.</p>
+  </details>
+  <details>
+    <summary>Why scores above 35% are shown in words</summary>
+    <p>Below 35% the score is well calibrated in testing. Above it, it has been too confident: months scored 35–50%
+      (average 41%) were followed by an event 30% of the time, and months scored 50% or more (average 76%) 56% of the
+      time. Each band rests on only 7–9 independent episodes, too few to correct the numbers reliably. So the site shows
+      "Elevated" for 35–50% and "More likely than not" for 50% and above, with the number only in the tooltip.</p>
+  </details>
+  <details>
+    <summary>What the forecast ranges can and can't do</summary>
+    <p>Each range mixes two things: a "quiet times" path fitted on months with no event near, and the paths that followed
+      past events, weighted by the score's probability for the matching window. When risk rises, the upper side of the
+      range stretches toward past downturns, so the fan is lopsided. The ranges held about the right share of outcomes in
+      testing, in downturn months as well as quiet ones, and the middle line beat "no change" by 13–27%. But professional
+      forecasters' consensus has been a better single-number forecast than our middle line (about 15–20% lower error):
+      use the range and the tilt, not the middle line. In 2022–26 unemployment drifted up slowly without an event, and the
+      middle line ran 0.1–0.3 point below what happened; across all late-cycle periods since 2000 there is no such lean,
+      so it was not corrected. The 12-month range is lower confidence.</p>
+  </details>
+  <details>
+    <summary>2020</summary>
+    <p>The pandemic was not foreseeable from these inputs. The score was 51% in December 2019 (a claims bump), 5% in
+      February 2020 and 97% at the end of March. 2020 is left out of every fit, and every forecast range failed that year:
+      past events hold nothing like a 25-fold jump in claims.</p>
+  </details>
+  <details>
+    <summary>Limits</summary>
+    <ul>
+      <li>Since 2000 the test holds two recessions (2001, 2008–09), five scares and 2020: a small sample.</li>
+      <li>Scares count as events, so some "false" warnings in a recession-only sense are real warnings here.</li>
+      <li>Values as first published exist only from about 2011 for temp help, the factory surveys and the NFCI (claims:
+        today's figures throughout); earlier tests use revised values, which flatters them somewhat.</li>
+      <li>Event dates come from final data; a new event is added only after review.</li>
+      <li>The model is frozen between January re-fits: weekly runs plug new data into the same weights.</li>
+    </ul>
+  </details>
+</section>
+{%- endif %}
+{% endblock %}

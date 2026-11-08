@@ -1,6 +1,6 @@
 /* Unemployment Watch styles.
    Colors are defined once as variables ("tokens") for light mode, then swapped for dark mode.
-   Red / amber / green are deliberately absent: they are reserved for the Phase 3 risk signal. */
+   Red / amber / green appear only for the Phase 3 risk signal (--sig-*), always with a text label and an icon. */
 
 :root {
   color-scheme: light;
@@ -16,6 +16,9 @@
   --warn-bg: #fff3d6;          /* stale-data badge: a caution note, not a risk signal */
   --warn-text: #6b4a00;
   --focus: #2a78d6;
+  --sig-green: #1f7a3a;
+  --sig-amber: #b76e00;
+  --sig-red: #c0392b;
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
@@ -31,6 +34,9 @@
   --warn-bg: #3a2e10;
   --warn-text: #f5d58a;
   --focus: #7fb2f0;
+  --sig-green: #4cb46a;
+  --sig-amber: #e8a33d;
+  --sig-red: #ef6b5e;
 }
 
 * { box-sizing: border-box; }
@@ -107,8 +113,7 @@ main { padding-block: 12px 24px; }
   .wide { grid-column: 1 / -1; }
 }
 
-.score-placeholder { border: 2px dashed var(--border); background: transparent; color: var(--text-2); }
-.score-placeholder p { margin: 0.4rem 0 0; font-size: 0.9rem; }
+.changes { margin-bottom: 16px; }
 .changes ul { margin: 0.4rem 0 0; padding-left: 1.1rem; }
 .changes li { margin-bottom: 0.3rem; }
 
@@ -186,3 +191,47 @@ th { color: var(--text-2); font-weight: 600; font-size: 0.8rem; }
 .footer { border-top: 1px solid var(--border); background: var(--surface); color: var(--text-2); font-size: 0.85rem; }
 .footer .wrap { padding-block: 12px 20px; }
 .footer p { margin: 0.4rem 0; }
+
+/* ---- Early-warning signal (Phase 3) ---- */
+.signal { display: inline-flex; align-items: center; gap: 6px; padding: 2px 12px; border-radius: 999px;
+  border: 2px solid currentColor; font-weight: 700; font-size: 0.95rem; white-space: nowrap; }
+.signal-green { color: var(--sig-green); }
+.signal-amber { color: var(--sig-amber); }
+.signal-red { color: var(--sig-red); }
+.signal-sm { padding: 0 8px; font-size: 0.82rem; border-width: 1.5px; }
+.model-note { margin: 6px 0; padding: 6px 10px; border-radius: 8px; background: var(--warn-bg); color: var(--warn-text);
+  font-size: 0.88rem; }
+.score-panel { margin-bottom: 16px; }
+.score-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 16px; }
+.score-asof { margin: 0; color: var(--muted); font-size: 0.82rem; }
+.score-body { display: grid; grid-template-columns: 1fr; gap: 12px 24px; margin-top: 6px; }
+@media (min-width: 760px) { .score-body { grid-template-columns: 5fr 6fr; } }
+.score-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin: 4px 0 0; }
+.score-value { font-size: 2rem; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.score-unit { color: var(--text-2); }
+.score-change { margin: 2px 0 8px; color: var(--text-2); font-size: 0.88rem; font-variant-numeric: tabular-nums; }
+.drivers { list-style: none; margin: 4px 0 8px; padding: 0; font-size: 0.9rem; }
+.drivers li { margin-bottom: 0.25rem; }
+.drivers .arrow { display: inline-block; width: 1.1em; color: var(--text-2); font-weight: 700; }
+.score-link { margin: 0; font-size: 0.9rem; }
+.chart.chart-small { height: 230px; }
+.chart-note { margin: 6px 0 0; color: var(--text-2); font-size: 0.85rem; }
+.whatif-toggle { display: inline-flex; align-items: center; gap: 6px; margin: 0 0 4px; font-size: 0.85rem;
+  color: var(--text-2); cursor: pointer; }
+.whatif-toggle input { width: 16px; height: 16px; }
+
+/* ---- Outlook page ---- */
+.outlook-head { margin-bottom: 16px; }
+.outlook-head .score-line { margin-top: 8px; }
+.outlook-cards { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 16px; }
+@media (min-width: 760px) { .outlook-cards { grid-template-columns: 1fr 1fr; } }
+.outlook-section { margin-bottom: 16px; }
+table.model-table { min-width: 560px; }
+table.model-table.compact { min-width: 0; }
+table.model-table td.num, table.model-table th.num { text-align: right; padding-right: 14px; white-space: nowrap; }
+.small { font-size: 0.82rem; }
+.method details { border-top: 1px solid var(--border); padding: 8px 0; }
+.method details:first-of-type { border-top: 0; }
+.method summary { cursor: pointer; font-weight: 600; }
+.method details p, .method details li { max-width: 85ch; color: var(--text-2); }
+.method details ul { padding-left: 1.1rem; }

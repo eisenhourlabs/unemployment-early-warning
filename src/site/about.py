@@ -15,6 +15,7 @@ LICENCE_TEXT = {
     "citation-required": "Copyright; charted with the required citation, not offered for download",
     "check-terms": "Terms of use not yet confirmed; not shown or offered for download",
     "restricted": "Licence does not allow republishing; not used",
+    "reference-only": "Public; shown as a reference marker (with its release date) and not offered for download",
 }
 DOL_LINK = "https://oui.doleta.gov/unemploy/claims.asp"
 CHICAGO_LMI_LINK = "https://www.chicagofed.org/research/data/chicago-fed-labor-market-indicators/index"

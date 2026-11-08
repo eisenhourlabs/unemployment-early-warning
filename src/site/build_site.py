@@ -3,7 +3,8 @@ Build the Unemployment Watch website (a folder of plain HTML files) from our dat
 
 What it does, step by step:
   1. Builds each page's content with its own module:
-       overview.py    -> index.html        (tiles, "What changed this week", 3 charts)
+       overview.py    -> index.html        (score panel, tiles, "What changed this week", 3 charts)
+       outlook.py     -> outlook.html      (early-warning score in full: history, triggers, forecasts, method)
        job_losses.py  -> job-losses.html   (7 charts)
        duration.py    -> duration.html     (7 charts)
        leading.py     -> leading.html      (summary table + 8 charts)
@@ -42,6 +43,7 @@ import downloads
 import duration
 import job_losses
 import leading
+import outlook
 import overview
 from common import PROCESSED, ROOT, claims_weekly, fmt_date, fmt_month, fred, is_preliminary
 
@@ -61,7 +63,7 @@ RECESSION_VIEWS = [
 DEFAULT_RANGE = "5y"
 
 # Top-bar links: (key, label, file). An empty file means "coming soon" (shown greyed out).
-NAV = [("overview", "Overview", "index.html"), ("job-losses", "Job Losses", "job-losses.html"),
+NAV = [("overview", "Overview", "index.html"), ("outlook", "Outlook", "outlook.html"), ("job-losses", "Job Losses", "job-losses.html"),
        ("duration", "Duration", "duration.html"), ("leading", "Leading", "leading.html"), ("data", "Data", "data.html"), ("about", "About", "about.html")]
 
 
@@ -121,13 +123,14 @@ def release_calendar() -> list[dict]:
     return sorted(rows, key=lambda x: x["sort"])
 
 
-def page_data(charts: list[dict], built: datetime) -> str:
+def page_data(charts: list[dict], built: datetime, default_range: str = DEFAULT_RANGE) -> str:
     """Everything the browser script (site.js) needs, embedded in the page as JSON."""
     return json.dumps({
         "today": built.astimezone(CENTRAL).strftime("%Y-%m-%d"),
-        "defaultRange": DEFAULT_RANGE,
+        "defaultRange": default_range,
         "recessionViews": RECESSION_VIEWS,
-        "charts": [{k: c[k] for k in ("id", "title", "figure", "table", "fixed", "zero", "downloadable")} for c in charts],
+        "charts": [{k: c.get(k) for k in ("id", "title", "figure", "table", "fixed", "zero", "downloadable", "ahead",
+                                          "whatif_ahead")} for c in charts],
     }, separators=(",", ":"), allow_nan=False)
 
 
@@ -149,6 +152,7 @@ def main() -> None:
 
     # Build every page's content before touching site/, so a failure leaves the old folder alone.
     ov = overview.build(built)
+    ou = outlook.build(built)
     jl = job_losses.build()
     du = duration.build()
     le = leading.build()
@@ -156,6 +160,10 @@ def main() -> None:
         ("overview.html", "index.html",
          {**frame, **ov, "page": "overview", "title": "Overview", "calendar": release_calendar(),
           "page_data": page_data(list(ov["charts"].values()), built)}, len(ov["charts"])),
+        # The Outlook page opens on the full score history (since 1980): time control starts at Max.
+        ("outlook.html", "outlook.html",
+         {**frame, **ou, "page": "outlook", "title": "Outlook", "default_range": "max",
+          "has_charts": bool(ou["charts"]), "page_data": page_data(ou["charts"], built, "max")}, len(ou["charts"])),
         ("charts_page.html", "job-losses.html",
          {**frame, **jl, "page": "job-losses", "title": "Job Losses",
           "heading": "Job losses: how many people are losing jobs",

@@ -69,14 +69,14 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 | `docs/data_revisions.md` | Automatic log of DOL revisions |
 | `docs/dashboard_requirements.md` | What the Phase 2 dashboard must show |
 | `src/alerts/alerts.py` | Optional alerts (off) |
-| `src/model/` | Phase 3 modeling: `build_claims_history.py` (claims table from 1967), `alfred_fetcher.py` (past vintages), `realtime.py` (`as_known_on(series, date)` + Sahm check), `events.py` (event definition and list), `plot_events.py` (review chart), `current_fetcher.py` (long histories of never-revised series), `triggers.py` (8 Layer 1 triggers monthly, real-time), `backtest_triggers.py` (leads, false alarms, adds-warning), `plot_triggers.py` (status chart), `features.py` (score inputs), `score.py` (early-warning score: fit, out-of-sample test, sensitivity runs), `plot_score.py` (score charts), `score_followups.py` (3d Part A: drivers, NSA claims test, calibration, colour stability, 3/12-month scores), `forecast.py` (fans: baseline + event-path mixture, backtest, stress paths), `nowcast.py` (next UR release), `benchmarks.py` (FOMC SEP / SPF comparison), `plot_forecast.py` (forecast charts), `part0.py` (3e Part 0: coherence, live as-of inputs, bias report) |
+| `src/model/` | Phase 3 modeling: `build_claims_history.py` (claims table from 1967), `alfred_fetcher.py` (past vintages), `realtime.py` (`as_known_on(series, date)` + Sahm check), `events.py` (event definition and list), `plot_events.py` (review chart), `current_fetcher.py` (long histories of never-revised series), `triggers.py` (8 Layer 1 triggers monthly, real-time), `backtest_triggers.py` (leads, false alarms, adds-warning), `plot_triggers.py` (status chart), `features.py` (score inputs), `score.py` (early-warning score: fit, out-of-sample test, sensitivity runs), `plot_score.py` (score charts), `score_followups.py` (3d Part A: drivers, NSA claims test, calibration, colour stability, 3/12-month scores), `forecast.py` (fans: baseline + event-path mixture, backtest, stress paths), `nowcast.py` (next UR release), `benchmarks.py` (FOMC SEP / SPF comparison), `plot_forecast.py` (forecast charts), `part0.py` (3e Part 0: coherence, live as-of inputs, bias report), `freeze_model.py` (writes the frozen model each January), `live.py` (one "as of" result set from the frozen model) |
 | `config/model_series.csv`, `config/event_notes.csv`, `config/triggers.csv` | Modeling series: ALFRED / first-release / current vintage, release lag; Troy's event rulings and notes; Layer 1 trigger thresholds |
-| `data/model/` | Modeling data: `claims_weekly.csv`, `alfred/` (vintages + coverage), `current/` (GS10, TB3MS, T10Y3MM full history), `events.csv`, `event_flags_monthly.csv`, `claims_leg_weekly.csv`, `triggers_monthly.csv`, `trigger_episodes.csv`, `trigger_leads.csv`, `trigger_summary.csv`, `status_comparison.csv`, `features_monthly.csv`, `score_*.csv`, `forecast_*.csv`, `stress_paths.csv`, `nowcast.csv`, `benchmark_summary.csv` |
+| `data/model/` | Modeling data: `claims_weekly.csv`, `alfred/` (vintages + coverage), `current/` (GS10, TB3MS, T10Y3MM full history), `events.csv`, `event_flags_monthly.csv`, `claims_leg_weekly.csv`, `triggers_monthly.csv`, `trigger_episodes.csv`, `trigger_leads.csv`, `trigger_summary.csv`, `status_comparison.csv`, `features_monthly.csv`, `score_*.csv`, `forecast_*.csv`, `stress_paths.csv`, `nowcast.csv`, `benchmark_summary.csv`, `frozen/model_<year>.json` (frozen model), `live_latest.json` + `score_display_weekly.csv` / `score_display_monthly.csv` (what the site reads) |
 | `docs/model.md`, `reports/` | Phase 3 method and results (grows each stage); review charts (not on the site) |
 | `src/signals/`, `src/forecast/` | Phase 3: triggers, composite score, forecast fan |
 | `src/site/build_site.py` | Builds the "Unemployment Watch" website (Plotly + Jinja2) into `site/`: shared frame, renders each page |
 | `src/site/common.py` | Shared site pieces: data reading, formats, statistics, recession shading, chart builders |
-| `src/site/overview.py`, `job_losses.py`, `duration.py`, `leading.py` | One module per page: its charts, tiles, tables and text |
+| `src/site/overview.py`, `outlook.py`, `job_losses.py`, `duration.py`, `leading.py` | One module per page: its charts, tiles, tables and text (Outlook = early-warning score in full) |
 | `src/site/about.py` | About page: definitions, sources (from the catalog), updates, revisions, method notes, disclaimer |
 | `src/site/downloads.py` | Data & Downloads page: writes every CSV / XLSX and bundle under `site/data/` (public licences only) |
 | `config/derived_columns.csv` | Descriptions of the columns we calculate in DOL files (used in download Columns sheets) |
@@ -110,6 +110,10 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   `python src\model\plot_score.py`, `python src\model\score_followups.py` (~2 min), `python src\model\forecast.py` (~4 min),
   `python src\model\part0.py prep`, `python src\model\forecast.py --from 1985 --live` (and `--option gap` for the Part 0 test),
   `python src\model\part0.py report`, `python src\model\nowcast.py`, `python src\model\benchmarks.py <path to SPF medianLevel.xlsx>`, `python src\model\plot_forecast.py`
+- Site model output (stage 3e): `python src\model\freeze_model.py` (once a year, after the January re-fit), then
+  `python src\model\live.py` (each refresh; optional date `YYYY-MM-DD`), then build the site.
+- On this PC (6 GB RAM) the browser check can run out of memory in numpy; if so run
+  `$env:OPENBLAS_NUM_THREADS=1; python src\checks\check_site.py`
 
 ## Status (2026-11-07)
 - Phase 0 done: folders, catalog (35 active rows), footprint weights, FRED fetcher (tested only against
@@ -205,9 +209,17 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   date (part0.py prep + forecast.py --live); nowcast +/-0.2 = 82% coverage. Phase 3e design brief drafted:
   docs/phase3e_design.md. Waiting for Troy's approval; no site changes yet.
 
+- 2026-11-08: Stage 3e-1 built locally on phase3a (not pushed, not merged): FOMC median catalog row (UNRATEMD,
+  reference-only); freeze_model.py (data/model/frozen/model_2026.json) and live.py (live_latest.json; matches Part 0:
+  score 1.77%, fan baselines to 4 decimals); Overview score panel (colour with label + icon, drivers, 2-year weekly line
+  with colour strip), unemployment-rate fan + FOMC marker + nowcast note + what-if toggle (fans only in today's view);
+  new Outlook page (history since 1980, horizons, triggers, forecasts, track record, methodology). Browser check
+  extended (Phase 3 section): 733 checks pass on all 7 pages. docs/model.md 7.1. Waiting for Troy's local review.
+  Until 3e-3 the cloud does not run live.py: after a merge the score would show "not updated since" once 9 days old.
+
 ## Next steps, in order
 Setup (steps 1-4), Phase 1, Phase 2 and the Phase 2 review fixes are done and live.
-1. docs/phase3e_design.md is APPROVED (decisions at its end). Build 3e-1, then 3e-2, then 3e-3 as proposed there,
+1. docs/phase3e_design.md is APPROVED (decisions at its end). 3e-1 is built (awaiting review); then 3e-2, then 3e-3,
    each reviewed locally before merging to main and publishing. Switch on the Actions pull-request setting in 3e-3.
    Push phase3a / merge to main only when he says so.
 2. Stage 3e per docs/phase3_plan.md. Stage 3e must also: show trigger signal colors for the panel (yield curve
