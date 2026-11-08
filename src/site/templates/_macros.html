@@ -1,7 +1,7 @@
 {#- Pieces shared by several pages. Import with:  {% from "_macros.html" import chart_card %} -#}
 
 {% macro chart_card(c) -%}
-<section class="card chart-card{% if c.wide %} wide{% endif %}" aria-labelledby="{{ c.id }}-title">
+<section class="card chart-card{% if c.wide %} wide{% endif %}" id="card-{{ c.id }}" aria-labelledby="{{ c.id }}-title">
   <h2 id="{{ c.id }}-title">{{ c.title }}</h2>
   <p class="why">{{ c.why }}</p>
   {%- if c.fixed %}
@@ -9,6 +9,7 @@
   {%- endif %}
   <div class="chart" id="chart-{{ c.id }}" role="img" aria-label="{{ c.title }} chart"></div>
   <p class="chart-footer">{{ c.footer }}</p>
+  {%- if c.downloadable %}
   <div class="card-actions">
     <div class="menu">
       <button type="button" class="btn" data-csv-menu="{{ c.id }}" aria-expanded="false">Download CSV ▾</button>
@@ -23,5 +24,8 @@
     </div>
     <button type="button" class="btn" data-png="{{ c.id }}">Download image</button>
   </div>
+  {%- else %}
+  <p class="chart-footer">Not available for download (licensed data).</p>
+  {%- endif %}
 </section>
 {%- endmacro %}

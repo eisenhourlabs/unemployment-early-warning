@@ -139,6 +139,13 @@ main { padding-block: 12px 24px; }
   padding: 8px 12px; cursor: pointer; }
 .menu-list button:hover { background: var(--chip); }
 
+/* ---- Summary table (Leading page) ---- */
+.summary { margin-bottom: 16px; }
+.summary .units { display: block; font-size: 0.78rem; }
+.summary td.num { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.summary .arrow { color: var(--text-2); }
+.summary table { min-width: 640px; }
+
 /* ---- Release calendar ---- */
 .calendar-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
 .table-scroll { overflow-x: auto; }

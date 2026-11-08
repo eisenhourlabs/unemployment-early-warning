@@ -138,7 +138,11 @@ def check_page(browser, url, name, shots_prefix, first_page):
     page.screenshot(path=str(SHOTS / f"{shots_prefix}_2008.png"), full_page=True)
 
     print("Downloads")
-    normal = next(s for s in specs if not s["fixed"])["id"]
+    for spec in specs:   # licensed charts must not offer any download
+        if not spec.get("downloadable", True):
+            n_buttons = page.locator(f"[data-csv-menu='{spec['id']}'], [data-png='{spec['id']}']").count()
+            check(n_buttons == 0, f"{spec['id']}: no download buttons (licensed data)")
+    normal = next(s for s in specs if not s["fixed"] and s.get("downloadable", True))["id"]
     page.click(f"[data-csv-menu='{normal}']")
     with page.expect_download() as dl:
         page.click(f"[data-csv='{normal}'][data-scope='visible']")

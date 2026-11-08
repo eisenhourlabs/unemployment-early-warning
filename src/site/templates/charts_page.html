@@ -7,6 +7,31 @@
   <h1>{{ heading }}</h1>
   <p>{{ intro }}</p>
 </div>
+{%- if summary %}
+<section class="card summary" aria-labelledby="summary-title">
+  <h2 id="summary-title">Summary</h2>
+  <p class="why">Latest values with full-history percentiles. Arrows show the direction of the 3-month change only,
+    not whether it is good or bad; signal colors arrive in Phase 3.</p>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Indicator</th><th>Latest</th><th>As of</th><th>3-month change</th><th>Percentile</th><th>Typical lead</th></tr></thead>
+    <tbody>
+      {%- for r in summary %}
+      <tr>
+        <td>{% if r.link %}<a href="#card-{{ r.link }}">{{ r.name }}</a>{% else %}{{ r.name }}{% endif %}
+          <span class="muted units">{{ r.units }}</span></td>
+        <td class="num">{{ r.latest }}</td>
+        <td>{{ r.as_of }}</td>
+        <td class="num"><span class="arrow" aria-label="{{ r.direction }}">{{ r.arrow }}</span> {{ r.change }}</td>
+        <td>{{ r.percentile }}</td>
+        <td>{{ r.lead }}</td>
+      </tr>
+      {%- endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+{%- endif %}
 <div class="grid">
   {%- for c in charts %}
   {{ chart_card(c) }}

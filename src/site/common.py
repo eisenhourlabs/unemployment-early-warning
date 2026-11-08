@@ -261,15 +261,18 @@ def add_zero_line(fig: go.Figure) -> None:
     fig.add_hline(y=0, line=dict(color=AXIS, width=1), layer="below")
 
 
-def card(id, title, why, footer, fig, columns, rows, wide=False, fixed=None, zero=False) -> dict:
+def card(id, title, why, footer, fig, columns, rows, wide=False, fixed=None, zero=False,
+         downloadable=True) -> dict:
     """Everything the page needs for one chart card.
 
     fixed: [from, to] if the chart ignores the page time control (the seasonal comparison chart).
     zero:  True if the y-axis must always include zero (bar charts, % change charts).
+    downloadable: False hides the Download CSV / image buttons (licensed data, e.g. U. Michigan sentiment).
     """
     if not rows:
         raise RuntimeError(f"Chart {id} has no data")   # something upstream broke: stop the build
     return {"id": id, "title": title, "why": why, "footer": footer, "wide": wide, "fixed": fixed, "zero": zero,
+            "downloadable": downloadable,
             "figure": json.loads(fig.to_json()), "table": {"columns": columns, "rows": rows}}
 
 
@@ -298,12 +301,14 @@ def last_data_note(d: pd.DataFrame, date_col: str, source_col: str | None = None
 
 
 def line_chart(id, title, why, footer, s: pd.Series, name, y_title, hover, csv_col,
-               monthly=True, zero_line=False, prelim: pd.Series | None = None, wide=False, freq="MS") -> dict:
+               monthly=True, zero_line=False, prelim: pd.Series | None = None, wide=False, freq="MS",
+               x_hover: str | None = None, downloadable=True) -> dict:
     """One series as a line, with recession shading.
 
     Monthly series get missing months put back as blanks, so a gap (e.g. no October 2025 survey,
     federal government shutdown) shows as a break instead of a straight line across it.
     freq: "MS" for series dated the 1st of the month (FRED), "ME" for month-end dates (DOL).
+    x_hover: date format in the tooltip (default: "Oct 2026" monthly, "Week ending Oct 31, 2026" weekly).
     prelim (weekly only): a series of source labels; preliminary weeks are drawn dashed with hollow markers.
     """
     s = s.dropna()
@@ -326,14 +331,14 @@ def line_chart(id, title, why, footer, s: pd.Series, name, y_title, hover, csv_c
     if zero_line:
         add_zero_line(fig)
     add_recession_shading(fig, d.date.iloc[0])
-    base_layout(fig, y_title, "%b %Y" if monthly else "Week ending %b %-d, %Y", legend=len(tail) > 0)
+    base_layout(fig, y_title, x_hover or ("%b %Y" if monthly else "Week ending %b %-d, %Y"), legend=len(tail) > 0)
 
     footer += " Grey bands: NBER recessions." + last_data_note(
         d.dropna(subset=["value"]), "date", "source" if prelim is not None else None, monthly)
     columns = ["date", csv_col] + (["source"] if prelim is not None else [])
     rows = [[x, v] + ([src] if prelim is not None else [])
             for x, v, src in zip(dates(d.date), plain(d.value), d.source)]
-    return card(id, title, why, footer, fig, columns, rows, wide=wide, zero=zero_line)
+    return card(id, title, why, footer, fig, columns, rows, wide=wide, zero=zero_line, downloadable=downloadable)
 
 
 def weekly_claims_chart(id, title, why, footer, d: pd.DataFrame, weekly_col, avg_col, source_col,
@@ -375,6 +380,36 @@ def weekly_claims_chart(id, title, why, footer, d: pd.DataFrame, weekly_col, avg
     rows = [[x, w, (None if pd.isna(a) else a), s]
             for x, w, a, s in zip(d.x, d[weekly_col], d[avg_col], d[source_col])]
     return card(id, title, why, footer, fig, csv_names, rows, wide=wide)
+
+
+def lines_chart(id, title, why, footer, lines: list[tuple], y_title, hover, csv_names, zero_line=False,
+                freq="MS") -> dict:
+    """Two or more series in the same units, e.g. the Philadelphia and New York Fed surveys.
+    lines: [(series, name, short label), ...]; the first is drawn in the accent color, the rest in greys.
+    Each line is labelled at its end as well as in the legend."""
+    fig = go.Figure()
+    ends, table = [], {}
+    for i, (s, name, label) in enumerate(lines):
+        s = s.dropna().asfreq(freq)
+        table[name] = s
+        style = (dict(color=ACCENT, width=2), "main") if i == 0 else (dict(color=GREYS[i - 1], width=1.5), f"grey{i - 1}")
+        fig.add_trace(go.Scatter(x=dates(s.index), y=plain(s.values), name=name, mode="lines", line=style[0],
+                                 meta={"role": style[1]}, hovertemplate=f"{hover}<extra>{name}</extra>"))
+        last = s.dropna()
+        ends.append({"year": label, "x": last.index[-1].strftime("%Y-%m-%d"), "y": last.iloc[-1]})
+    if zero_line:
+        add_zero_line(fig)
+    first = min(t.index[0] for t in table.values())
+    add_recession_shading(fig, first)
+    base_layout(fig, y_title, "%b %Y")
+    fig.update_layout(margin=dict(l=60, r=70, t=8, b=36))
+    all_values = pd.concat(table.values())
+    add_end_labels(fig, ends, all_values.min(), all_values.max())
+    latest = max(t.dropna().index[-1] for t in table.values())
+    footer += f" Grey bands: NBER recessions. Last data: {fmt_month(latest)}."
+    df = pd.DataFrame(table).dropna(how="all")
+    rows = [[d.strftime("%Y-%m-%d")] + plain(r) for d, r in zip(df.index, df.values)]
+    return card(id, title, why, footer, fig, csv_names, rows, zero=zero_line)
 
 
 def line_with_comparison(id, title, why, footer, main: pd.Series, main_name, main_freq,

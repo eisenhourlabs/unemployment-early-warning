@@ -7,7 +7,6 @@ AWHMAN,"Average Weekly Hours of Production and Nonsupervisory Employees, Manufac
 AZCCLAIMS,Continued Claims (Insured Unemployment) in Arizona,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:39:02-06,1990-01-06,2026-10-24,19038.0
 AZICLAIMS,Initial Claims in Arizona,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:39:05-06,1990-01-06,2026-10-31,2242.0
 AZUR,Unemployment Rate in Arizona,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:40:18-05,1990-01-01,2026-09-01,4.9
-BAMLH0A0HYM2,ICE BofA US High Yield Index Option-Adjusted Spread,Percent,"Daily, Close",Not Seasonally Adjusted,2026-11-06 09:08:33-06,2023-11-07,2026-11-05,3.48
 CACCLAIMS,Continued Claims (Insured Unemployment) in California,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:39:04-06,1990-01-06,2026-10-24,305135.0
 CAICLAIMS,Initial Claims in California,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:39:05-06,1990-01-06,2026-10-31,39974.0
 CAUR,Unemployment Rate in California,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:38:54-05,1990-01-01,2026-09-01,5.1
@@ -129,6 +128,7 @@ NECCLAIMS,Continued Claims (Insured Unemployment) in Nebraska,Number,"Weekly, En
 NEICLAIMS,Initial Claims in Nebraska,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:44-06,1990-01-06,2026-10-31,457.0
 NEUR,Unemployment Rate in Nebraska,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:41:49-05,1990-01-01,2026-09-01,2.9
 NFCI,Chicago Fed National Financial Conditions Index,Index,"Weekly, Ending Friday",Not Seasonally Adjusted,2026-11-04 07:37:30-06,1990-01-05,2026-10-30,-0.459
+NFCICREDIT,Chicago Fed National Financial Conditions Credit Subindex,Index,"Weekly, Ending Friday",Not Seasonally Adjusted,2026-11-04 07:34:27-06,1990-01-05,2026-10-30,0.002
 NHCCLAIMS,Continued Claims (Insured Unemployment) in New Hampshire,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:44-06,1990-01-06,2026-10-24,3177.0
 NHICLAIMS,Initial Claims in New Hampshire,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:43-06,1990-01-06,2026-10-31,291.0
 NHUR,Unemployment Rate in New Hampshire,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:51:05-05,1990-01-01,2026-09-01,2.6

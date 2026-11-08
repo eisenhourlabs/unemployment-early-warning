@@ -6,6 +6,7 @@ What it does, step by step:
        overview.py    -> index.html        (tiles, "What changed this week", 3 charts)
        job_losses.py  -> job-losses.html   (7 charts)
        duration.py    -> duration.html     (7 charts)
+       leading.py     -> leading.html      (summary table + 8 charts)
      Shared pieces (reading data, formats, chart builders) live in common.py.
   2. Adds the shared frame every page has: the freshness line, the stale-data badge (from the
      health check), the time control, the release calendar and the footer.
@@ -36,6 +37,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 import duration
 import job_losses
+import leading
 import overview
 from common import PROCESSED, ROOT, claims_weekly, fmt_date, fmt_month, fred, is_preliminary
 
@@ -56,7 +58,7 @@ DEFAULT_RANGE = "5y"
 
 # Top-bar links: (key, label, file). An empty file means "coming soon" (shown greyed out).
 NAV = [("overview", "Overview", "index.html"), ("job-losses", "Job Losses", "job-losses.html"),
-       ("duration", "Duration", "duration.html"), ("leading", "Leading", ""), ("data", "Data", ""), ("about", "About", "")]
+       ("duration", "Duration", "duration.html"), ("leading", "Leading", "leading.html"), ("data", "Data", ""), ("about", "About", "")]
 
 
 # ===========================================================================
@@ -119,7 +121,7 @@ def page_data(charts: list[dict], built: datetime) -> str:
         "today": built.astimezone(CENTRAL).strftime("%Y-%m-%d"),
         "defaultRange": DEFAULT_RANGE,
         "recessionViews": RECESSION_VIEWS,
-        "charts": [{k: c[k] for k in ("id", "title", "figure", "table", "fixed", "zero")} for c in charts],
+        "charts": [{k: c[k] for k in ("id", "title", "figure", "table", "fixed", "zero", "downloadable")} for c in charts],
     }, separators=(",", ":"), allow_nan=False)
 
 
@@ -142,6 +144,7 @@ def main() -> None:
     ov = overview.build(built)
     jl = job_losses.build()
     du = duration.build()
+    le = leading.build()
     pages = [
         ("overview.html", "index.html",
          {**frame, **ov, "page": "overview", "title": "Overview", "calendar": release_calendar(),
@@ -154,6 +157,10 @@ def main() -> None:
          {**frame, **du, "page": "duration", "title": "Duration",
           "heading": "Duration: how long unemployment lasts",
           "page_data": page_data(du["charts"], built)}, len(du["charts"])),
+        ("charts_page.html", "leading.html",
+         {**frame, **le, "page": "leading", "title": "Leading Indicators",
+          "heading": "Leading indicators: what tends to move first",
+          "page_data": page_data(le["charts"], built)}, len(le["charts"])),
     ]
 
     # Start from an empty site/ folder so nothing old lingers.
