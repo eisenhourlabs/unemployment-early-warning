@@ -235,22 +235,31 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   42530598066; first archive file data/archive/2026/2026-11-08_ic2026-10-31_ur2026-10.json); Re-fit test (run
   42530635563) reproduced the 2026 model exactly and opened [TEST] PR #1 (refit-2026-test -> refit-dry-run): do not
   merge; close it and delete branches refit-2026-test and refit-dry-run after review. Browser check 759 pass.
-  Waiting for Troy's go to merge. If merged before Thu Nov 12 7:35 am CT, that Thursday's scheduled run is the first
-  automated live run; if not, run live.py by hand after the 8:30 am ET release, commit data\model, push.
+  Troy approved; fast-forwarded into main and pushed; "Publish site" run 42533370372 green; About fixes verified live.
+  Test PR #1 closed unmerged; branches refit-2026-test and refit-dry-run deleted. PHASE 3 IS COMPLETE.
+  Troy paused before the next stage (2026-11-08).
 
 ## Next steps, in order
-Setup (steps 1-4), Phase 1, Phase 2 and the Phase 2 review fixes are done and live.
-1. docs/phase3e_design.md is APPROVED (decisions at its end). 3e-1 and 3e-2 are done and live; 3e-3 built (awaiting go),
-   each reviewed locally before merging to main and publishing. Switch on the Actions pull-request setting in 3e-3.
-   Push phase3a / merge to main only when he says so.
-2. Stage 3e per docs/phase3_plan.md. Stage 3e must also: show trigger signal colors for the panel (yield curve
-   labeled "long lead, often 12+ months"; NFCI caveat "real-time only since 2011"); move temp help and manufacturing
-   surveys to the Leading page as context only (not counted in the overall status); use the new overall rule; state
-   the claims-revision effect on the methodology page (docs/model.md 5.10); move scikit-learn from
-   requirements-dev.txt to requirements.txt so the cloud can compute the score; show only the forecast horizons that
-   passed the gate (docs/model.md section 6), 12-month labeled lower confidence; stress paths labeled as what-ifs.
-Open items to watch: first real Thursday run (2026-11-12); ETA 539 allowed age (42 days); Chicago Fed LMI terms of use;
-DOL certificate glitch seen once on 2026-11-08.
+Setup, Phase 1, Phase 2 (with review fixes) and Phase 3 (stages 3a-3e) are done and live. Troy paused on 2026-11-08
+before starting anything new; wait for his go.
+1. Watch the first automated runs (no build work):
+   - Thu 2026-11-12, 7:35 am CT "Refresh data": the model step should archive a second run and the panel should switch
+     from "First live run" to "vs. last week". Check the run log and the site.
+   - Thanksgiving week: claims come out Wed 2026-11-25. live.py only counts continuing claims 12 days after the week
+     ends, so the November nowcast (reference week ending Nov 14) would wait until the Thu Dec 3 run, one day before the
+     Dec 4 jobs report. Small fix to consider: use the data actually present instead of the fixed lag in live runs.
+   - Fri 2026-12-04 jobs report: the 7:45 am CT run should make a new live run (new unemployment month).
+   - Thu 2027-01-15 "Re-fit model": the first real re-fit opens a pull request into main for Troy's review.
+2. Gaps against docs/phase3_plan.md, to raise with Troy (not in the approved 3e brief): alerts on a red Layer 1 trigger
+   (plan decision 9; only colour changes and failed refreshes are wired); trigger badges on the Job Losses / Duration
+   chart cards.
+3. Phase 4 (not designed yet; design questions go back to Troy's Claude project): States page and map weighted by the
+   footprint ranking (state series are already fetched; the public "footprint" / state-count wording rule needs a
+   decision first); the catalog's "future" sources (Challenger headline, charted only; WARN notices; Revelio RPLS;
+   Google Trends); shutdown backups (Chicago Fed LMI once its terms of use are confirmed, state data) with gaps labeled.
+4. Deferred to a later phase (do not build): consumer credit stress (Tier 5) and any company data.
+Open items to watch: ETA 539 allowed age (42 days); Chicago Fed LMI terms of use; DOL certificate glitch seen once on
+2026-11-08; GitHub moving ubuntu-latest to Ubuntu 26. Branch phase3a now equals main and can be deleted when Troy agrees.
 
 ## Where planning lives
 The full plan, roadmap and decisions are kept in Troy's Claude project ("Unemployment Correlations"),
