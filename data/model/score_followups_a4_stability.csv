@@ -1,0 +1,13 @@
+rule,period,flips_per_year,amber_real,amber_false,red_real,red_false,amber_lead_#1,amber_lead_#2,amber_lead_#3,amber_lead_#4,amber_lead_#5,amber_lead_#6,amber_lead_#7,amber_lead_#8,amber_lead_#9,amber_lead_#10,amber_lead_#11,amber_lead_#12,amber_lead_#13,amber_lead_#14,amber_lead_#15,red_lead_#1,red_lead_#2,red_lead_#3,red_lead_#4,red_lead_#5,red_lead_#6,red_lead_#7,red_lead_#8,red_lead_#9,red_lead_#10,red_lead_#11,red_lead_#12,red_lead_#13,red_lead_#14,red_lead_#15
+plain (20% / 50%),pre-2000 (in-sample),2.07,6,6,7,1,6,7,5,11,on since 1978-11,3,7,on since 1989-03,n/a,n/a,n/a,n/a,n/a,n/a,n/a,6,4,0,10,on since 1978-12,1,4,2,n/a,n/a,n/a,n/a,n/a,n/a,n/a
+plain (20% / 50%),2000-on (out of sample),1.98,5,4,5,2,,,,,,,,,5,3,1,on since 2006-05,4,7,on since 2022-11,,,,,,,,,3,none,1,4,3,3,on since 2023-03
+"hysteresis: leave amber < 18.8%, red < 48%",pre-2000 (in-sample),1.91,6,6,7,1,6,7,5,11,on since 1978-11,3,7,on since 1989-03,n/a,n/a,n/a,n/a,n/a,n/a,n/a,6,4,0,10,on since 1978-12,1,4,2,n/a,n/a,n/a,n/a,n/a,n/a,n/a
+"hysteresis: leave amber < 18.8%, red < 48%",2000-on (out of sample),1.9,5,4,5,2,,,,,,,,,5,3,1,on since 2006-05,4,7,on since 2022-11,,,,,,,,,3,none,1,4,3,3,on since 2023-03
+"hysteresis: leave amber < 17.5%, red < 45%",pre-2000 (in-sample),1.88,6,6,7,1,6,7,5,11,on since 1978-11,3,7,on since 1989-03,n/a,n/a,n/a,n/a,n/a,n/a,n/a,6,4,0,10,on since 1978-12,1,4,2,n/a,n/a,n/a,n/a,n/a,n/a,n/a
+"hysteresis: leave amber < 17.5%, red < 45%",2000-on (out of sample),1.79,5,4,5,1,,,,,,,,,5,3,1,on since 2006-05,4,7,on since 2022-11,,,,,,,,,3,none,1,4,3,3,on since 2023-03
+"hysteresis: leave amber < 16.2%, red < 42%",pre-2000 (in-sample),1.69,6,6,7,1,6,7,5,11,on since 1978-11,3,7,on since 1989-03,n/a,n/a,n/a,n/a,n/a,n/a,n/a,6,4,0,10,on since 1978-12,1,4,2,n/a,n/a,n/a,n/a,n/a,n/a,n/a
+"hysteresis: leave amber < 16.2%, red < 42%",2000-on (out of sample),1.79,5,4,5,1,,,,,,,,,5,3,1,on since 2006-05,4,7,on since 2022-11,,,,,,,,,3,none,1,4,3,3,on since 2023-03
+"hysteresis: leave amber < 15.0%, red < 40%",pre-2000 (in-sample),1.69,6,6,7,1,6,7,5,11,on since 1978-11,3,7,on since 1989-03,n/a,n/a,n/a,n/a,n/a,n/a,n/a,6,4,0,10,on since 1978-12,1,4,2,n/a,n/a,n/a,n/a,n/a,n/a,n/a
+"hysteresis: leave amber < 15.0%, red < 40%",2000-on (out of sample),1.64,5,4,5,1,,,,,,,,,5,3,1,on since 2006-05,4,7,on since 2022-11,,,,,,,,,3,none,1,4,3,3,on since 2023-03
+2 of 3 months,pre-2000 (in-sample),1.07,6,3,6,1,5,6,4,10,on since 1978-12,2,6,on since 1989-04,n/a,n/a,n/a,n/a,n/a,n/a,n/a,2,3,none,4,on since 1979-06,0,3,1,n/a,n/a,n/a,n/a,n/a,n/a,n/a
+2 of 3 months,2000-on (out of sample),0.89,5,2,2,0,,,,,,,,,4,none,0,6,3,6,on since 2022-12,,,,,,,,,late +1,none,none,3,late +1,2,on since 2023-04

@@ -682,3 +682,361 @@ claims figures. With claims as they were first published, its 2010–2026 skill 
 that is 2022: first-published claims rose 36–46% above their March 2022 low, against 2–6% after DOL's 2023 seasonal-factor
 revision. In real time the score would have been 77–99% from June 2022 to January 2023, a false red that today's figures
 hide. Outside 2022–23 the effect is smaller (+0.21 vs. +0.14), but real-time claims still add false ambers (7 vs. 3).
+
+## 6. Stage 3d: score follow-ups and forecast fans
+
+Scripts:
+- `src/model/score_followups.py` (Part A);
+- `src/model/forecast.py` (fans, backtest, stress paths);
+- `src/model/nowcast.py`;
+- `src/model/benchmarks.py`;
+- `src/model/plot_forecast.py`.
+
+Outputs:
+- `data/model/score_followups_*.csv`, `score_horizons.csv`, `score_weekly.csv`;
+- `forecast_backtest.csv` (one row per origin × target × horizon: center, 10/25/75/90 percentiles, deterioration
+  weight, baseline and deterioration components, climatology quantiles, outcome);
+- `forecast_evaluation.csv`, `forecast_events.csv`, `forecast_current.csv`, `forecast_paths.csv`, `stress_paths.csv`,
+  `nowcast.csv`, `benchmark_summary.csv`.
+
+Charts: `reports/forecast_backtest_{ur,ic,cc}.png`, `forecast_coverage.png`, `forecast_events.png`,
+`forecast_current.png`.
+
+### Part A — score follow-ups
+
+#### A1. What drove the score from October 2024 (text for the methodology page)
+
+Months with the score at or above 20%. Contributions are in log-odds (positive pushes the score up). Inputs with zero
+weight are left out.
+
+| Month | Score | Sahm | Claims vs. 52-wk low | Temp help | Yield curve | Manufacturing | NFCI | Intercept |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2024-10 | 99% | +1.95 | +2.73 | +2.17 | +0.43 | +0.33 | −0.33 | −2.93 |
+| 2024-11 | 91% | +1.67 | +0.70 | +2.80 | +0.42 | +0.18 | −0.47 | −2.93 |
+| 2024-12 | 95% | +1.67 | +1.47 | +2.43 | +0.41 | +0.30 | −0.40 | −2.93 |
+| 2025-01 | 37% | +1.27 | −0.55 | +1.27 | +0.29 | +0.18 | −0.41 | −2.57 |
+| 2025-02 | 58% | +1.17 | +0.38 | +1.33 | +0.29 | +0.14 | −0.44 | −2.57 |
+| 2025-03 | 46% | +0.83 | +0.23 | +1.19 | +0.29 | +0.14 | −0.27 | −2.57 |
+| 2025-04 | 48% | +0.83 | −0.02 | +1.03 | +0.29 | +0.42 | −0.09 | −2.57 |
+| 2025-05 | 41% | +0.83 | +0.33 | +0.53 | +0.29 | +0.58 | −0.35 | −2.57 |
+| **2025-06** | **85%** | +0.83 | **+1.56** | +1.15 | +0.29 | +0.64 | −0.20 | −2.57 |
+| 2025-07 | 25% | +0.49 | −0.34 | +0.91 | +0.29 | +0.40 | −0.29 | −2.57 |
+| 2025-08 | 32% | +0.26 | +0.26 | +0.97 | +0.29 | +0.29 | −0.27 | −2.57 |
+| 2025-09 | 54% | +0.36 | +1.06 | +1.18 | +0.29 | +0.14 | −0.29 | −2.57 |
+| 2025-10 | 35% | +0.36 | +0.14 | +1.18 | +0.29 | +0.24 | −0.26 | −2.57 |
+| 2025-11 | 39% | +0.70 | −0.11 | +1.24 | +0.29 | +0.22 | −0.23 | −2.57 |
+| 2025-12 | 56% | +1.37 | −0.24 | +1.34 | +0.29 | +0.34 | −0.29 | −2.57 |
+| 2026-02 | 30% | +0.62 | +0.34 | +0.70 | 0 | +0.24 | −0.27 | −2.48 |
+| 2026-06 | 25% | +0.16 | +1.03 | +0.38 | 0 | +0.03 | −0.21 | −2.48 |
+
+**Paragraph for the methodology page.** From late 2024 through 2025 the score was often elevated without a new
+deterioration event following. Three things drove it.
+- **Temporary-help employment** was falling. It was the largest push in most months.
+- **The Sahm indicator** stayed in the 0.3–0.5 range after the mid-2024 rise in unemployment.
+- **Initial claims** had several short jumps above their 52-week low. The largest came in October 2024, during Hurricanes
+  Helene and Milton and the Boeing strike, and in June and September 2025.
+
+The red reading of June 2025 (85%) combined a 13% rise in initial claims above their 52-week low with a 1.6% six-month fall
+in temp-help jobs, on top of a Sahm indicator of 0.27 and weak regional factory surveys. Claims eased the next month and the
+score fell to 25%.
+
+In each case the inputs moved in the direction that has preceded past downturns, but not far or long enough. The score
+is a probability, and a high probability that doesn't materialise is part of how it behaves.
+
+#### A2. A claims input less dependent on seasonal factors
+
+**New inputs** (`features.py`):
+- `nsa_yoy` = the NSA initial claims 4-week average vs. the same weeks a year earlier;
+- `nsa_low` = that year-ago ratio minus its lowest value in the prior 52 weeks.
+
+Each version of the final model (weights ≥ 0) was scored out of sample on today's data and on claims as first published
+(FRED vintages, 2010 on).
+
+| Variant | Skill, today's data 2000– | Skill, today's data 2010– | **Skill, as published 2010–** | As published 2010–, without 2022–23 | Real-time score mid-2022 (mean) |
+| --- | --- | --- | --- | --- | --- |
+| Final (SA claims) | **+0.180** | +0.197 | −0.234 | +0.141 | 89% |
+| + nsa_yoy | +0.166 | +0.191 | −0.200 | +0.125 | 85% |
+| + nsa_yoy + nsa_low | +0.147 | +0.167 | −0.213 | +0.216 | 90% |
+| NSA (yoy + low) replace the SA initial-claims measures | +0.040 | −0.044 | −0.061 | +0.102 | 58% |
+| NSA yoy replaces the SA initial-claims measures | +0.093 | 0.000 | −0.001 | −0.018 | 12% |
+
+**Not adopted:** no variant meets your rule. The ones that improve the as-published skill materially (the two
+"replace" variants) lose 0.09–0.14 of today's-data skill, far more than 0.02. The year-on-year NSA measure removes the
+2022 false red, because in real time 2022 claims were *below* their pandemic-inflated year-earlier levels. But it
+also blunts the warnings that work, so overall skill falls.
+
+#### A3. Calibration above 35%
+
+**Recalibration doesn't help.** A Platt-style adjustment was estimated each January on earlier out-of-sample scores only.
+It made the Brier score worse: 0.112 vs. 0.108 (skill +0.15 vs. +0.18). The two reliability tables are in
+`score_followups_a3_reliability.csv`.
+
+**Very little evidence sits above 35%:**
+
+| Band | Months | Independent episodes | Average predicted | Observed | 90% interval (block bootstrap by episode) |
+| --- | --- | --- | --- | --- | --- |
+| 35–50% | 20 | 9 | 41% | 30% | 6% – 62% |
+| 50–100% | 27 | 7 | 76% | 56% | 20% – 77% |
+
+With 7–9 episodes per band, observed rates of 30% and 56% are consistent with the predicted 41% and 76%. The evidence is
+too thin to justify a correction.
+
+**Recommendation:** keep the raw score. On the site, show percentages up to 35%, then verbal bands: **"elevated"**
+for 35–50% and **"more likely than not"** for 50% and above.
+
+#### A4. Colour stability
+
+The colour uses amber 20% and red 50%, judged on the 1968–1999 in-sample scores and then applied after 2000. Weekly =
+the score recomputed every Thursday (claims release day) with everything known that day.
+
+| Rule | Monthly changes / yr (pre-2000 / 2000–) | Weekly changes / yr (2000–) | 2000–: amber real / false | 2000–: red real / false | Effect on leads (2000–) |
+| --- | --- | --- | --- | --- | --- |
+| Plain 20% / 50% | 2.07 / 1.98 | 3.24 | 5 / 4 | 5 / 2 | – |
+| Hysteresis: leave amber < 18.75%, red < 47.5% | 1.91 / 1.90 | 3.09 | 5 / 4 | 5 / 2 | none |
+| Hysteresis: leave amber < 17.5%, red < 45% | 1.88 / 1.79 | 2.80 | 5 / 4 | 5 / 1 | none |
+| Hysteresis: leave amber < 16.25%, red < 42.5% | 1.69 / 1.79 | 2.80 | 5 / 4 | 5 / 1 | none |
+| **Hysteresis: leave amber < 15%, red < 40%** | **1.69 / 1.64** | **2.57** | 5 / 4 | 5 / 1 | none |
+| 2 of 3 months (weeks) | 1.07 / 0.89 | 2.42 | 5 / 2 | 2 / 0 | about 1 month shorter; red late for 2001 and 2020; scares #10, #11 missed at red |
+
+**Pre-2000 test:**
+- Hysteresis changes no warning or false alarm and cuts colour changes by about a fifth.
+- The 2-of-3 rule halves false ambers (6 → 3) but loses one red warning (the 1977 scare) and a month of lead everywhere.
+
+**Recommendation:** hysteresis with amber entered at 20% and left below 15%, red entered at 50% and left below 40%.
+That gives about 2.6 colour changes a year week to week (vs. 3.2) at no cost in warning.
+
+#### A5. Probabilities for 3 and 12 months
+
+The same final model (eight inputs, weights ≥ 0, same cross-validation), out of sample from 2000:
+
+| Target | Base rate (2000–) | Brier skill |
+| --- | --- | --- |
+| Event starts within 3 months | 7.5% | +0.22 |
+| Event starts within 6 months (headline) | 15.3% | +0.18 |
+| Event starts within 12 months | 30.4% | +0.21 |
+
+**Today (October 2026):** 0.5% (3 months), 2.4% (6 months), 37% (12 months).
+
+The 12-month figure has to be read against its base rate. In an average month since 1968 there is roughly a one-in-three
+chance that some event, scares included, starts within a year. 37% is close to that. The small push above the base rate
+comes from temp help and from the yield curve, whose lowest spread in the past 18 months was just below zero. The 12-month
+model weights the yield curve (0.65) much more than the 6-month model (0).
+
+### Part B — forecast fans
+
+#### Method (rules to keep)
+
+**Targets and timing**
+- Unemployment rate at 3, 6 and 12 months after the latest published month.
+- SA initial and continuing claims rates as **4-week averages** (less noisy than single weeks) at 13, 26 and 52 weeks
+  after the latest published week.
+- Origins: every month end from 2000. Each origin uses only what was published by then: the unemployment rate as known
+  that day (ALFRED), claims rates as we hold them (current vintage; the 2022 caveat applies), the score inputs, and the
+  out-of-sample 3/6/12-month probabilities.
+- Outcomes: today's figures.
+
+**Baseline**
+- A ridge regression of the h-step change on the eight score inputs plus the current level. Unemployment rate in points;
+  claims rates as log (percentage) changes.
+- Fitted only on **quiet** origins: no event in progress and none starting within the horizon. The deterioration
+  component is what covers downturns, so a baseline trained on downturns too would count them twice.
+- Re-fitted each January. Penalty chosen by forward-chaining cross-validation (chosen values 10–3,000, inside the grid);
+  the cross-validation's out-of-sample residuals supply the noise.
+
+**Deterioration component**
+- The path after each past event start, measured from the last pre-event month (week). Used: events from 1968 for the
+  unemployment rate, from 1973 for the claims rates. 2020 is never used.
+- **Recession paths** (the 7 recessions plus the early signal) and **scare paths** (6) are kept separate and mixed by
+  their share of events: 57% recession for the unemployment rate (8 of 14), 54% for the claims rates (7 of 13). At each
+  origin only events whose path had already been observed are used.
+- The event is assumed to start at a uniformly random point within the horizon.
+- Scaling to today's level: unemployment-rate paths are added in points; claims-rate paths are applied as percentage
+  changes.
+
+**Spread of paths across events** (change h periods after the last pre-event period):
+
+| Target | Group | h | Min | 25% | Median | 75% | Max |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Unemployment rate (pt) | recession (8) | 3 / 6 / 12 | 0.0 / −0.1 / +0.6 | +0.1 / +0.4 / +1.3 | +0.35 / +0.65 / +1.7 | +0.5 / +1.0 / +2.5 | +0.9 / +1.4 / +2.8 |
+| | scare (6) | 3 / 6 / 12 | −0.3 / −0.6 / −1.1 | | −0.1 / −0.2 / −0.4 | | +0.1 / +0.1 / +0.3 |
+| Initial claims rate (%) | recession (7) | 13 / 26 / 52 wk | +5 / 0 / +6 | +8 / +12 / +17 | +10 / +17 / +29 | +14 / +22 / +60 | +23 / +30 / +69 |
+| | scare (6) | 13 / 26 / 52 wk | −17 / −22 / −18 | | −8 / −10 / −12 | | +8 / −5 / 0 |
+| Continuing claims rate (%) | recession (7) | 13 / 26 / 52 wk | +3 / +5 / +14 | +8 / +14 / +36 | +12 / +16 / +47 | +13 / +25 / +57 | +16 / +31 / +71 |
+| | scare (6) | 13 / 26 / 52 wk | −6 / −12 / −20 | | −2 / −5 / −6 | | +4 / +3 / +4 |
+
+(Scare paths measured from the pre-event week fall back quickly, because the spike that defines a scare is already over a
+few weeks later.)
+
+**Mixture**
+- With the horizon-matched probability (3-month for 3 months / 13 weeks, 6-month for 6 / 26, 12-month for 12 / 52;
+  raw, since recalibration was not adopted) the change follows a deterioration path; otherwise the baseline.
+- **If an event is already in progress at the origin**, the deterioration weight is 1. The path is picked up at the event's
+  current age, using past events that lasted at least that long.
+
+**Bands**
+- 10/25/50/75/90 percentiles of 4,000 simulated draws (a baseline or deterioration change, plus a resampled baseline
+  residual). Center = the median.
+- When risk is elevated the upper band stretches toward the deterioration paths, so the fan is asymmetric (see the 12-month
+  fans in `forecast_current.png`).
+
+**Benchmarks**
+- No-change.
+- Climatology: no-change center plus the empirical quantiles of all past h-step changes, re-estimated each January.
+
+#### Results, 2000–2026 excluding 2020 (B8)
+
+RMSE ratio = our median's RMSE / no-change's RMSE (below 1 is better); 90% interval by moving-block bootstrap
+(blocks = the horizon). Pinball skill = quantile loss vs. climatology (above 0 is better). Coverage = share of outcomes
+inside the band (targets 50% and 80%).
+
+| Target | h | RMSE ratio (90% int.) | Pinball skill | 50% band: all / event / quiet | 80% band: all / event / quiet | Gate |
+| --- | --- | --- | --- | --- | --- | --- |
+| Unemployment rate | 3 mo | **0.81** (0.75–0.89) | +0.21 | 48 / 46 / 49 | 80 / 77 / 81 | **pass** |
+| | 6 mo | **0.76** (0.69–0.85) | +0.26 | 52 / 47 / 54 | 79 / 76 / 80 | **pass** |
+| | 12 mo | **0.74** (0.67–0.84) | +0.29 | 53 / 54 / 52 | 78 / 79 / 77 | **pass** (label lower confidence) |
+| Initial claims rate | 13 wk | 0.99 (0.93–1.05) | +0.04 | 50 / 44 / 53 | 79 / 79 / 79 | pass on paper; no real gain |
+| | 26 wk | 0.94 (0.88–1.01) | +0.05 | 48 / 44 / 50 | 79 / 77 / 80 | pass; gain not significant |
+| | 52 wk | 0.94 (0.85–1.02) | +0.03 | 46 / 55 / 39 | 73 / 75 / 71 | pass; gain not significant |
+| Continuing claims rate | 13 wk | **0.88** (0.78–0.96) | +0.17 | 52 / 53 / 52 | 77 / 85 / 74 | **pass** |
+| | 26 wk | **0.86** (0.77–0.95) | +0.18 | 46 / 45 / 46 | 73 / 79 / 72 | **pass** |
+| | 52 wk | 0.87 (0.78–0.98) | +0.15 | 36 / 38 / 34 | **67** / 70 / 65 | **FAIL** (bands too narrow) → dropped |
+
+"Event" = an event in progress or starting within the horizon (79–125 origins depending on h); "quiet" = the rest.
+
+**2020 (reported separately):** every fan failed. The 80% bands covered 0–24% of outcomes and the RMSE ratios were about 1.0.
+No indicator anticipated a pandemic, and the paths of past events have nothing like a 25-fold jump in claims.
+
+**What it says:**
+- **Unemployment-rate fans work.** They are 19–26% more accurate than no-change, beat climatology at every horizon, and
+  their bands hold up in downturn months as well as in quiet ones. That last point is the one that matters.
+- **Continuing-claims fans work at 13 and 26 weeks.** At 52 weeks the bands are too narrow, so that horizon fails the gate.
+- **Initial-claims fans are well calibrated but barely more accurate than no-change.** Initial claims are close to a random
+  walk at these horizons. Their 90% intervals include 1.
+
+#### Event by event (`forecast_events.png`, `forecast_events.csv`)
+
+Outcomes inside the 80% band, out of 9 (3 targets × 3 horizons):
+
+| Event | 6 months before | 3 months before | Notes |
+| --- | --- | --- | --- |
+| #9 2001 recession | 5 / 9 | 8 / 9 | Six months before, the claims fans were too low; the unemployment fans held |
+| #12 2008 recession | 8 / 9 | 6 / 9 | From November 2007: 12-month unemployment fan 4.2–6.3% (median 4.9%), actual 6.5%, just above the band; 12-month claims also above |
+| #14 2023 scare | 6 / 9 | 9 / 9 | |
+| #15 2024 scare | 9 / 9 | 7 / 9 | |
+| #13 2020 (not fitted) | 2 / 9 | 2 / 9 | As expected |
+
+#### Nowcast of the next unemployment-rate release (B5)
+
+- **Method:** previous published rate, plus regression terms for the months since the last release and the changes in log
+  initial and continuing claims between survey reference weeks (the week containing the 12th). Re-estimated before every
+  release on all earlier months from 1968, excluding 2020. Scored against the first release.
+- **2000–2026 excluding March–December 2020, 311 releases:** RMSE 0.155 vs. 0.172 for no-change (ratio 0.90); MAE 0.121 vs.
+  0.128. It hits the exact published figure no more often than no-change (25% each).
+- **March–December 2020:** RMSE 1.83 vs. 3.45 (ratio 0.53).
+- **Missing releases:** October 2025 was never published. The November 2025 release followed September's, and the
+  nowcast treated it as a two-month change (4.42%); the first release was 4.6%.
+- **Next nowcast:** November 2026, once claims for the week ending 14 November are out (initial on 19 November, continuing
+  on 26 November).
+- **Chicago Fed real-time unemployment forecast:** the Chicago Fed's legal notice allows reproducing its written materials
+  for non-commercial use with credit. Distributing or republishing requires the Bank's written permission, and the Bank
+  cannot grant rights to third-party data. The Labor Market Indicators use third-party sources including Indeed and The
+  Conference Board, which our rules exclude. **Not usable as a marker without written permission.** Not built.
+
+#### Published forecasts as benchmarks (B6; comparison only)
+
+**FOMC SEP median:** FRED `UNRATEMD`, verified. It is the Q4-average unemployment rate, annual, with one vintage per SEP
+release from December 2015 (43 vintages).
+
+**SPF median:** the Philadelphia Fed's `medianLevel.xlsx`, sheet `UNEMP` (quarterly levels for the current quarter and
+four ahead). It is a free download marked "all rights reserved", with reuse questions directed to `PHIL.SPF@phil.frb.org`.
+The file is read from outside the repository; only summary statistics are saved.
+
+Our fan medians were interpolated to each benchmark's target quarter, within our 12-month reach.
+- **"Strict" timing:** our origin is the last month end before publication. We then know one month *less* of the
+  unemployment rate, because both benchmarks come out after that month's release.
+- **"Matched" timing:** our origin is the end of the publication month, with the same unemployment-rate release.
+
+Mean absolute error, excluding 2020 quarters:
+
+| Benchmark | Horizon | Cases | Ours, strict | Ours, matched | Benchmark | No-change, matched |
+| --- | --- | --- | --- | --- | --- | --- |
+| SPF median | 1 quarter ahead | 103 | 0.27 | 0.24 | **0.20** | 0.30 |
+| | 2 quarters ahead | 102 | 0.40 | 0.35 | **0.31** | 0.48 |
+| | 3 quarters ahead | 101 | 0.58 | 0.51 | **0.44** | 0.69 |
+| FOMC SEP median | Mar → Q4 | 6 | 0.58 | 0.36 | **0.23** | 0.55 |
+| | Jun → Q4 | 7 | 0.19 | 0.18 | 0.15 | **0.11** |
+| | Sep → Q4 | 8 | 0.29 | 0.22 | **0.18** | 0.19 |
+
+December SEPs project the *next* year's Q4, which is beyond our 12-month reach; they were not compared.
+
+**Professional consensus is a better point forecast than our fan median** (about 15–20% lower error). Our fans beat
+no-change, and their value is the honest band and the tilt toward downturns, not a better central forecast. The FOMC
+comparison rests on only 6–8 cases per release month.
+
+#### Stress paths (B7; what-ifs, not forecasts)
+
+"If a 2001-type (#9) or 2008-type (#12) downturn started now", from today's level (`stress_paths.csv`, shown in
+`forecast_current.png`):
+
+| Target | Today | 2001-type peak | 2008-type peak |
+| --- | --- | --- | --- |
+| Unemployment rate | 4.1% | 6.1% after 18 months | 9.1% after 21 months |
+| Initial claims rate (4-wk avg, per 10,000) | 12.7 | 20.2 after 51 weeks | 24.5 after 61 weeks |
+| Continuing claims rate (4-wk avg) | 1.11% | 1.91% after 82 weeks | 2.59% after 70 weeks |
+
+#### Today's fans (October 2026 data; unemployment rate latest published: September 4.2%)
+
+| Target | Horizon | Median | 50% band | 80% band | Deterioration weight |
+| --- | --- | --- | --- | --- | --- |
+| Unemployment rate | 3 mo | 4.05% | 3.93–4.19 | 3.80–4.30 | 0.5% |
+| | 6 mo | 3.94% | 3.78–4.09 | 3.62–4.23 | 2.4% |
+| | 12 mo | 3.80% | 3.55–4.23 | 3.26–4.99 | 37% |
+| Initial claims rate (per 10,000) | 13 / 26 / 52 wk | 12.5 / 12.2 / 12.0 | | 11.7–13.4 / 11.3–13.3 / 10.6–15.0 | |
+| Continuing claims rate | 13 / 26 wk | 1.07% / 1.04% | | 1.02–1.13 / 0.97–1.14 | |
+
+The 12-month unemployment fan is visibly asymmetric: the median is 3.8% but the 90th percentile is 5.0%, because the
+12-month event probability is 37%.
+
+**Bias check:** in quiet months the 12-month median was on average slightly *too high* (outcomes 0.18 point lower); before
+events it was too low (0.46 point). So today's downward-leaning median is not a systematic downward bias.
+
+#### Caveats
+
+- After 2000 the evaluation contains two recessions (2001, 2008), five scares and 2020.
+- Overlapping horizons make neighbouring errors correlated. The block-bootstrap intervals allow for that, but they are wide.
+- Claims rates are today's figures. Section 5.10 shows real-time claims would have produced a false red in 2022, which
+  would also have pushed the fans up then.
+- Event dates (used for "in progress") are on final data.
+- **The "in progress" rule leans on recession paths during short scares.** For a few months after the starts of #10 (2003)
+  and #15 (2024) the 12-month unemployment median jumped to about 6–8% (visible in `forecast_backtest_ur.png`), because the
+  past events lasting that long are mostly recessions. Coverage passed anyway.
+- Benchmarks' information sets differ from ours; both timings are shown.
+
+### Gate (plan)
+
+**Criteria:** band coverage within about 10 points of target, and each horizon shown beats no-change.
+
+| Target × horizon | Gate | For the site (3e) |
+| --- | --- | --- |
+| Unemployment rate 3 / 6 / 12 months | pass | show; 12 months labeled lower confidence |
+| Continuing claims rate 13 / 26 weeks | pass | show |
+| Continuing claims rate 52 weeks | **fail** (80% band covers 67%) | drop |
+| Initial claims rate 13 / 26 / 52 weeks | pass on the letter of the gate (ratios 0.99 / 0.94 / 0.94) | **your decision**: intervals include 1, so no demonstrated gain over no-change |
+| Nowcast | beats no-change (0.90) | your decision |
+
+### Decisions for Troy (stage 3d)
+
+1. **Calibration:** keep the raw score; percentages up to 35%, then "elevated" (35–50%) and "more likely than not"
+   (50%+). Recommended.
+2. **Colour stability:** hysteresis, with amber entered at 20% and left below 15%, red entered at 50% and left below 40%.
+   Recommended: no loss of warning, about 20% fewer colour changes. The alternatives are the 2-of-3 rule (half the
+   changes, a month less warning) or none.
+3. **NSA claims input:** not adopted (A2 rule not met). Confirm.
+4. **Initial-claims fans:** drop all three (no demonstrated gain), or show 26 and 52 weeks with a "small gain" note.
+   Recommended: drop the fans and keep the initial-claims rate history plus its stress paths.
+5. **"In progress" rule:** keep as decided, or switch the deterioration weight to 1 only once an event has lasted 3+ months
+   (scares rarely do), using the probability before that. That would remove the 2003 / 2024 spikes; it is untested, so it
+   would need a re-run.
+6. **Nowcast on the site:** show it as "next release nowcast" next to no-change? Its gain is modest (RMSE −10%).
+7. **Benchmark markers:** FOMC SEP (public, FRED) could be a marker in 3e. SPF needs the Philadelphia Fed's OK first.
+   Chicago Fed: not without written permission.

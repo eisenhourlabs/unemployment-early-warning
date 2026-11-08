@@ -69,9 +69,9 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 | `docs/data_revisions.md` | Automatic log of DOL revisions |
 | `docs/dashboard_requirements.md` | What the Phase 2 dashboard must show |
 | `src/alerts/alerts.py` | Optional alerts (off) |
-| `src/model/` | Phase 3 modeling: `build_claims_history.py` (claims table from 1967), `alfred_fetcher.py` (past vintages), `realtime.py` (`as_known_on(series, date)` + Sahm check), `events.py` (event definition and list), `plot_events.py` (review chart), `current_fetcher.py` (long histories of never-revised series), `triggers.py` (8 Layer 1 triggers monthly, real-time), `backtest_triggers.py` (leads, false alarms, adds-warning), `plot_triggers.py` (status chart), `features.py` (score inputs), `score.py` (early-warning score: fit, out-of-sample test, sensitivity runs), `plot_score.py` (score charts) |
+| `src/model/` | Phase 3 modeling: `build_claims_history.py` (claims table from 1967), `alfred_fetcher.py` (past vintages), `realtime.py` (`as_known_on(series, date)` + Sahm check), `events.py` (event definition and list), `plot_events.py` (review chart), `current_fetcher.py` (long histories of never-revised series), `triggers.py` (8 Layer 1 triggers monthly, real-time), `backtest_triggers.py` (leads, false alarms, adds-warning), `plot_triggers.py` (status chart), `features.py` (score inputs), `score.py` (early-warning score: fit, out-of-sample test, sensitivity runs), `plot_score.py` (score charts), `score_followups.py` (3d Part A: drivers, NSA claims test, calibration, colour stability, 3/12-month scores), `forecast.py` (fans: baseline + event-path mixture, backtest, stress paths), `nowcast.py` (next UR release), `benchmarks.py` (FOMC SEP / SPF comparison), `plot_forecast.py` (forecast charts) |
 | `config/model_series.csv`, `config/event_notes.csv`, `config/triggers.csv` | Modeling series: ALFRED / first-release / current vintage, release lag; Troy's event rulings and notes; Layer 1 trigger thresholds |
-| `data/model/` | Modeling data: `claims_weekly.csv`, `alfred/` (vintages + coverage), `current/` (GS10, TB3MS, T10Y3MM full history), `events.csv`, `event_flags_monthly.csv`, `claims_leg_weekly.csv`, `triggers_monthly.csv`, `trigger_episodes.csv`, `trigger_leads.csv`, `trigger_summary.csv`, `status_comparison.csv`, `features_monthly.csv`, `score_*.csv` |
+| `data/model/` | Modeling data: `claims_weekly.csv`, `alfred/` (vintages + coverage), `current/` (GS10, TB3MS, T10Y3MM full history), `events.csv`, `event_flags_monthly.csv`, `claims_leg_weekly.csv`, `triggers_monthly.csv`, `trigger_episodes.csv`, `trigger_leads.csv`, `trigger_summary.csv`, `status_comparison.csv`, `features_monthly.csv`, `score_*.csv`, `forecast_*.csv`, `stress_paths.csv`, `nowcast.csv`, `benchmark_summary.csv` |
 | `docs/model.md`, `reports/` | Phase 3 method and results (grows each stage); review charts (not on the site) |
 | `src/signals/`, `src/forecast/` | Phase 3: triggers, composite score, forecast fan |
 | `src/site/build_site.py` | Builds the "Unemployment Watch" website (Plotly + Jinja2) into `site/`: shared frame, renders each page |
@@ -107,7 +107,8 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   (~3 min), `python src\model\current_fetcher.py`, `python src\model\realtime.py` (Sahm check), `python src\model\events.py`,
   `python src\model\plot_events.py`, `python src\model\triggers.py` (~15 s), `python src\model\backtest_triggers.py`,
   `python src\model\plot_triggers.py`, `python src\model\features.py` (~2 min), `python src\model\score.py` (~2 min),
-  `python src\model\plot_score.py`
+  `python src\model\plot_score.py`, `python src\model\score_followups.py` (~2 min), `python src\model\forecast.py` (~4 min),
+  `python src\model\nowcast.py`, `python src\model\benchmarks.py <path to SPF medianLevel.xlsx>`, `python src\model\plot_forecast.py`
 
 ## Status (2026-11-07)
 - Phase 0 done: folders, catalog (35 active rows), footprint weights, FRED fetcher (tested only against
@@ -188,17 +189,24 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 - 2026-11-08: Stage 3c review applied (docs/model.md 5.10): FINAL score = ridge logistic on the 8 trigger measures,
   weights >= 0, amber 20%, red 50%; out of sample 2000-2026 Brier 0.108, skill +0.18; JOLTS tested and left out (made it
   worse); temp help kept; claims-revision effect to be stated, not modeled. Latest score (Oct 2026) 2.4%, green.
+- 2026-11-08: Stage 3c approved; branch phase3a pushed to GitHub (origin/phase3a; main and site unchanged).
+- 2026-11-08: Stage 3d built locally on phase3a (not pushed, website unchanged), docs/model.md section 6: score
+  follow-ups (A1 drivers 2024-26; NSA claims not adopted; recalibration not adopted, verbal bands proposed; hysteresis
+  proposed; 3/12-month scores skill +0.22/+0.21) and forecast fans (UR 3/6/12 and continuing claims 13/26 wk pass the
+  gate; continuing claims 52 wk fails; initial claims fans no real gain; nowcast ratio 0.90; SPF / FOMC beat our point
+  forecasts). Stopped at the gate; waiting for Troy's decisions (model.md 6, "Decisions for Troy (stage 3d)").
 
 ## Next steps, in order
 Setup (steps 1-4), Phase 1, Phase 2 and the Phase 2 review fixes are done and live.
-1. Stage 3d (forecasts), plan with Troy first, when he says to start. Merge `phase3a` into main and push only when he
-   says "push".
-   The final score's probability feeds the mixture fans (plan Layer 3).
+1. Stage 3d review: Troy decides docs/model.md section 6 "Decisions for Troy (stage 3d)" (verbal bands, hysteresis, NSA
+   claims, initial-claims fans, in-progress rule, nowcast, benchmark markers). Do not start 3e until he says so. Push
+   phase3a / merge to main only when he says so.
 2. Stage 3e per docs/phase3_plan.md. Stage 3e must also: show trigger signal colors for the panel (yield curve
    labeled "long lead, often 12+ months"; NFCI caveat "real-time only since 2011"); move temp help and manufacturing
    surveys to the Leading page as context only (not counted in the overall status); use the new overall rule; state
    the claims-revision effect on the methodology page (docs/model.md 5.10); move scikit-learn from
-   requirements-dev.txt to requirements.txt so the cloud can compute the score.
+   requirements-dev.txt to requirements.txt so the cloud can compute the score; show only the forecast horizons that
+   passed the gate (docs/model.md section 6), 12-month labeled lower confidence; stress paths labeled as what-ifs.
 Open items to watch: first real Thursday run (2026-11-12); ETA 539 allowed age (42 days); Chicago Fed LMI terms of use;
 DOL certificate glitch seen once on 2026-11-08.
 

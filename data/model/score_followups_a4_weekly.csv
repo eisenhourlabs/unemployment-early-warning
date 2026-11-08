@@ -1,0 +1,7 @@
+rule,weekly_flips_per_year,weeks_amber_or_red,weeks_red
+plain (20% / 50%),3.24,566,364
+"hysteresis: leave amber < 18.8%, red < 48%",3.09,571,370
+"hysteresis: leave amber < 17.5%, red < 45%",2.8,581,373
+"hysteresis: leave amber < 16.2%, red < 42%",2.8,591,379
+"hysteresis: leave amber < 15.0%, red < 40%",2.57,596,390
+2 of 3 weeks,2.42,564,360

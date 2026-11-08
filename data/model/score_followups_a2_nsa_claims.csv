@@ -1,0 +1,6 @@
+variant,inputs,skill_today_2000on,skill_today_2010on,skill_vintage_2010on,skill_today_2010on_ex2022_23,skill_vintage_2010on_ex2022_23,brier_today_2000on,brier_vintage_2010on,amber_real_false_today_2000on,amber_real_false_vintage_2010on,vintage_score_mid2022_max,vintage_score_mid2022_mean
+final (SA claims),sahm claims_low claims_yoy cont_yoy temp_help yield_curve mfg nfci,0.18,0.197,-0.234,0.208,0.141,0.108,0.1017,5 / 4,1 / 7,0.99,0.89
+final + nsa_yoy,sahm claims_low claims_yoy cont_yoy temp_help yield_curve mfg nfci nsa_yoy,0.166,0.191,-0.2,0.205,0.125,0.1098,0.099,4 / 4,1 / 7,0.98,0.85
+final + nsa_yoy + nsa_low,sahm claims_low claims_yoy cont_yoy temp_help yield_curve mfg nfci nsa_yoy nsa_low,0.147,0.167,-0.213,0.223,0.216,0.1124,0.1001,4 / 4,1 / 7,1.0,0.9
+NSA replaces SA initial-claims measures,sahm cont_yoy temp_help yield_curve mfg nfci nsa_yoy nsa_low,0.04,-0.044,-0.061,0.119,0.102,0.1264,0.0875,4 / 4,2 / 2,0.97,0.58
+NSA yoy replaces SA initial-claims measures,sahm cont_yoy temp_help yield_curve mfg nfci nsa_yoy,0.093,0.0,-0.001,-0.007,-0.018,0.1194,0.0826,4 / 4,2 / 4,0.54,0.12

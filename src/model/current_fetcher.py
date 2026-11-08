@@ -22,7 +22,7 @@ sys.path.insert(0, str(ROOT / "src" / "fetchers"))
 from fred_fetcher import fetch_one, load_api_key   # reuse the FRED fetcher's download code
 
 OUT_DIR = ROOT / "data" / "model" / "current"
-SERIES = ["GS10", "TB3MS", "T10Y3MM"]
+SERIES = ["GS10", "TB3MS", "T10Y3MM", "ICNSA"]   # ICNSA: weekly NSA initial claims (stage 3d)
 
 
 def main() -> None:
@@ -31,7 +31,7 @@ def main() -> None:
     for sid in SERIES:
         df, info = fetch_one(sid, key, start="1900-01-01")   # "from the beginning"
         df.to_csv(OUT_DIR / f"{sid}.csv", index=False)
-        print(f"{sid:8} {info['first_date']} to {info['last_date']}, {len(df)} months")
+        print(f"{sid:8} {info['first_date']} to {info['last_date']}, {len(df)} observations")
 
 
 if __name__ == "__main__":
