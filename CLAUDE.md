@@ -134,15 +134,14 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 - 2026-11-07: Stage 4 built locally: Leading Indicators page (catalog-driven summary table + 8 charts). Licence
   scan of FRED notes: ICE high-yield spread dropped (restricted; files removed, NFCICREDIT added instead);
   U. Michigan sentiment charted with citation, no downloads. Browser check passes on all four pages.
-  Waiting for Troy's review before pushing.
+  Reviewed by Troy and live (run 42443436321).
 
 ## Next steps, in order
 Setup (steps 1-4) and Phase 1 are done. Phase 2 is built in stages; Troy reviews each one locally before the next.
-1. Stage 4 review: Leading Indicators page (built 2026-11-07; push and republish after Troy's review).
-2. Stage 5: Data & Downloads page (catalog, CSV/XLSX per series, bundles, stable links; DOL downloads per
+1. Stage 5: Data & Downloads page (catalog, CSV/XLSX per series, bundles, stable links; DOL downloads per
    docs/dashboard_requirements.md). Chicago Fed LMI data not offered until its terms are confirmed;
    series with licence restricted / citation-required are never offered as downloads.
-3. Stage 6: About page (definitions, sources, update schedule, revision policy, disclaimer).
+2. Stage 6: About page (definitions, sources, update schedule, revision policy, disclaimer).
 
 ## Where planning lives
 The full plan, roadmap and decisions are kept in Troy's Claude project ("Unemployment Correlations"),
