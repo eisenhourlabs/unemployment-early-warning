@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{#- Overview page: "Where are we this week?" -#}
+
+{% macro chart_card(c, wide=false) -%}
+<section class="card chart-card{% if wide %} wide{% endif %}" aria-labelledby="{{ c.id }}-title">
+  <h2 id="{{ c.id }}-title">{{ c.title }}</h2>
+  <p class="why">{{ c.why }}</p>
+  <div class="chart" id="chart-{{ c.id }}" role="img" aria-label="{{ c.title }} chart"></div>
+  <p class="chart-footer">{{ c.footer }}</p>
+  <div class="card-actions">
+    <div class="menu">
+      <button type="button" class="btn" data-csv-menu="{{ c.id }}" aria-expanded="false">Download CSV ▾</button>
+      <div class="menu-list" hidden>
+        <button type="button" data-csv="{{ c.id }}" data-scope="visible">Visible range</button>
+        <button type="button" data-csv="{{ c.id }}" data-scope="full">Full history</button>
+      </div>
+    </div>
+    <button type="button" class="btn" data-png="{{ c.id }}">Download image</button>
+  </div>
+</section>
+{%- endmacro %}
+
+{% block content %}
+<div class="grid top-row">
+  <section class="card score-placeholder" aria-label="Early-warning score">
+    <h2>Early-warning score</h2>
+    <p>The green / amber / red layoff-risk score and the 3–6 and 12-month forecast arrive in Phase 3,
+       once thresholds are backtested on 2001, 2008–09 and 2020.</p>
+  </section>
+  <section class="card changes" aria-labelledby="changes-title">
+    <h2 id="changes-title">What changed this week</h2>
+    <ul>
+      {%- for s in sentences %}
+      <li>{{ s }}</li>
+      {%- endfor %}
+    </ul>
+  </section>
+</div>
+
+<div class="tiles">
+  {%- for t in tiles %}
+  <section class="card tile">
+    <h3>{{ t.name }}</h3>
+    <p class="tile-value">{{ t.value }}</p>
+    <p class="tile-asof">{{ t.as_of }}</p>
+    <ul class="tile-changes">
+      {%- for ch in t.changes %}
+      <li>{{ ch }}</li>
+      {%- endfor %}
+    </ul>
+    <p class="tile-pct">{{ t.percentile }}</p>
+  </section>
+  {%- endfor %}
+</div>
+<p class="note">Tiles and percentiles use full history whatever the time setting: the share of all past
+  observations at or below the latest value.</p>
+
+<div class="grid">
+  {{ chart_card(charts.unemployment, wide=true) }}
+  {{ chart_card(charts.ic) }}
+  {{ chart_card(charts.cc) }}
+</div>
+
+<section class="card calendar" aria-labelledby="cal-title">
+  <div class="calendar-head">
+    <h2 id="cal-title">Next releases</h2>
+    <span class="soon" title="Coming soon">Downloads →</span>
+  </div>
+  {%- if calendar %}
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Release</th><th>Next</th><th>Time</th><th>After that</th></tr></thead>
+    <tbody>
+      {%- for r in calendar %}
+      <tr>
+        <td>{% if r.url %}<a href="{{ r.url }}">{{ r.release }}</a>{% else %}{{ r.release }}{% endif %}
+          {%- if r.detail and "20" in r.detail %} <span class="muted">({{ r.detail }})</span>{% endif %}</td>
+        <td>{{ r.next }}</td>
+        <td>{{ r.time }}</td>
+        <td>{{ r.after }}</td>
+      </tr>
+      {%- endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p class="chart-footer">Scheduled dates from FRED's release calendar and the Chicago Fed's release schedule; publishers can change them.</p>
+  {%- else %}
+  <p>Release calendar not available.</p>
+  {%- endif %}
+</section>
+{% endblock %}

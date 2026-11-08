@@ -2,6 +2,6 @@ file,description,source,first_date,last_date,rows,last_checked_utc
 ar218.csv,DOL ar218 by state,https://oui.doleta.gov/unemploy/csv/ar218.csv,1995-03-31,2026-09-30,6723,2026-11-07T21:03:11+00:00
 ar5159.csv,DOL ar5159 by state,https://oui.doleta.gov/unemploy/csv/ar5159.csv,1995-01-31,2026-10-31,20204,2026-11-07T21:03:10+00:00
 ar539.csv,DOL ar539 by state,https://oui.doleta.gov/unemploy/csv/ar539.csv,1995-01-07,2026-10-31,88033,2026-11-07T21:03:09+00:00
-national_weekly.csv,Merged national weekly claims (ETA 539 + preliminary weeks),ETA 539 national report; FRED (news release figures); ar539 state sums,1995-01-07,2026-10-31,1661,2026-11-07T21:03:12+00:00
+national_weekly.csv,Merged national weekly claims (ETA 539 + preliminary weeks),ETA 539 national report; FRED (news release figures); ar539 state sums,1995-01-07,2026-10-31,1661,2026-11-08T02:01:55+00:00
 national_weekly_eta539.csv,"National weekly claims, ETA 539 (official)",https://oui.doleta.gov/unemploy/wkclaims/report.asp,1995-01-07,2026-10-10,1658,2026-11-07T21:03:07+00:00
 seasonal_factors.csv,Published seasonal factors incl. future weeks,https://oui.doleta.gov/unemploy/wkclaims/report.asp,1995-01-07,2027-04-03,1683,2026-11-07T21:03:07+00:00

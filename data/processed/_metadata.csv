@@ -13,7 +13,7 @@ CAICLAIMS,Initial Claims in California,Number,"Weekly, Ending Saturday",Not Seas
 CAUR,Unemployment Rate in California,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:38:54-05,1990-01-01,2026-09-01,5.1
 CC4WSA,4-Week Moving Average of Continued Claims (Insured Unemployment),Number,"Weekly, Ending Saturday",Seasonally Adjusted,2026-11-05 07:34:28-06,1990-01-06,2026-10-24,1709500.0
 CCNSA,Continued Claims (Insured Unemployment),Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-05 07:34:29-06,1990-01-06,2026-10-24,1494812.0
-CCSA,Continued Claims (Insured Unemployment),Number,"Weekly, Ending Saturday",Seasonally Adjusted,2026-11-05 07:34:30-06,1990-01-06,2026-10-24,1718000.0
+CCSA,Continued Claims (Insured Unemployment),Number,"Weekly, Ending Saturday",Seasonally Adjusted,2026-11-05 07:34:30-06,1967-01-07,2026-10-24,1718000.0
 CFLMICONTRIBUTIONHIRINGRATEUWADVANCE,CFLMI Real-Time Hiring Contribution (Advance),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,0.012
 CFLMICONTRIBUTIONHIRINGRATEUWFINAL,CFLMI Real-Time Hiring Contribution (Final),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,-0.023
 CFLMICONTRIBUTIONLAYOFFSOTHERSEPSADVANCE,CFLMI Real-Time Layoffs Contribution (Advance),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,0.003
@@ -70,9 +70,9 @@ HIUR,Unemployment Rate in Hawaii,Percent,Monthly,Seasonally Adjusted,2026-10-20 
 IACCLAIMS,Continued Claims (Insured Unemployment) in Iowa,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:39:00-06,1990-01-06,2026-10-24,6196.0
 IAICLAIMS,Initial Claims in Iowa,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:54-06,1990-01-06,2026-10-31,1430.0
 IAUR,Unemployment Rate in Iowa,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:46:05-05,1990-01-01,2026-09-01,3.2
-IC4WSA,4-Week Moving Average of Initial Claims,Number,"Weekly, Ending Saturday",Seasonally Adjusted,2026-11-05 07:34:29-06,1990-01-06,2026-10-31,194750.0
+IC4WSA,4-Week Moving Average of Initial Claims,Number,"Weekly, Ending Saturday",Seasonally Adjusted,2026-11-05 07:34:29-06,1967-01-28,2026-10-31,194750.0
 ICNSA,Initial Claims,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-05 07:34:30-06,1990-01-06,2026-10-31,176698.0
-ICSA,Initial Claims,Number,"Weekly, Ending Saturday",Seasonally Adjusted,2026-11-05 07:34:30-06,1990-01-06,2026-10-31,189000.0
+ICSA,Initial Claims,Number,"Weekly, Ending Saturday",Seasonally Adjusted,2026-11-05 07:34:30-06,1967-01-07,2026-10-31,189000.0
 IDCCLAIMS,Continued Claims (Insured Unemployment) in Idaho,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:52-06,1990-01-06,2026-10-24,4366.0
 IDICLAIMS,Initial Claims in Idaho,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:53-06,1990-01-06,2026-10-31,836.0
 IDUR,Unemployment Rate in Idaho,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:44:28-05,1990-01-01,2026-09-01,3.6
@@ -158,7 +158,7 @@ PAICLAIMS,Initial Claims in Pennsylvania,Number,"Weekly, Ending Saturday",Not Se
 PAUR,Unemployment Rate in Pennsylvania,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:42:02-05,1990-01-01,2026-09-01,3.6
 PAYEMS,"All Employees, Total Nonfarm",Thousands of Persons,Monthly,Seasonally Adjusted,2026-11-06 09:43:20-06,1990-01-01,2026-10-01,159293.0
 PERMIT,New Privately-Owned Housing Units Authorized in Permit-Issuing Places: Total Units,Thousands of Units,Monthly,Seasonally Adjusted Annual Rate,2026-10-27 09:04:15-05,1990-01-01,2026-09-01,1398.0
-SAHMREALTIME,Real-time Sahm Rule Recession Indicator,Percentage Points,Monthly,Seasonally Adjusted,2026-11-06 09:47:24-06,1990-01-01,2026-10-01,0.0
+SAHMREALTIME,Real-time Sahm Rule Recession Indicator,Percentage Points,Monthly,Seasonally Adjusted,2026-11-06 09:47:24-06,1959-12-01,2026-10-01,0.0
 SCCCLAIMS,Continued Claims (Insured Unemployment) in South Carolina,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:40-06,1990-01-06,2026-10-24,13760.0
 SCICLAIMS,Initial Claims in South Carolina,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:41-06,1990-01-06,2026-10-31,1704.0
 SCUR,Unemployment Rate in South Carolina,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:54:19-05,1990-01-01,2026-09-01,4.0
@@ -177,7 +177,8 @@ U6RATE,"Total Unemployed, Plus All Persons Marginally Attached to the Labor Forc
 UEMPLT5,Number Unemployed for Less Than 5 Weeks,Thousands of Persons,Monthly,Seasonally Adjusted,2026-11-06 09:43:11-06,1990-01-01,2026-10-01,2170.0
 UEMPMED,Median Weeks Unemployed,Weeks,Monthly,Seasonally Adjusted,2026-11-06 09:43:16-06,1990-01-01,2026-10-01,11.9
 UMCSENT,University of Michigan: Consumer Sentiment,Index 1966:Q1=100,Monthly,Not Seasonally Adjusted,2026-10-23 10:02:25-05,1990-01-01,2026-09-01,48.1
-UNRATE,Unemployment Rate,Percent,Monthly,Seasonally Adjusted,2026-11-06 09:43:15-06,1990-01-01,2026-10-01,4.1
+UNRATE,Unemployment Rate,Percent,Monthly,Seasonally Adjusted,2026-11-06 09:43:15-06,1948-01-01,2026-10-01,4.1
+USREC,NBER based Recession Indicators for the United States from the Period following the Peak through the Trough,+1 or 0,Monthly,Not Seasonally Adjusted,2026-11-02 18:02:26-06,1854-12-01,2026-10-01,0.0
 UTCCLAIMS,Continued Claims (Insured Unemployment) in Utah,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:34-06,1990-01-06,2026-10-24,10553.0
 UTICLAIMS,Initial Claims in Utah,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:33-06,1990-01-06,2026-10-31,1443.0
 UTUR,Unemployment Rate in Utah,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:44:23-05,1990-01-01,2026-09-01,3.5

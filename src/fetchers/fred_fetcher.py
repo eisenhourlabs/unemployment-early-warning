@@ -5,7 +5,8 @@ What it does, step by step:
   1. Reads your FRED API key (from config/.env on your PC, or from a GitHub secret in the cloud).
   2. Reads the series catalog and picks rows where fetcher == "fred" and status == "active".
      Rows whose ID starts with STATE_ are expanded to one series per state in config/state_weights.csv.
-  3. Downloads each series' full history from the FRED API.
+  3. Downloads each series' history from the FRED API, from 1990 or from the catalog's history_start
+     date when one is set (e.g. UNRATE from 1948, for long-run percentiles on the dashboard).
   4. Saves it to data/processed/<SERIES_ID>.csv  (columns: date, value).
   5. If the data changed since last time, also saves a dated copy in data/vintages/<SERIES_ID>/
      so we keep a record of revisions (important for honest backtests).
@@ -39,7 +40,8 @@ VINTAGES = ROOT / "data" / "vintages"
 LOG_FILE = ROOT / "data" / "fetch_log.csv"
 
 FRED_URL = "https://api.stlouisfed.org/fred"
-START_DATE = "1990-01-01"   # history start; enough for 3 recessions of backtesting
+START_DATE = "1990-01-01"   # default history start; enough for 3 recessions of backtesting.
+                            # A catalog row's history_start column overrides it for that series.
 PAUSE_SECONDS = 0.6         # FRED allows ~120 requests/minute; this keeps us well under
 
 # When should a run count as failed (exit code 1, which turns the GitHub run red)?
@@ -89,6 +91,13 @@ def series_to_fetch(only=None) -> dict[str, str]:
     return tiers
 
 
+def history_starts() -> dict[str, str]:
+    """Return {series_id: start date} for catalog rows that set history_start (others use START_DATE)."""
+    with open(CATALOG) as f:
+        return {row["series_id"]: row["history_start"] for row in csv.DictReader(f)
+                if row.get("history_start")}
+
+
 def fred_get(endpoint: str, params: dict, key: str, tries: int = 3) -> dict:
     """Call one FRED API endpoint and return the JSON. Retries a few times on network hiccups."""
     params = {**params, "api_key": key, "file_type": "json"}
@@ -106,10 +115,10 @@ def fred_get(endpoint: str, params: dict, key: str, tries: int = 3) -> dict:
     raise RuntimeError(f"FRED returned status {r.status_code} for {params.get('series_id')}")
 
 
-def fetch_one(sid: str, key: str) -> tuple[pd.DataFrame, dict]:
-    """Download one series. Returns (data, metadata)."""
+def fetch_one(sid: str, key: str, start: str = START_DATE) -> tuple[pd.DataFrame, dict]:
+    """Download one series from the start date. Returns (data, metadata)."""
     meta = fred_get("series", {"series_id": sid}, key)["seriess"][0]
-    obs = fred_get("series/observations", {"series_id": sid, "observation_start": START_DATE}, key)
+    obs = fred_get("series/observations", {"series_id": sid, "observation_start": start}, key)
     df = pd.DataFrame(obs["observations"])[["date", "value"]]
     # FRED uses "." for missing values (e.g. October 2025, when no unemployment rate was collected).
     df["value"] = pd.to_numeric(df["value"].replace(".", pd.NA), errors="coerce")
@@ -147,13 +156,14 @@ def main(only=None):
     key = load_api_key()
     tiers = series_to_fetch(only)
     ids = list(tiers)
+    starts = history_starts()
     print(f"Fetching {len(ids)} FRED series...")
     meta_rows, log_rows = [], []
     run_time = datetime.now(timezone.utc).isoformat(timespec="seconds")
 
     for i, sid in enumerate(ids, 1):
         try:
-            df, info = fetch_one(sid, key)
+            df, info = fetch_one(sid, key, starts.get(sid, START_DATE))
             changed = save(sid, df)
             meta_rows.append(info)
             status = "updated" if changed else "no change"

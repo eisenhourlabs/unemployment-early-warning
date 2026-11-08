@@ -7,3 +7,6 @@ __pycache__/
 data/raw/*
 !data/raw/.gitkeep
 internal/
+
+# Built website (rebuilt by src/site/build_site.py on every run; published by GitHub Actions)
+/site/

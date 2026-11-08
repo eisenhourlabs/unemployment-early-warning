@@ -50,12 +50,13 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 ## Layout
 | Path | Purpose |
 | --- | --- |
-| `config/series_catalog.csv` | Every series: source, fetcher, frequency, tier, role, page, status (active/future) |
+| `config/series_catalog.csv` | Every series: source, fetcher, frequency, tier, role, page, history_start (optional; FRED default 1990), status (active/future) |
 | `config/state_weights.csv` | Footprint ranking by state (44 states, rank only; exact weights in `internal/`) |
 | `config/dol_columns.csv` | DOL coded column names -> plain names, with how each was confirmed (verified / label / inferred / unclear) |
 | `src/fetchers/fred_fetcher.py` | Downloads all active FRED series (incl. per-state series) to `data/processed/` |
 | `src/fetchers/dol_*.py` | DOL pipeline: `dol_national.py` (ETA 539), `dol_state.py` (ar539/ar5159/ar218), `dol_recent_weeks.py` (merged table + preliminary weeks), `dol_common.py` (shared) |
 | `src/fetchers/wait_for_claims.py` | Thursday run: waits up to 60 min for the claims release on FRED; never fails |
+| `src/fetchers/release_calendar.py` | Next release dates (FRED schedules + Chicago Fed schedule page) -> `data/processed/release_calendar.csv`; never fails |
 | `src/fetchers/chicagofed_fetcher.py` | Chicago Fed Labor Market Indicators: 36 series to `data/processed/CFLMI*.csv` (with vintages) |
 | `src/checks/data_quality.py` | Stale / gaps / outlier / fetch checks for every series -> `data/processed/series_health.csv`; fails only on a stale or missing Tier 1 series |
 | `config/quality_rules.csv`, `config/quality_dol_columns.csv` | Data-quality settings: allowed ages, known gaps, skips, outlier window and threshold; which DOL columns to check |
@@ -66,7 +67,11 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 | `docs/dashboard_requirements.md` | What the Phase 2 dashboard must show |
 | `src/alerts/alerts.py` | Optional alerts (off) |
 | `src/signals/`, `src/forecast/` | Phase 3: triggers, composite score, forecast fan |
-| `site/` | Phase 2: the dashboard pages |
+| `src/site/build_site.py` | Builds the "Unemployment Watch" website (Plotly + Jinja2) from the data files into `site/` |
+| `src/site/templates/`, `src/site/static/` | Page templates (`base.html` = shared frame) and the site's CSS / JavaScript (time control, dark mode, downloads) |
+| `site/` | Built website (not committed; rebuilt and published to GitHub Pages by the workflow) |
+| `src/checks/check_site.py` | Browser check of the built site (Playwright + Edge; PC only, `requirements-dev.txt`) |
+| `docs/phase2_design.md` | Approved Phase 2 design (pages, charts, conventions, time control) |
 | `.github/workflows/refresh-data.yml` | Scheduled cloud refresh (weekday mornings + Thursday after claims) |
 | `docs/decisions.md` | Decision log — keep it current |
 | `docs/getting_started.md` | Manual setup steps (fallback) |
@@ -81,6 +86,10 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   `python src\fetchers\dol_recent_weeks.py`, `python src\transforms\dol_rates.py`, `python src\checks\dol_checks.py`
 - Chicago Fed: `python src\fetchers\chicagofed_fetcher.py`
 - Series health (run last): `python src\checks\data_quality.py`
+- Release calendar: `python src\fetchers\release_calendar.py`
+- Build the site: `python src\site\build_site.py`; preview: `python -m http.server 8000 --directory site`,
+  then open http://localhost:8000 (Ctrl+C stops the server)
+- Check the built site in a browser (once: `pip install -r requirements-dev.txt`): `python src\checks\check_site.py`
 
 ## Status (2026-11-07)
 - Phase 0 done: folders, catalog (35 active rows), footprint weights, FRED fetcher (tested only against
@@ -109,9 +118,20 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 - Still to watch: first real Thursday run (2026-11-12); ETA 539 national allowed age (42 days) is based on
   one observation; Chicago Fed terms of use before offering its data as downloads.
 
+- 2026-11-07: Phase 2 ("Unemployment Watch", design in docs/phase2_design.md) Stage 1 built: site frame,
+  Overview page, USREC + history_start in the catalog, release calendar, build + deploy jobs in the workflow.
+  Browser check passes locally (desktop, phone, dark mode, time control, downloads). Waiting for Troy's
+  review and for GitHub Pages to be switched on (Settings > Pages > Source: GitHub Actions).
+
 ## Next steps, in order
-Setup (steps 1-4) and Phase 1 are done.
-1. Phase 2: the dashboard MVP on GitHub Pages (see docs/dashboard_requirements.md).
+Setup (steps 1-4) and Phase 1 are done. Phase 2 is built in stages; Troy reviews each one locally before the next.
+1. Phase 2 Stage 1 review: site frame + Overview + publishing (built 2026-11-07; first live deploy pending).
+2. Stage 2: Job Losses page (7 charts, docs/phase2_design.md).
+3. Stage 3: Duration page (6 charts).
+4. Stage 4: Leading Indicators page (summary table + 8 charts).
+5. Stage 5: Data & Downloads page (catalog, CSV/XLSX per series, bundles, stable links; DOL downloads per
+   docs/dashboard_requirements.md). Chicago Fed data not offered until its terms are confirmed.
+6. Stage 6: About page (definitions, sources, update schedule, revision policy, disclaimer).
 
 ## Where planning lives
 The full plan, roadmap and decisions are kept in Troy's Claude project ("Unemployment Correlations"),

@@ -1,0 +1,4 @@
+# Only needed on your PC, for checking the built site in a real browser (src/checks/check_site.py).
+# Not installed in the cloud.
+-r requirements.txt
+playwright==1.64.1

@@ -1,4 +1,7 @@
-# Runs the data fetchers in GitHub's cloud on a schedule and saves new data back to the repository.
+# Runs the data fetchers in GitHub's cloud on a schedule, saves new data back to the repository,
+# then rebuilds the Unemployment Watch website and publishes it to GitHub Pages.
+# Three jobs run one after another: refresh (data) -> build (website) -> deploy (publish).
+# If the build fails, deploy is skipped and the previous website stays online.
 # Times are UTC. Central Time = UTC-6 in winter (UTC-5 in summer), so runs land about an hour
 # later in CT during daylight time; that is fine for these release times.
 name: Refresh data
@@ -54,6 +57,11 @@ jobs:
       - name: Check DOL data (fails if DOL and FRED claims differ by more than 1%)
         if: ${{ !cancelled() }}
         run: python src/checks/dol_checks.py
+      - name: Release calendar for the website (never fails)
+        if: ${{ !cancelled() }}
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+        run: python src/fetchers/release_calendar.py
       - name: Data-quality checks and series-health summary (fails only if a Tier 1 series is stale or missing)
         if: ${{ !cancelled() }}
         run: python src/checks/data_quality.py
@@ -65,3 +73,42 @@ jobs:
           git add data/ docs/data_revisions.md
           git diff --cached --quiet || git commit -m "Data refresh $(date -u +%Y-%m-%dT%H:%MZ)"
           git push
+
+  # Build the website from the data just saved. Runs even if a data step failed (the site then shows
+  # the stale-data badge), but not if the run was cancelled.
+  build:
+    needs: refresh
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main                     # the newest commit, including the data-bot's refresh
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.15"
+      - run: pip install -r requirements.txt
+      - name: Build the site
+        run: python src/site/build_site.py
+      - name: Package the site for GitHub Pages
+        uses: actions/upload-pages-artifact@v5   # current major as of 2026-11-07
+        with:
+          path: site
+
+  # Publish. Runs only if the build succeeded, so a broken build never replaces the live site.
+  deploy:
+    needs: build
+    if: ${{ !cancelled() && needs.build.result == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write                      # allowed to publish to GitHub Pages
+      id-token: write                   # proves to Pages that this workflow is the publisher
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publish to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5    # current major as of 2026-11-07

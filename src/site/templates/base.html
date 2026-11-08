@@ -1,0 +1,86 @@
+<!doctype html>
+{#- The shared frame for every page: top bar, freshness line, time control, footer.
+    Each page "extends" this file and fills in the {% block content %} part. -#}
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }} · Unemployment Watch</title>
+  <meta name="description" content="US unemployment early-warning dashboard: claims, unemployment rate and duration, from public data.">
+  {# Apply the saved light/dark choice before the page draws, so it doesn't flash. #}
+  <script>try { var t = localStorage.getItem("uw-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="index.html">Unemployment Watch</a>
+    <nav class="pages" aria-label="Pages">
+      {%- set pages = [("overview", "Overview", "index.html"), ("job-losses", "Job Losses", ""),
+                       ("duration", "Duration", ""), ("leading", "Leading", ""),
+                       ("data", "Data", ""), ("about", "About", "")] %}
+      {%- for key, label, href in pages %}
+        {%- if href %}
+      <a href="{{ href }}"{% if key == page %} aria-current="page"{% endif %}>{{ label }}</a>
+        {%- else %}
+      <span class="soon" title="Coming soon">{{ label }}</span>
+        {%- endif %}
+      {%- endfor %}
+    </nav>
+    <button class="theme-toggle" type="button" id="theme-toggle" aria-pressed="false">
+      <span class="theme-icon" aria-hidden="true"></span><span class="theme-label">Dark mode</span>
+    </button>
+  </div>
+</header>
+
+<div class="wrap controls">
+  <p class="freshness">
+    Data through: {{ freshness.claims }} · {{ freshness.unemployment }} · {{ freshness.updated }}
+    {%- if badge %}
+    <span class="badge" tabindex="0" title="{{ badge.list }}">⚠ {{ badge.text }}<span class="badge-detail">{{ badge.list }}</span></span>
+    {%- endif %}
+  </p>
+
+  <div class="timecontrol" role="group" aria-label="Time range for every chart on this page">
+    <span class="tc-label">Time:</span>
+    {%- for key, label in range_buttons %}
+    <button type="button" data-range="{{ key }}"{% if key == default_range %} aria-pressed="true"{% else %} aria-pressed="false"{% endif %}>{{ label }}</button>
+    {%- endfor %}
+    <span class="tc-sep" aria-hidden="true"></span>
+    {%- for r in recession_views %}
+    <button type="button" data-range="{{ r.key }}" aria-pressed="false" title="{{ r.start[:7] }} to {{ r.end[:7] }}">{{ r.label }}</button>
+    {%- endfor %}
+    <button type="button" data-range="custom" aria-pressed="false" aria-expanded="false" aria-controls="tc-custom">Custom</button>
+    <form class="tc-custom" id="tc-custom" hidden>
+      <label>From <input type="date" name="from" required></label>
+      <label>To <input type="date" name="to" required></label>
+      <button type="submit">Apply</button>
+    </form>
+  </div>
+</div>
+
+<main class="wrap">
+{% block content %}{% endblock %}
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <p><strong>Not an official forecast; public data only.</strong> Figures are revised by their publishers;
+      this site shows the latest published values and refreshes automatically on weekday mornings.</p>
+    <p>Sources: U.S. Department of Labor, Employment and Training Administration
+      (<a href="https://oui.doleta.gov/unemploy/claims.asp">weekly claims, ETA 539</a>);
+      U.S. Bureau of Labor Statistics and Federal Reserve Bank of St. Louis via
+      <a href="https://fred.stlouisfed.org/">FRED</a> (unemployment rate, Sahm indicator, claims);
+      National Bureau of Economic Research recession dates via FRED (USREC);
+      release schedules from FRED and the
+      <a href="https://www.chicagofed.org/research/data/chicago-fed-labor-market-indicators/release-schedule">Federal Reserve Bank of Chicago</a>.</p>
+    <p><a href="{{ repo_url }}">Source code and data on GitHub</a></p>
+  </div>
+</footer>
+
+<script id="page-data" type="application/json">{{ page_data | safe }}</script>
+<script src="assets/plotly.min.js"></script>
+<script src="assets/site.js"></script>
+</body>
+</html>

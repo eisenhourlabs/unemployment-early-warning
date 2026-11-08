@@ -22,3 +22,7 @@ for design decisions in `docs/decisions.md`.
    - `claims_rates_weekly.csv`, `exhaustion_duration_monthly.csv`, `benefit_duration_quarterly.csv`
    - `ar539.csv`, `ar5159.csv`, `ar218.csv` (state detail; plain column names)
    - Each download should include, or link to, the column descriptions in `config/dol_columns.csv`.
+
+Note (2026-11-07): on the site the SA initial claims rate is shown per 10,000 covered workers
+(`ic_rate_sa` x 100) and the continuing claims rate in percent, per docs/phase2_design.md decision 2.
+The data files keep percent.

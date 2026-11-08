@@ -933,3 +933,14 @@ run_utc,series_id,status
 2026-11-07T21:03:10+00:00,DOL_AR5159,updated: 20204 rows; no new periods
 2026-11-07T21:03:11+00:00,DOL_AR218,updated: 6723 rows; no new periods
 2026-11-07T21:03:12+00:00,DOL_NATIONAL_WEEKLY,"updated: 1661 weeks; official through IC 2026-10-10 / CC 2026-10-10; preliminary IC weeks ['2026-10-17', '2026-10-24', '2026-10-31'], CC weeks ['2026-10-17', '2026-10-24']"
+2026-11-08T02:01:37+00:00,UNRATE,updated
+2026-11-08T02:01:37+00:00,ICSA,updated
+2026-11-08T02:01:37+00:00,IC4WSA,updated
+2026-11-08T02:01:37+00:00,CCSA,updated
+2026-11-08T02:01:37+00:00,SAHMREALTIME,updated
+2026-11-08T02:01:37+00:00,USREC,updated
+2026-11-08T02:01:55+00:00,DOL_NATIONAL_WEEKLY,"updated: 1661 weeks; official through IC 2026-10-10 / CC 2026-10-10; preliminary IC weeks ['2026-10-17', '2026-10-24', '2026-10-31'], CC weeks ['2026-10-17', '2026-10-24']"
+2026-11-08T02:04:18+00:00,CALENDAR:Weekly jobless claims,ok
+2026-11-08T02:04:18+00:00,"CALENDAR:Jobs report (unemployment rate, payrolls)",ok
+2026-11-08T02:04:18+00:00,"CALENDAR:JOLTS (job openings, hires, layoffs)",ok
+2026-11-08T02:04:18+00:00,CALENDAR:Chicago Fed Labor Market Indicators,ok
