@@ -13,7 +13,7 @@ sahm,amber,2008-01,2010-07,31,real-time,hit (recession),12.0
 sahm,amber,2020-04,2021-04,13,real-time,during event,
 sahm,amber,2023-11,2023-12,2,real-time,false alarm,
 sahm,amber,2024-04,2025-02,11,real-time,followed by scare,15.0
-sahm,amber,2025-12,2026-02,3,real-time,false alarm,
+sahm,amber,2025-12,2026-02,3,real-time,too recent to judge,
 sahm,red,1969-11,1969-11,1,real-time,hit (recession),1.0
 sahm,red,1970-03,1971-11,21,real-time,during event,
 sahm,red,1974-04,1974-04,1,real-time,during event,
@@ -204,7 +204,7 @@ overall,amber,2000-11,2002-11,25,mixed,hit (recession),9.0
 overall,amber,2008-01,2010-06,30,mixed,hit (recession),12.0
 overall,amber,2019-12,2021-04,17,mixed,hit (2020),13.0
 overall,amber,2023-03,2025-02,24,mixed,followed by scare,14.0
-overall,amber,2025-12,2026-02,3,mixed,false alarm,
+overall,amber,2025-12,2026-02,3,mixed,too recent to judge,
 overall,red,1969-11,1971-11,25,mixed,hit (recession),1.0
 overall,red,1973-12,1976-02,27,mixed,hit (recession),2.0
 overall,red,1976-12,1977-02,3,mixed,followed by scare,3.0

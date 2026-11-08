@@ -10,7 +10,8 @@ Definitions:
               If none started in that window, the lead table says why: "late +k" (first on k months after
               the start), "on since YYYY-MM" (already on, from an episode older than the window), "none",
               or "n/a" (no data yet). The yield curve is also shown with a 24-month window.
-  Outcome     Each episode that starts outside an event is a HIT if an event (recession, early signal or 2020)
+  Outcome     Episodes whose 12-month window runs past the last month of data are "too recent to judge" and
+              not scored. Otherwise each episode that starts outside an event is a HIT if an event (recession, early signal or 2020)
               starts within the next 12 months while the episode is live (as above), "followed by a scare" if only a scare does, otherwise a
               FALSE ALARM. Episodes that start during an event are not scored.
   Adds        A trigger ADDS WARNING for an event if its amber lead is at least 1 month longer than the best
@@ -138,6 +139,9 @@ def main() -> None:
                         outcome, ev_no = f"hit ({real.iloc[0].group})", int(real.iloc[0].event)
                     elif len(nxt):
                         outcome, ev_no = "followed by scare", int(nxt.iloc[0].event)
+                    elif s + pd.DateOffset(months=WINDOW) > trig.index[-1]:
+                        # Its 12-month window isn't over yet: an event could still follow. Not scored.
+                        outcome, ev_no = "too recent to judge", None
                     else:
                         outcome, ev_no = "false alarm", None
                 episode_rows.append({"trigger": tid, "level": level, "start": f"{s:%Y-%m}", "end": f"{e:%Y-%m}",
@@ -196,7 +200,8 @@ def main() -> None:
                 "scares_warned": f"{L[L.group == 'scare'].lead_months.notna().sum()} of "
                                  f"{(L[L.group == 'scare'].lead != 'n/a').sum()}",
                 "pandemic_2020": L[L.group == "2020"].lead.iloc[0],
-                "episodes": len(E[E.outcome != "during event"]),
+                "episodes": len(E[~E.outcome.isin(["during event", "too recent to judge"])]),
+                "too_recent": int((E.outcome == "too recent to judge").sum()),
                 "hits": int(E.outcome.str.startswith("hit").sum()),
                 "followed_by_scare": int((E.outcome == "followed by scare").sum()),
                 "false_alarms": int((E.outcome == "false alarm").sum()),

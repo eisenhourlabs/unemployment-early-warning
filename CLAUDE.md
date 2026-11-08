@@ -69,9 +69,9 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 | `docs/data_revisions.md` | Automatic log of DOL revisions |
 | `docs/dashboard_requirements.md` | What the Phase 2 dashboard must show |
 | `src/alerts/alerts.py` | Optional alerts (off) |
-| `src/model/` | Phase 3 modeling: `build_claims_history.py` (claims table from 1967), `alfred_fetcher.py` (past vintages), `realtime.py` (`as_known_on(series, date)` + Sahm check), `events.py` (event definition and list), `plot_events.py` (review chart), `current_fetcher.py` (long histories of never-revised series), `triggers.py` (8 Layer 1 triggers monthly, real-time), `backtest_triggers.py` (leads, false alarms, adds-warning), `plot_triggers.py` (status chart) |
+| `src/model/` | Phase 3 modeling: `build_claims_history.py` (claims table from 1967), `alfred_fetcher.py` (past vintages), `realtime.py` (`as_known_on(series, date)` + Sahm check), `events.py` (event definition and list), `plot_events.py` (review chart), `current_fetcher.py` (long histories of never-revised series), `triggers.py` (8 Layer 1 triggers monthly, real-time), `backtest_triggers.py` (leads, false alarms, adds-warning), `plot_triggers.py` (status chart), `features.py` (score inputs), `score.py` (early-warning score: fit, out-of-sample test, sensitivity runs), `plot_score.py` (score charts) |
 | `config/model_series.csv`, `config/event_notes.csv`, `config/triggers.csv` | Modeling series: ALFRED / first-release / current vintage, release lag; Troy's event rulings and notes; Layer 1 trigger thresholds |
-| `data/model/` | Modeling data: `claims_weekly.csv`, `alfred/` (vintages + coverage), `current/` (GS10, TB3MS, T10Y3MM full history), `events.csv`, `event_flags_monthly.csv`, `claims_leg_weekly.csv`, `triggers_monthly.csv`, `trigger_episodes.csv`, `trigger_leads.csv`, `trigger_summary.csv` |
+| `data/model/` | Modeling data: `claims_weekly.csv`, `alfred/` (vintages + coverage), `current/` (GS10, TB3MS, T10Y3MM full history), `events.csv`, `event_flags_monthly.csv`, `claims_leg_weekly.csv`, `triggers_monthly.csv`, `trigger_episodes.csv`, `trigger_leads.csv`, `trigger_summary.csv`, `status_comparison.csv`, `features_monthly.csv`, `score_*.csv` |
 | `docs/model.md`, `reports/` | Phase 3 method and results (grows each stage); review charts (not on the site) |
 | `src/signals/`, `src/forecast/` | Phase 3: triggers, composite score, forecast fan |
 | `src/site/build_site.py` | Builds the "Unemployment Watch" website (Plotly + Jinja2) into `site/`: shared frame, renders each page |
@@ -106,7 +106,8 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 - Phase 3 modeling data, in order: `python src\model\build_claims_history.py`, `python src\model\alfred_fetcher.py`
   (~3 min), `python src\model\current_fetcher.py`, `python src\model\realtime.py` (Sahm check), `python src\model\events.py`,
   `python src\model\plot_events.py`, `python src\model\triggers.py` (~15 s), `python src\model\backtest_triggers.py`,
-  `python src\model\plot_triggers.py`
+  `python src\model\plot_triggers.py`, `python src\model\features.py` (~2 min), `python src\model\score.py` (~2 min),
+  `python src\model\plot_score.py`
 
 ## Status (2026-11-07)
 - Phase 0 done: folders, catalog (35 active rows), footprint weights, FRED fetcher (tested only against
@@ -179,16 +180,19 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   2 claims vs. 52-wk low, 4 continued claims + 6 yield curve (long lead) and 8 NFCI (real-time only since 2011); 3 removed;
   5 temp help and 7 manufacturing = context only (Leading page, stage 3e); all 8 stay 3c score candidates. New overall rule:
   red if 1, 2 or 4 red; amber if one of 1, 2, 4 amber/red AND another panel trigger amber/red. Compared with the plan rule:
-  amber 8% vs. 14% of months, longest amber run 9 vs. 17 months, amber false alarms 3 vs. 4. Waiting for Troy's review.
+  amber 8% vs. 14% of months, longest amber run 9 vs. 17 months, amber false alarms 2 vs. 4. Layer 1 locked (approved).
+- 2026-11-08: Stage 3c built locally on `phase3a` (not pushed, website unchanged): early-warning score (ridge logistic,
+  8 inputs, real-time), out of sample 2000-2026 Brier 0.114 / skill +0.14 (equal-weight +0.12, Layer 1 +0.01); amber 19%,
+  red 50%; sensitivity runs incl. claims vintages (2022 false red hidden by revised claims) and an extra
+  coefficients->=0 run (+0.18); docs/model.md section 5, reports/score_history.png, score_reliability.png. Latest score
+  (Oct 2026) 2.4%. Waiting for Troy's review (decisions in docs/model.md 5.9).
 
 ## Next steps, in order
 Setup (steps 1-4), Phase 1, Phase 2 and the Phase 2 review fixes are done and live.
-1. Stage 3b review of the new overall rule (docs/model.md 4.8). Do not start 3c until he says so. Merge `phase3a` into main and push only when he
-   says "push".
-2. Stage 3c (score), plan with Troy first. REQUIRED (Troy, 2026-11-08): fit the score (a) with and without the four
-   one-off shock scares (#3, #6, #11, #14), and (b) with and without TEMPHELPS and JOLTS, and report the differences.
-   Also measure the claims revision effect with FRED's 2009+ claims vintages (ICSA / CCSA).
-3. Stages 3d-3e per docs/phase3_plan.md. Stage 3e must also: show trigger signal colors for the panel (yield curve
+1. Stage 3c review: Troy decides docs/model.md 5.9 (coefficients >= 0, temp help, JOLTS, claims-revision handling,
+   thresholds). Do not start 3d until he says so. Merge `phase3a` into main and push only when he says "push".
+2. Stage 3d (forecasts), plan with Troy first. The score's probability feeds the mixture fans (plan Layer 3).
+3. Stage 3e per docs/phase3_plan.md. Stage 3e must also: show trigger signal colors for the panel (yield curve
    labeled "long lead, often 12+ months"; NFCI caveat "real-time only since 2011"); move temp help and manufacturing
    surveys to the Leading page as context only (not counted in the overall status); use the new overall rule.
 Open items to watch: first real Thursday run (2026-11-12); ETA 539 allowed age (42 days); Chicago Fed LMI terms of use;

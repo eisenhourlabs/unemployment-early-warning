@@ -42,12 +42,19 @@ def alfred_series() -> pd.DataFrame:
     return cfg[cfg.vintage_source.isin(["alfred", "alfred_first"])]
 
 
+VINTAGE_SUFFIX = "_vintage"   # e.g. IC4WSA_vintage = FRED's IC4WSA, kept separately for a sensitivity run
+VINTAGE_FROM = "2007-01-01"   # ... with observations from 2007 only (its vintages start in 2009)
+
+
 def fetch_realtime(series_id: str, key: str) -> pd.DataFrame:
     """Download every vintage of one series as rows of (date, value, realtime_start, realtime_end)."""
+    fred_id = series_id.removesuffix(VINTAGE_SUFFIX)
+    extra = {"observation_start": VINTAGE_FROM} if series_id.endswith(VINTAGE_SUFFIX) else {}
     rows, offset = [], 0
     while True:
         answer = fred_get("series/observations", {
-            "series_id": series_id,
+            **extra,
+            "series_id": fred_id,
             "realtime_start": "1776-07-04",   # FRED's documented "earliest possible" date
             "realtime_end": "9999-12-31",     # ... and "latest possible" date
             "limit": PAGE, "offset": offset,

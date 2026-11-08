@@ -183,6 +183,8 @@ revised history shows that week as tighter.
 - **Adds warning:** a trigger adds warning for an event if its amber lead is at least 1 month longer than the best
   amber lead among the baseline triggers (1–4; for a baseline trigger, the other three), or it warns when they don't.
   This is judged on the 7 recessions used for fitting plus the early signal (#7).
+- **Too recent to judge:** an episode whose 12-month window runs past the last month of data is not scored (added in
+  stage 3c; it moved Sahm's and the new rule's December 2025 amber from "false alarm" to "too recent").
 - **Flags (nothing dropped):** *drop candidate* = adds warning in none of the events it can be tested on; *weak* = adds in
   only one, or (amber) has more false alarms than hits.
 
@@ -247,7 +249,7 @@ Hits, scares and false alarms count episodes that start outside events. False al
 
 | Trigger | Level | Recessions warned (≤ 12 mo) | Median lead | Hits | Followed by scare | False alarms | False alarms / decade | Adds warning (of 8) | Flag |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 Sahm | amber | 4 of 7 | 0.5 | 4 | 3 | 4 | 0.7 | 1 (#1 +1) | weak |
+| 1 Sahm | amber | 4 of 7 | 0.5 | 4 | 3 | 3 | 0.5 | 1 (#1 +1) | weak |
 |  | red | 1 of 7 | 2 | 1 | 1 | 0 | 0.0 | | |
 | 2 Claims vs. 52-wk low | amber | 6 of 7 | 1.5 | 8 | 5 | 8 | 1.4 | 2 (#7 +4, #9 +3) | keep |
 |  | red | 4 of 7 | 0 | 6 | 2 | 1 | 0.2 | | |
@@ -266,7 +268,7 @@ Hits, scares and false alarms count episodes that start outside events. False al
 | **Overall status (plan rule; new rule in 4.8)** | amber | 4 of 7 (the other 3 "on since") | 3 | 6 | 4 | 4 | 0.7 | | |
 |  | red | 5 of 7 | 0 | 7 | 2 | 1 | 0.2 | | |
 
-False alarms, by start month (amber unless noted): Sahm 1967-10, 1986-05, 2023-11, 2025-12; claims vs. 52-wk low
+False alarms, by start month (amber unless noted): Sahm 1967-10, 1986-05, 2023-11 (2025-12 is too recent to judge); claims vs. 52-wk low
 1969-07, 1972-07, 1973-08, 1976-09, 1995-07, 1995-11, 2006-05, 2017-09 (all 1–2 months long); claims vs. year ago 1985-02,
 1994-02, 1995-09, 2007-02, 2024-10; temp help 1995-07, 2006-12, 2016-05, 2019-06, 2021-08; yield curve 1967-01, 2006-10;
 manufacturing 1995-06, 2012-08, 2015-10, 2025-05; NFCI 1978-04, 1987-04, 1998-10. Overall amber: 1967-10, 1985-02, 1995-07,
@@ -350,8 +352,8 @@ together without a core trigger.
 | Amber lead, early signal #7 / 2020 #13 | 4 / 3 | 4 / 6 |
 | Red lead, recessions #1, #2, #4, #5, #8, #9, #12 | 2, 0, 0, late +1, late +1, 0, late +3 | 2, 0, 0, 0, late +1, 0, late +3 |
 | Red lead, early signal #7 / 2020 #13 | 0 / 0 | 0 / 0 |
-| Amber episodes: hits / followed by scare / false alarms | 8 / 3 / 3 | 6 / 4 / 4 |
-| Amber false alarms (start month) | 1967-10, 1973-08, 2025-12 | 1967-10, 1985-02, 1995-07, 2006-12 |
+| Amber episodes: hits / followed by scare / false alarms | 8 / 3 / 2 (+1 too recent to judge) | 6 / 4 / 4 |
+| Amber false alarms (start month) | 1967-10, 1973-08 (2025-12 too recent to judge) | 1967-10, 1985-02, 1995-07, 2006-12 |
 | Red episodes: hits / followed by scare / false alarms | 6 / 2 / 1 | 7 / 2 / 1 |
 | Red false alarm | 1979-04 (strike spike) | 1979-04 (strike spike) |
 | Longest continuous amber run | 9 months (1990-02 to 1990-10) | 17 months (2024-11 to 2026-03) |
@@ -368,12 +370,209 @@ together without a core trigger.
    rule gives shorter measured leads where the plan rule's amber was driven by the yield curve (1973: 0 vs. 4; 1979: 6 vs. 8;
    2020: 3 vs. 6). In 1981 and 2008 the new rule's amber is a fresh 1-month warning instead of a run that began more than a
    year earlier.
-3. **False alarms:** amber 3 vs. 4. The new rule's three are 1967-10 (Sahm + yield curve), 1973-08 (a one-month claims blip
-   with the yield curve inverted and NFCI red on revised data; the 1973 event followed 4 months later, after the blip had ended) and **2025-12 to 2026-02**
-   (Sahm amber at 0.30–0.43 around the uncollected October 2025 unemployment rate, while the yield curve was red from
-   re-steepening after the 2022–24 inversion). Red false alarms are unchanged (1 each).
+3. **False alarms:** amber 2 vs. 4. The new rule's two are 1967-10 (Sahm + yield curve) and 1973-08 (a one-month claims blip
+   with the yield curve inverted and NFCI red on revised data; the 1973 event followed 4 months later, after the blip had ended).
+   A third amber episode, **2025-12 to 2026-02**, is too recent to judge: its 12-month window runs to December 2026. Sahm was
+   amber at 0.30–0.43 (from November 2025's first print of 4.6%, not an artifact of the uncollected October; see the check in
+   `docs/decisions.md`) while the yield curve was red from re-steepening after the 2022–24 inversion. Red false alarms are
+   unchanged (1 each).
 4. **Red is slightly later in 1981** (late +1 vs. 0), because trigger 3 (now removed) went red in the event's start month.
 5. **Today (October 2026):** green under both rules.
 
 **Caveat:** the new rule was chosen after looking at these same 7 recessions, so its record here is in-sample. Stage 3c's
 out-of-sample test of the score is the fairer comparison.
+
+## 5. The early-warning score (stage 3c)
+
+Scripts: `src/model/features.py` (inputs), `src/model/score.py` (fit, out-of-sample test, sensitivity runs),
+`src/model/plot_score.py` (charts). Outputs: `data/model/features_monthly.csv`, `score_oos.csv` (every month's
+out-of-sample score, all models and runs), `score_results.csv`, `score_sensitivity.csv`, `score_reliability.csv`,
+`score_thresholds.csv`, `score_coefficients.csv` (each yearly re-fit), `score_coefficients_nonneg.csv`,
+`score_contributions.csv`; charts `reports/score_history.png` and `reports/score_reliability.png`.
+
+### 5.1 Set-up
+
+- **Target.** For each month t, judged at its last day, y = 1 if an event in `events.csv` starts in months t+1 to t+6.
+  Scares and the early signal count as events (ruling of 2026-11-08).
+- **Not used for fitting or for the Brier score:**
+  - months while an event is in progress (start month included), because the score predicts starts;
+  - the 2020 window, 2019-09 to 2021-03 (event #13), which is reported separately;
+  - the last 6 months of data, whose outcome isn't known yet.
+- **Inputs** (`features.py`): the eight trigger measures as continuous values, each signed so that higher = worse,
+  each month seeing only what was published by its last day:
+  - Sahm indicator; initial claims vs. 52-week low; initial claims vs. a year ago; continued claims vs. a year ago;
+  - minus temp help's 6-month change;
+  - minus the **lowest** 10y − 3m spread of the past 18 months ("recently inverted, and how deeply");
+  - minus the 3-month average of the manufacturing surveys;
+  - NFCI.
+
+  Each is standardized with the training window's mean and standard deviation, capped at ±4, and set to 0 ("average, no
+  information") before the series exists (temp help before 1990, NFCI before 1973).
+- **Models:**
+  - (a) **ridge logistic regression** (L2 penalty), with the penalty chosen by forward-chaining cross-validation inside
+    each training window (5 time-ordered blocks, 6-month gap);
+  - (b) **equal-weight index**: the average of the standardized inputs, turned into a probability by a one-variable
+    logistic fit;
+  - (c) **Layer 1 baseline**: the event rate per color of the overall status (new rule) in the training data, shrunk
+    toward the base rate;
+  - (d) **base rate**.
+- **Out-of-sample test.** Re-fit every January using only months whose 6-month outcome was already known, then score that
+  year. **2000–2026 is the test.** 1980–1999 is also run, as a "pseudo out-of-sample" check.
+- **Amber threshold.** Chosen on pre-2000 data only: a model fitted on 1968–1999 gives in-sample scores, and the
+  threshold is the one whose episodes come closest to one false amber per real warning. Episodes and outcomes follow
+  Layer 1's rules: 12-month window, still on within 3 months of the start, too-recent episodes not scored. **Red = 50%.**
+- **Sample.** By the 2026 re-fit: 490 usable months, 84 of them with y = 1, from 14 events (2020 excluded).
+  Neighbouring months share the same 6-month windows, so the effective number of independent outcomes is far smaller.
+
+### 5.2 Results, 2000–2026 (out of sample)
+
+236 scored months, 36 with y = 1.
+
+| Model | Brier | Skill vs. base rate | Amber threshold | Amber: real / false | Red (50%): real / false |
+| --- | --- | --- | --- | --- | --- |
+| **(a) Ridge logistic (main)** | **0.114** | **+0.14** | 19% | 5 / 6 (+1 too recent) | 5 / 2 |
+| (b) Equal-weight index | 0.115 | +0.12 | 15% | 3 / 8 | 4 / 1 |
+| (c) Layer 1 baseline | 0.130 | +0.01 | 35% | 4 / 1 (+1 too recent) | 4 / 1 |
+| (d) Base rate | 0.132 | 0 | – | – | – |
+| Ridge logistic, pseudo out of sample 1980–1999 | 0.085 | +0.36 | 19% | 2 / 4 | 4 / 1 |
+
+Brier = average squared error of the probability (lower is better). Skill = 1 − Brier / Brier of the base rate.
+
+**Plan gate: passed.** Out of sample, the logistic score beats the Layer 1 baseline (+0.14 vs. +0.01) and the
+equal-weight index (+0.12), so the fallback isn't needed. The margin over the equal-weight index is small.
+
+### 5.3 Thresholds
+
+- **Amber: 19%.** This came from the 1968–1999 fit at about one false amber per real warning, almost exactly the plan's
+  starting 20%. The pseudo-out-of-sample 1980–1999 scores would have given 35%, but that rests on only 4 events.
+- **After 2000, amber at 19%** gave 5 real warnings and 6 false ambers, plus one episode too recent to judge. That is 1.2
+  false per real, close to your target.
+- **Red: keep 50%.** After 2000 it gave 5 real warnings and 2 false reds. Months scored above 50% were followed by an event
+  52% of the time (table in 5.5), which matches "more likely than not". Nothing argues for moving it.
+
+### 5.4 Event by event since 2000
+
+Main model; months of warning before the event's start (Layer 1 rules).
+
+| Event | Type | Amber (19%) | Red (50%) |
+| --- | --- | --- | --- |
+| #9 2000-11 | recession | 5 | 3 |
+| #10 2003-07 | scare | 3 | none |
+| #11 2005-10 | scare (Katrina) | 1 | 1 |
+| #12 2008-02 | recession | on since 2006-05 (21 months) | 4 |
+| #13 2020-03 | pandemic, excluded from fitting | 4 | 0 |
+| #14 2023-06 | scare | 10 | 3 |
+| #15 2024-07 | scare | on since 2022-08 | on since 2023-03 |
+
+- **False ambers:** 2006-05, 2011-08, 2012-11, 2017-09 (the Harvey / Irma hurricane claims), 2019-02, 2019-06.
+  The 2026-06 episode is too recent to judge. **False reds:** 2006-11, 2017-09.
+- **2020:** the score was 49% in December 2019 (the claims bump), back to 7% by February, and 96% at the end of March.
+  The December reading was not a forecast of the pandemic.
+- **What the episode counts hide:** after #15 ended (September 2024), the score was at or above 50% in 8 months and above
+  amber in 17 months between October 2024 and October 2026 (peak 85% in June 2025), and no event has started. These months
+  count against the Brier score, but they don't show up as false alarms, because they bridge into the long run that began
+  in 2022–23. **Today (October 2026): 2.4% (green).**
+
+### 5.5 Calibration (`reports/score_reliability.png`)
+
+| Predicted band | Months | Average predicted | Share followed by an event start |
+| --- | --- | --- | --- |
+| 0–5% | 85 | 2.6% | 2.4% |
+| 5–10% | 53 | 7.2% | 7.5% |
+| 10–20% | 36 | 15.2% | 19.4% |
+| 20–35% | 21 | 27.9% | 23.8% |
+| 35–50% | 12 | 41.7% | 25.0% |
+| 50–100% | 29 | 70.3% | 51.7% |
+
+Well calibrated below 35%. **Above 35% it is overconfident:** 70% predicted against 52% observed. A score of 80% should be read
+as "more likely than not", not as 4 in 5. The constrained version (5.6) is similar (76% predicted vs. 56% observed).
+
+### 5.6 Sensitivity runs
+
+| Run (logistic) | Months scored | Brier | Base-rate Brier | Skill | Amber thr. | Amber real / false | Red real / false |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| **Main**, 2000– | 236 | 0.114 | 0.132 | **+0.14** | 19% | 5 / 6 | 5 / 2 |
+| Shock scares #3, #6, #11, #14 **not** events, 2000– | 239 | 0.114 | 0.093 | **−0.23** | 8% | 1 / 7 | 3 / 2 |
+| Without temp help, 2000– | 236 | 0.112 | 0.132 | +0.15 | 21% | 5 / 4 | 6 / 2 |
+| Fit from 2001, without JOLTS, tested 2008– | 168 | 0.0752 | 0.091 | +0.17 | 19% | 3 / 3 | 1 / 1 |
+| Fit from 2001, **with JOLTS**, tested 2008– (indicative) | 168 | 0.0752 | 0.091 | +0.17 | 19% | 3 / 3 | 1 / 1 |
+| Main, scored 2010– (today's claims figures) | 167 | 0.068 | 0.083 | +0.18 | 19% | 2 / 5 | 2 / 1 |
+| **Claims as published at the time** (FRED vintages), 2010– | 167 | 0.095 | 0.083 | **−0.15** | 19% | 1 / 9 | 2 / 0 |
+| Main, 2010– without 2022–23 | 145 | 0.053 | 0.063 | +0.16 | 19% | 2 / 5 | 2 / 1 |
+| Claims vintages, 2010– without 2022–23 | 145 | 0.054 | 0.063 | +0.13 | 19% | 1 / 9 | 2 / 0 |
+| **Coefficients constrained ≥ 0** (extra run, see below) | 236 | **0.108** | 0.132 | **+0.18** | 20% | 5 / 4 | 5 / 2 |
+
+What they say:
+
+1. **Shock scares.** With the four one-off shocks not counted as events, the score is *worse* than a constant base rate
+   after 2000 (−0.23). Since 2000 the only recessions available to the test are 2001 and 2008 (2020 is excluded). Much of
+   the score's measurable skill comes from anticipating claims-led scares, which it does because claims are its strongest
+   input. Counting scares as events (your ruling) is what makes the score useful here. The flip side: it is as much a
+   "claims-jump" detector as a recession detector, which suits IUI claim frequency.
+2. **Temp help.** Dropping it improves the score slightly (+0.15 vs. +0.14; 4 false ambers instead of 6). The difference
+   is within noise. Its weight changed sign over the years (from −0.50 to +0.85), and before 2011 it rests on revised data.
+   Today it is the largest upward contribution (see 5.7).
+3. **JOLTS adds nothing.** With a 2001-onward fit the penalty sets its weight to about zero, and the Brier is identical to
+   four decimals. That is a test on one recession (2008), so it is indicative only.
+4. **Claims revisions matter, mostly in 2022.** With claims as published at the time, the score goes from +0.18 to
+   −0.15 for 2010 onward. Almost all of that is mid-2022: initial claims as first published rose 36–46% above their
+   March 2022 low, while today's revised figures show 2–6%. The real-time score would have sat at 71–97% from June 2022 to
+   January 2023, a false red that today's numbers hide. The Layer 1 claims trigger would also have been red.
+   - Average absolute score difference: 0.06; largest 0.76 (July 2022).
+   - Without 2022–23 the gap is small (+0.16 vs. +0.13), but the vintage run has more false ambers (9 vs. 5), so smaller
+     revisions add noise too.
+   - **Our backtest is optimistic about real-time performance, especially around unusual seasonal patterns.**
+5. **Coefficients constrained ≥ 0.** This run is not in your list; I added it because of what the main fit does.
+   - **Problem with the main fit:** continued claims gets a negative weight in every re-fit since 1985 (−0.08 to −0.51).
+     It moves with the stronger initial-claims measures, and its rises mostly happen inside events, which are excluded.
+     That makes the contributions misleading ("continued claims rising lowers the risk").
+   - **What the constraint does:** requiring every weight to be zero or positive, as the inputs are signed, sets continued
+     claims, initial claims vs. a year ago and the yield curve to 0 today.
+   - **Result:** a better score (+0.18 vs. +0.14), fewer false ambers (4 vs. 6) and the same warnings, except #14's amber
+     at 7 months instead of 10 and 2020's red at 3 months instead of 0.
+
+### 5.7 What drives the latest score (October 2026)
+
+Main model as re-fitted in January 2026 (C = 0.3). Contribution = weight × standardized value, in log-odds. Positive
+pushes the score up.
+
+| Input | Value | Standardized | Weight | Contribution | Weight (≥ 0) | Contribution (≥ 0) |
+| --- | --- | --- | --- | --- | --- | --- |
+| Sahm indicator | 0.00 | −0.15 | 0.48 | −0.07 | 0.46 | −0.07 |
+| Initial claims vs. 52-wk low | −0.5% | −1.03 | 1.06 | **−1.10** | 1.07 | **−1.10** |
+| Initial claims vs. a year ago | −13.1% | −0.34 | 0.09 | −0.03 | 0 | 0 |
+| Continued claims vs. a year ago | −11.9% | −0.12 | −0.20 | +0.02 | 0 | 0 |
+| Temp help, 6-month change (sign flipped) | +0.3% (rise) | +0.80 | 0.68 | **+0.54** | 0.65 | **+0.52** |
+| Yield curve, lowest spread in 18 months (sign flipped) | −0.04 pt | +0.76 | 0.02 | +0.01 | 0 | 0 |
+| Manufacturing surveys, 3-month average | +26.6 | −1.03 | 0.44 | −0.46 | 0.41 | −0.42 |
+| NFCI | −0.49 | −0.16 | 0.99 | −0.16 | 1.00 | −0.16 |
+| Intercept | | | | −2.49 | | −2.48 |
+| **Score** | | | | **2.4%** | | **2.4%** |
+
+**Reading it:** claims sitting at their 52-week low and strong factory surveys hold the score down. Temp help is the main upward
+pressure: it rose only 0.3% over six months, well below its usual growth, so its standardized value is +0.8.
+
+**Weights across the 27 re-fits since 2000** (main): initial claims vs. 52-week low 0.61–1.47 (always the largest), NFCI
+0.45–1.00, Sahm 0.28–0.71, manufacturing 0.22–0.51, yield curve 0.02–0.46 (falling towards zero after the 2022–24 inversion
+was followed only by scares), temp help −0.50 to +0.85, initial claims vs. a year ago 0.08–0.27, continued claims −0.51 to −0.08.
+
+### 5.8 Caveats
+
+- After 2000 the test contains two recessions (2001, 2008), five scares and 2020. Every number above rests on that.
+- Claims are today's figures (our rule). 5.6 shows that real-time claims would have produced a long false red in 2022.
+- Temp help, the manufacturing surveys and NFCI are revised data before 2011–15 (see section 4).
+- The new Layer 1 rule used in the baseline (c) was chosen after looking at all years, so (c) is if anything flattered.
+- Calibration is optimistic above 35%.
+- Event starts are dated on final data; inputs are real-time.
+
+### 5.9 Decisions for Troy (stage 3c)
+
+1. **Constrain coefficients to ≥ 0?** Recommended: yes. It's more explainable and scored better out of sample. Its amber
+   threshold is 20%.
+2. **Temp help in the score?** Keep (the gain from dropping it is within noise) or drop (slightly better; sign-unstable;
+   revised data before 2011).
+3. **JOLTS:** leave out (no gain).
+4. **Claims revisions:** state the 2022 effect on the site's methodology page. Or, in addition, test a claims input that is
+   less sensitive to seasonal factors, for example the non-seasonally-adjusted 4-week average vs. the same weeks a year
+   earlier, as a stage 3d / 3e follow-up.
+5. **Thresholds:** amber 19% (20% with the constraint), red 50%.

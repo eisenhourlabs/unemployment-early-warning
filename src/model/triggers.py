@@ -64,30 +64,53 @@ def t_sahm(d, cfg):
     return v, grade_up(v, cfg.amber, cfg.red), basis(ur)
 
 
+# The three claims measures, written as helpers that take a weekly series (so the score's sensitivity run
+# can apply them to the claims vintages too). Each returns None when there isn't enough history.
+def claims_vs_low_of(ic4: pd.Series):
+    """Latest 4-week average vs. the lowest of the previous 52 weeks."""
+    if len(ic4) < 53:
+        return None
+    return ic4.iloc[-1] / ic4.iloc[-53:-1].min() - 1
+
+
+def claims_yoy_of(ic4: pd.Series):
+    """Latest 4-week average vs. the value 52 weeks earlier."""
+    then = ic4.get(ic4.index[-1] - YEAR) if len(ic4) else None
+    if then is None or pd.isna(then):
+        return None
+    return ic4.iloc[-1] / then - 1
+
+
+def cont_yoy_of(cc: pd.Series):
+    """4-week average of continued claims vs. the same average 52 weeks earlier."""
+    cc4 = cc.rolling(4).mean()
+    then = cc4.get(cc4.index[-1] - YEAR) if len(cc4) else None
+    if then is None or pd.isna(then):
+        return None
+    return cc4.iloc[-1] / then - 1
+
+
 def t_claims_vs_low(d, cfg):
     ic4 = as_known_on("IC4WSA", d).dropna()
-    if len(ic4) < 53:
+    v = claims_vs_low_of(ic4)
+    if v is None:
         return None, "", ""
-    v = ic4.iloc[-1] / ic4.iloc[-53:-1].min() - 1   # latest vs. lowest of the previous 52 weeks
     return round(v, 4), grade_up(round(v, 6), cfg.amber, cfg.red), basis(ic4)
 
 
 def t_claims_yoy(d, cfg):
     ic4 = as_known_on("IC4WSA", d).dropna()
-    then = ic4.get(ic4.index[-1] - YEAR) if len(ic4) else None
-    if then is None or pd.isna(then):
+    v = claims_yoy_of(ic4)
+    if v is None:
         return None, "", ""
-    v = ic4.iloc[-1] / then - 1
     return round(v, 4), grade_up(round(v, 6), cfg.amber, cfg.red), basis(ic4)
 
 
 def t_cont_claims_yoy(d, cfg):
     cc = as_known_on("CCSA", d).dropna()
-    cc4 = cc.rolling(4).mean()                    # 4-week average, like the initial-claims triggers
-    then = cc4.get(cc4.index[-1] - YEAR) if len(cc4) else None
-    if then is None or pd.isna(then):
+    v = cont_yoy_of(cc)
+    if v is None:
         return None, "", ""
-    v = cc4.iloc[-1] / then - 1
     return round(v, 4), grade_up(round(v, 6), cfg.amber, cfg.red), basis(cc)
 
 
