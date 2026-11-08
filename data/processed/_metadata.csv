@@ -11,7 +11,7 @@ BAMLH0A0HYM2,ICE BofA US High Yield Index Option-Adjusted Spread,Percent,"Daily,
 CACCLAIMS,Continued Claims (Insured Unemployment) in California,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:39:04-06,1990-01-06,2026-10-24,305135.0
 CAICLAIMS,Initial Claims in California,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:39:05-06,1990-01-06,2026-10-31,39974.0
 CAUR,Unemployment Rate in California,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:38:54-05,1990-01-01,2026-09-01,5.1
-CC4WSA,4-Week Moving Average of Continued Claims (Insured Unemployment),Number,"Weekly, Ending Saturday",Seasonally Adjusted,2026-11-05 07:34:28-06,1990-01-06,2026-10-24,1709500.0
+CC4WSA,4-Week Moving Average of Continued Claims (Insured Unemployment),Number,"Weekly, Ending Saturday",Seasonally Adjusted,2026-11-05 07:34:28-06,1967-01-28,2026-10-24,1709500.0
 CCNSA,Continued Claims (Insured Unemployment),Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-05 07:34:29-06,1990-01-06,2026-10-24,1494812.0
 CCSA,Continued Claims (Insured Unemployment),Number,"Weekly, Ending Saturday",Seasonally Adjusted,2026-11-05 07:34:30-06,1967-01-07,2026-10-24,1718000.0
 CFLMICONTRIBUTIONHIRINGRATEUWADVANCE,CFLMI Real-Time Hiring Contribution (Advance),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,0.012
@@ -97,7 +97,7 @@ KYUR,Unemployment Rate in Kentucky,Percent,Monthly,Seasonally Adjusted,2026-10-2
 LACCLAIMS,Continued Claims (Insured Unemployment) in Louisiana,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:59-06,1990-01-06,2026-10-24,4964.0
 LAICLAIMS,Initial Claims in Louisiana,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:53-06,1990-01-06,2026-10-31,1099.0
 LAUR,Unemployment Rate in Louisiana,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:46:49-05,1990-01-01,2026-09-01,4.0
-LNS13025703,"Of Total Unemployed, Percent Unemployed 27 Weeks & over",Percent,Monthly,Seasonally Adjusted,2026-11-06 09:42:45-06,1990-01-01,2026-10-01,27.6
+LNS13025703,"Of Total Unemployed, Percent Unemployed 27 Weeks & over",Percent,Monthly,Seasonally Adjusted,2026-11-06 09:42:45-06,1948-01-01,2026-10-01,27.6
 MDCCLAIMS,Continued Claims (Insured Unemployment) in Maryland,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:51-06,1990-01-06,2026-10-24,20686.0
 MDICLAIMS,Initial Claims in Maryland,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:49-06,1990-01-06,2026-10-31,2181.0
 MDUR,Unemployment Rate in Maryland,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:48:34-05,1990-01-01,2026-09-01,3.9
@@ -175,7 +175,7 @@ TXICLAIMS,Initial Claims in Texas,Number,"Weekly, Ending Saturday",Not Seasonall
 TXUR,Unemployment Rate in Texas,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:54:25-05,1990-01-01,2026-09-01,4.4
 U6RATE,"Total Unemployed, Plus All Persons Marginally Attached to the Labor Force, Plus Total Employed Part Time for Economic Reasons, as a Percent of the Civilian Labor Force Plus All Persons Marginally Attached to the Labor Force (U-6)",Percent,Monthly,Seasonally Adjusted,2026-11-06 09:43:22-06,1994-01-01,2026-10-01,7.9
 UEMPLT5,Number Unemployed for Less Than 5 Weeks,Thousands of Persons,Monthly,Seasonally Adjusted,2026-11-06 09:43:11-06,1948-01-01,2026-10-01,2170.0
-UEMPMED,Median Weeks Unemployed,Weeks,Monthly,Seasonally Adjusted,2026-11-06 09:43:16-06,1990-01-01,2026-10-01,11.9
+UEMPMED,Median Weeks Unemployed,Weeks,Monthly,Seasonally Adjusted,2026-11-06 09:43:16-06,1967-07-01,2026-10-01,11.9
 UMCSENT,University of Michigan: Consumer Sentiment,Index 1966:Q1=100,Monthly,Not Seasonally Adjusted,2026-10-23 10:02:25-05,1990-01-01,2026-09-01,48.1
 UNRATE,Unemployment Rate,Percent,Monthly,Seasonally Adjusted,2026-11-06 09:43:15-06,1948-01-01,2026-10-01,4.1
 USREC,NBER based Recession Indicators for the United States from the Period following the Peak through the Trough,+1 or 0,Monthly,Not Seasonally Adjusted,2026-11-02 18:02:26-06,1854-12-01,2026-10-01,0.0

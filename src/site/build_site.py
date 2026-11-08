@@ -5,6 +5,7 @@ What it does, step by step:
   1. Builds each page's content with its own module:
        overview.py    -> index.html        (tiles, "What changed this week", 3 charts)
        job_losses.py  -> job-losses.html   (7 charts)
+       duration.py    -> duration.html     (7 charts)
      Shared pieces (reading data, formats, chart builders) live in common.py.
   2. Adds the shared frame every page has: the freshness line, the stale-data badge (from the
      health check), the time control, the release calendar and the footer.
@@ -33,6 +34,7 @@ import pandas as pd
 import plotly
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+import duration
 import job_losses
 import overview
 from common import PROCESSED, ROOT, claims_weekly, fmt_date, fmt_month, fred, is_preliminary
@@ -54,7 +56,7 @@ DEFAULT_RANGE = "5y"
 
 # Top-bar links: (key, label, file). An empty file means "coming soon" (shown greyed out).
 NAV = [("overview", "Overview", "index.html"), ("job-losses", "Job Losses", "job-losses.html"),
-       ("duration", "Duration", ""), ("leading", "Leading", ""), ("data", "Data", ""), ("about", "About", "")]
+       ("duration", "Duration", "duration.html"), ("leading", "Leading", ""), ("data", "Data", ""), ("about", "About", "")]
 
 
 # ===========================================================================
@@ -139,6 +141,7 @@ def main() -> None:
     # Build every page's content before touching site/, so a failure leaves the old folder alone.
     ov = overview.build(built)
     jl = job_losses.build()
+    du = duration.build()
     pages = [
         ("overview.html", "index.html",
          {**frame, **ov, "page": "overview", "title": "Overview", "calendar": release_calendar(),
@@ -147,6 +150,10 @@ def main() -> None:
          {**frame, **jl, "page": "job-losses", "title": "Job Losses",
           "heading": "Job losses: how many people are losing jobs",
           "page_data": page_data(jl["charts"], built)}, len(jl["charts"])),
+        ("charts_page.html", "duration.html",
+         {**frame, **du, "page": "duration", "title": "Duration",
+          "heading": "Duration: how long unemployment lasts",
+          "page_data": page_data(du["charts"], built)}, len(du["charts"])),
     ]
 
     # Start from an empty site/ folder so nothing old lingers.

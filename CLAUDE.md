@@ -69,7 +69,7 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 | `src/signals/`, `src/forecast/` | Phase 3: triggers, composite score, forecast fan |
 | `src/site/build_site.py` | Builds the "Unemployment Watch" website (Plotly + Jinja2) into `site/`: shared frame, renders each page |
 | `src/site/common.py` | Shared site pieces: data reading, formats, statistics, recession shading, chart builders |
-| `src/site/overview.py`, `src/site/job_losses.py` | One module per page: its charts, tiles and text |
+| `src/site/overview.py`, `job_losses.py`, `duration.py` | One module per page: its charts, tiles and text |
 | `src/site/templates/`, `src/site/static/` | Templates (`base.html` = shared frame, `_macros.html` = chart card, `charts_page.html` = chart-grid pages) and the site's CSS / JavaScript (time control, dark mode, downloads) |
 | `site/` | Built website (not committed; rebuilt and published to GitHub Pages by the workflow) |
 | `src/checks/check_site.py` | Browser check of the built site (Playwright + Edge; PC only, `requirements-dev.txt`) |
@@ -128,10 +128,13 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 - 2026-11-07: Stage 1 review fixes live (run 42439932036). Stage 2 built locally: Job Losses page (7 charts),
   PAYEMS / UEMPLT5 history from 1948, site code split into page modules; browser check passes on both pages.
   Reviewed by Troy and live (run 42441206087).
+- 2026-11-07: Stage 3 built locally: Duration page (7 charts; average benefit duration = all-claimant weeks paid
+  vs. ETA 218 weeks entitled); CC4WSA from 1967, UEMPMED / LNS13025703 from 1948. Browser check passes on all
+  three pages. Waiting for Troy's review before pushing.
 
 ## Next steps, in order
 Setup (steps 1-4) and Phase 1 are done. Phase 2 is built in stages; Troy reviews each one locally before the next.
-1. Stage 3: Duration page (6 charts, docs/phase2_design.md).
+1. Stage 3 review: Duration page (built 2026-11-07; push and republish after Troy's review).
 2. Stage 4: Leading Indicators page (summary table + 8 charts).
 3. Stage 5: Data & Downloads page (catalog, CSV/XLSX per series, bundles, stable links; DOL downloads per
    docs/dashboard_requirements.md). Chicago Fed data not offered until its terms are confirmed.

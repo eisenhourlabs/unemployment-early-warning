@@ -298,15 +298,17 @@ def last_data_note(d: pd.DataFrame, date_col: str, source_col: str | None = None
 
 
 def line_chart(id, title, why, footer, s: pd.Series, name, y_title, hover, csv_col,
-               monthly=True, zero_line=False, prelim: pd.Series | None = None, wide=False) -> dict:
+               monthly=True, zero_line=False, prelim: pd.Series | None = None, wide=False, freq="MS") -> dict:
     """One series as a line, with recession shading.
 
     Monthly series get missing months put back as blanks, so a gap (e.g. no October 2025 survey,
     federal government shutdown) shows as a break instead of a straight line across it.
+    freq: "MS" for series dated the 1st of the month (FRED), "ME" for month-end dates (DOL).
     prelim (weekly only): a series of source labels; preliminary weeks are drawn dashed with hollow markers.
     """
+    s = s.dropna()
     if monthly:
-        s = s.asfreq("MS")
+        s = s.asfreq(freq)
     d = pd.DataFrame({"date": s.index, "value": s.values})
     d["source"] = prelim.reindex(s.index).fillna("ETA 539").values if prelim is not None else "official"
     official, tail, labels = split_preliminary(d, "source")
@@ -373,6 +375,37 @@ def weekly_claims_chart(id, title, why, footer, d: pd.DataFrame, weekly_col, avg
     rows = [[x, w, (None if pd.isna(a) else a), s]
             for x, w, a, s in zip(d.x, d[weekly_col], d[avg_col], d[source_col])]
     return card(id, title, why, footer, fig, csv_names, rows, wide=wide)
+
+
+def line_with_comparison(id, title, why, footer, main: pd.Series, main_name, main_freq,
+                         comp: pd.Series, comp_name, comp_freq, y_title, hover, csv_names,
+                         extra: pd.Series | None = None) -> dict:
+    """A main series (bold accent) with a comparison series (grey) in the same units, e.g. average weeks
+    claimed vs. average weeks entitled. The two can have different frequencies (monthly vs. quarterly);
+    each keeps its own gaps. extra: an additional column for the CSV only (not drawn)."""
+    main = main.dropna().asfreq(main_freq)
+    comp = comp.dropna().asfreq(comp_freq)
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=dates(comp.index), y=plain(comp.values), name=comp_name, mode="lines",
+                             line=dict(color=GREYS[0], width=1.5), meta={"role": "grey0"}, connectgaps=False,
+                             hovertemplate=f"{hover}<extra>{comp_name}</extra>"))
+    fig.add_trace(go.Scatter(x=dates(main.index), y=plain(main.values), name=main_name, mode="lines",
+                             line=dict(color=ACCENT, width=2.5), meta={"role": "main"},
+                             hovertemplate=f"{hover}<extra>{main_name}</extra>"))
+    first = min(main.index[0], comp.index[0])
+    add_recession_shading(fig, first)
+    base_layout(fig, y_title, "%b %Y")
+    fig.update_layout(legend_traceorder="reversed")   # main series first in the legend (it is drawn on top)
+    short = lambda n: n.split(" (")[0].lower()        # 'Average weeks paid (all claimants)' -> 'average weeks paid'
+    footer += (f" Grey bands: NBER recessions. Last data: {short(main_name)} {fmt_month(main.dropna().index[-1])}, "
+               f"{short(comp_name)} {fmt_month(comp.dropna().index[-1])}.")
+    # CSV: one row per date that appears in either series (quarter ends line up with month ends)
+    table = pd.DataFrame({"main": main, "comp": comp})
+    if extra is not None:
+        table["extra"] = extra
+    table = table.dropna(how="all")
+    rows = [[d.strftime("%Y-%m-%d")] + plain(r) for d, r in zip(table.index, table.values)]
+    return card(id, title, why, footer, fig, csv_names, rows)
 
 
 def bars_with_average(id, title, why, footer, s: pd.Series, bar_name, avg_name, y_title, hover, csv_names,

@@ -1,0 +1,97 @@
+"""
+Duration page (severity: how long unemployment lasts). Seven charts.
+Called by build_site.py.
+"""
+
+import pandas as pd
+
+from common import DOL, claims_weekly, fred, line_chart, line_with_comparison, weekly_claims_chart
+from overview import cc_rate_chart
+
+INTRO = ("How long people stay unemployed drives how long IUI claims last (claim severity). Continuing claims "
+         "show it weekly; exhaustion and benefit duration come monthly and quarterly from DOL's state reports; "
+         "the household survey and JOLTS hiring add the wider picture.")
+
+
+def us_rows(filename: str, date_col: str) -> pd.DataFrame:
+    """US rows of a DOL by-state file, indexed by date."""
+    df = pd.read_csv(DOL / filename, parse_dates=[date_col])
+    return df[df.state == "US"].set_index(date_col)
+
+
+def build() -> dict:
+    claims = claims_weekly()
+    charts = []
+
+    # 1. SA continuing claims rate (same chart as the Overview), with how closely it matches DOL's IUR
+    rate = cc_rate_chart(claims, wide=True)
+    both = claims.dropna(subset=["cc_rate_sa", "iur_sa_published"])
+    max_diff = (both.cc_rate_sa - both.iur_sa_published).abs().max()
+    rate["footer"] += (f" Check: within {max_diff:.2f} pp of DOL's published insured unemployment rate in every "
+                       f"week since {both.week_ended.dt.year.min()} (DOL rounds to 0.1).")
+    charts.append(rate)
+
+    # 2. SA continued claims level: 4-week average bold, weekly faint (FRED, from 1967)
+    sources = claims.set_index("week_ended")["source_continued"]
+    level = pd.DataFrame({"cc_sa": fred("CCSA"), "cc_sa_4wk": fred("CC4WSA")})
+    level.index.name = "week_ended"
+    level = level.reset_index()
+    level["source"] = level.week_ended.map(sources).fillna("ETA 539")
+    charts.append(weekly_claims_chart(
+        "cc-level", "SA continued claims",
+        "Number of people still claiming benefits; continued claims run a week behind initial claims.",
+        "Source: DOL weekly claims via FRED (CCSA, CC4WSA). Seasonally adjusted, number of people claiming, weekly.",
+        level, "cc_sa", "cc_sa_4wk", "source", "Continued claims (SA)", "%{y:,.0f}",
+        ["week_ended", "cc_sa", "cc_sa_4wk", "source"]))
+
+    # 3. Exhaustion rate, 12-month (our calculation from DOL's monthly ETA 5159 report)
+    monthly = us_rows("exhaustion_duration_monthly.csv", "month_ended")
+    charts.append(line_chart(
+        "exhaustion-rate", "Exhaustion rate (12-month)",
+        "Share of claimants who use up all their state benefits before finding work.",
+        "Source: DOL ETA 5159 (state claims and payments), our calculation: 12-month average final payments ÷ "
+        "12-month average first payments 6 months earlier. Percent, US. US = sum of all states (can differ "
+        "slightly from DOL's published US figure: 0.08 pp in 2026 Q2). Monthly, dated at month end.",
+        monthly["exhaustion_rate_12m"], "Exhaustion rate", "Percent of claimants", "%{y:.1f}%",
+        "exhaustion_rate_12m_pct", freq="ME"))
+
+    # 4. Average benefit duration: all claimants (monthly) vs. weeks entitled (quarterly ETA 218)
+    quarterly = us_rows("benefit_duration_quarterly.csv", "quarter_ended")
+    charts.append(line_with_comparison(
+        "benefit-duration", "Average benefit duration",
+        "Weeks of benefits paid per claimant, against weeks entitled: the closest public match to IUI benefit months.",
+        "Source: DOL ETA 5159 and ETA 218, our calculation. Bold: 12-month weeks compensated ÷ 12-month first "
+        "payments, all claimants, monthly. Grey: average potential (entitled) duration of new claimants, "
+        "quarterly. Weeks, US; quarters with a state missing are left blank.",
+        monthly["avg_duration_12m"], "Average weeks paid (all claimants)", "ME",
+        quarterly["potential_avg_weeks"], "Average weeks entitled (ETA 218)", "QE",
+        "Weeks", "%{y:.1f} weeks",
+        ["date", "avg_weeks_paid_all_claimants_12m", "avg_potential_weeks_eta218", "avg_weeks_exhaustees_eta218"],
+        extra=quarterly["actual_avg_weeks"]))
+
+    # 5. Median weeks unemployed (household survey)
+    charts.append(line_chart(
+        "median-weeks", "Median weeks unemployed",
+        "How long a typical unemployed person has been looking, whether or not they claim benefits.",
+        "Source: BLS Current Population Survey via FRED (UEMPMED). Median duration of unemployment, weeks, "
+        "seasonally adjusted, monthly; starts Jul 1967. Gap: no October 2025 survey (government shutdown).",
+        fred("UEMPMED"), "Median weeks unemployed", "Weeks", "%{y:.1f} weeks", "median_weeks_unemployed"))
+
+    # 6. Share unemployed 27 weeks or more (household survey)
+    charts.append(line_chart(
+        "long-term-share", "Share unemployed 27 weeks or more",
+        "Long-term unemployment: the tail that turns into the longest claims.",
+        "Source: BLS Current Population Survey via FRED (LNS13025703). Unemployed 27 weeks or more as a percent "
+        "of all unemployed, seasonally adjusted, monthly. Gap: no October 2025 survey (government shutdown).",
+        fred("LNS13025703"), "Share unemployed 27+ weeks", "Percent of unemployed", "%{y:.1f}%",
+        "share_unemployed_27wk_plus_pct"))
+
+    # 7. JOLTS hires rate
+    charts.append(line_chart(
+        "jolts-hires", "JOLTS hires rate",
+        "Low hiring means people who lose jobs take longer to find new ones.",
+        "Source: BLS Job Openings and Labor Turnover Survey via FRED (JTSHIR). Hires as a percent of total "
+        "employment, seasonally adjusted, monthly; JOLTS starts Dec 2000.",
+        fred("JTSHIR"), "Hires rate", "Percent of employment", "%{y:.1f}%", "hires_rate_pct"))
+
+    return {"intro": INTRO, "charts": charts}
