@@ -139,16 +139,13 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   Reviewed by Troy and live (run 42443436321).
 - 2026-11-07: Stage 5 built locally: Data & Downloads page (170 series / files as CSV + XLSX, 6 bundle files,
   346 download files, ~60 MB in site/data/; licence exclusions listed). Browser check compares every CSV with its
-  source and opens every XLSX. Waiting for Troy's review before pushing.
+  source and opens every XLSX. Reviewed by Troy and live (run 42445260168).
 - Watch: on 2026-11-08 ~03:55 UTC oui.doleta.gov briefly failed its certificate check (hostname mismatch) from
   this PC; it passed again minutes later. If a DOL step fails in a run, check this first.
 
 ## Next steps, in order
 Setup (steps 1-4) and Phase 1 are done. Phase 2 is built in stages; Troy reviews each one locally before the next.
-1. Stage 5 review: Data & Downloads page (built 2026-11-07; push and republish after Troy's review).
-   Chicago Fed LMI data stays out of downloads until its terms are confirmed; series with licence
-   restricted / citation-required are never offered as downloads.
-2. Stage 6: About page (definitions, sources, update schedule, revision policy, disclaimer).
+1. Stage 6: About page (definitions, sources, update schedule, revision policy, disclaimer).
 
 ## Where planning lives
 The full plan, roadmap and decisions are kept in Troy's Claude project ("Unemployment Correlations"),
