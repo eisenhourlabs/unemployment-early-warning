@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{#- About page: what the site is, definitions, sources, updates, revisions, method notes, disclaimer. -#}
+
+{% block content %}
+<div class="page-intro">
+  <h1>About Unemployment Watch</h1>
+  <p>An early-warning view of US unemployment built entirely from public data. It follows the two things that
+    drive involuntary unemployment insurance claims: <strong>new job losses</strong> (how often claims start) and
+    <strong>how long unemployment lasts</strong> (how long claims run). It refreshes itself every weekday morning.</p>
+</div>
+
+<nav class="card toc" aria-label="On this page">
+  <a href="#definitions">Definitions</a> · <a href="#sources">Sources</a> · <a href="#updates">Updates</a> ·
+  <a href="#revisions">Revisions</a> · <a href="#methods">Method notes</a> · <a href="#disclaimer">Disclaimer</a>
+</nav>
+
+<section class="card prose" id="definitions" aria-labelledby="def-title">
+  <h2 id="def-title">Definitions</h2>
+  <dl>
+    <dt>SA and NSA</dt>
+    <dd>Seasonally adjusted (SA) figures remove regular patterns such as January layoffs and holiday weeks, so one
+      week can be compared with the next. Not seasonally adjusted (NSA) figures are the raw counts.</dd>
+    <dt>Initial claims</dt>
+    <dd>New applications for state unemployment benefits in a week: the fastest public signal of job losses.</dd>
+    <dt>Continued (continuing) claims</dt>
+    <dd>People still claiming benefits; reported for the week before the initial claims week, so they run a week behind.</dd>
+    <dt>Covered employment</dt>
+    <dd>The number of jobs covered by state unemployment insurance (about 154 million), published by the
+      Department of Labor (DOL). It is the denominator of the two claims rates.</dd>
+    <dt>SA initial claims rate</dt>
+    <dd>Seasonally adjusted initial claims per 10,000 covered workers, weekly. Example: 189,000 claims ÷ 153.9 million
+      covered workers × 10,000 = 12.3.</dd>
+    <dt>SA continuing claims rate</dt>
+    <dd>Seasonally adjusted continued claims as a percent of covered workers. It reproduces DOL's published insured
+      unemployment rate: the largest difference in any week since {{ iur_since }} is {{ iur_max_diff }} percentage
+      points, which is DOL's rounding to one decimal.</dd>
+    <dt>4-week average</dt>
+    <dd>The mean of the latest four weeks, which smooths holiday and weather noise. Charts show it bold, with the
+      weekly figures faint behind it.</dd>
+    <dt>Preliminary weeks (advance, revised)</dt>
+    <dd>The newest weeks come from DOL's Thursday news release: the latest week is the <em>advance</em> figure, the week
+      before is <em>revised</em>. They are drawn dashed with hollow markers and are replaced when DOL's official weekly
+      report (ETA 539) covers them, usually within a few weeks.</dd>
+    <dt>Exhaustion rate (12-month)</dt>
+    <dd>The share of claimants who use up all their state benefits: 12-month average final payments ÷ 12-month average
+      first payments six months earlier (DOL's definition).</dd>
+    <dt>Average benefit duration</dt>
+    <dd>Weeks of benefits paid per claimant: 12-month weeks compensated ÷ 12-month first payments, for all claimants.
+      Shown against the average number of weeks claimants are entitled to (DOL's ETA 218 report).</dd>
+    <dt>Percentile</dt>
+    <dd>The share of all past observations at or below the latest value, over the full history shown on the tile or
+      table (for example "62nd percentile since 1995"). At the extremes the site says "lowest" or "highest since".</dd>
+    <dt>Sahm indicator</dt>
+    <dd>The 3-month average unemployment rate minus the lowest 3-month average of the prior 12 months. Readings of
+      0.50 or more have come in the early months of most past US recessions (St. Louis Fed, real-time version).</dd>
+    <dt>Recession shading</dt>
+    <dd>Grey bands mark recessions as dated by the National Bureau of Economic Research (NBER). NBER announces dates
+      months after the fact, so a new downturn appears only once it is official.</dd>
+    <dt>Diffusion index</dt>
+    <dd>Regional Fed surveys report the share of firms seeing increases minus the share seeing decreases; below zero
+      means more firms report declines.</dd>
+    <dt>NFCI</dt>
+    <dd>The Chicago Fed's National Financial Conditions Index: zero is the average since 1971, positive means tighter
+      than average. The credit subindex covers credit conditions only.</dd>
+  </dl>
+</section>
+
+<section class="card" id="sources" aria-labelledby="src-title">
+  <h2 id="src-title">Sources</h2>
+  <p class="why">Every series the site collects, from the project's series catalog. Most come through FRED, the
+    Federal Reserve Bank of St. Louis's free database.</p>
+  <div class="table-scroll">
+  <table class="sources">
+    <thead><tr><th>Series</th><th>Publisher</th><th>Frequency</th><th>Use</th></tr></thead>
+    <tbody>
+      {%- for s in sources %}
+      <tr>
+        <td><a href="{{ s.link }}">{{ s.name }}</a>{% if s.id %} <code>{{ s.id }}</code>{% endif %}</td>
+        <td>{{ s.publisher }}</td>
+        <td>{{ s.frequency }}</td>
+        <td>{{ s.licence }}</td>
+      </tr>
+      {%- endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<div class="grid">
+  <section class="card prose" id="updates" aria-labelledby="upd-title">
+    <h2 id="upd-title">How often it updates</h2>
+    <ul>
+      <li>The site rebuilds itself on weekday mornings at about 7:45 and 10:00 am Central Time, after the morning
+        releases.</li>
+      <li>On Thursdays an extra run starts at about 7:35 am CT and waits up to an hour for the weekly claims release.</li>
+      <li>The <span class="badge-inline">⚠ stale</span> badge next to "Data through" appears if a series is older than
+        its normal release schedule allows (for example, a missed weekly claims release).</li>
+    </ul>
+    {%- if calendar %}
+    <h3>Next releases</h3>
+    <ul>
+      {%- for r in calendar %}
+      <li>{{ r.release }}: {{ r.next }}{% if r.time %}, {{ r.time }}{% endif %}</li>
+      {%- endfor %}
+    </ul>
+    {%- endif %}
+  </section>
+
+  <section class="card prose" id="revisions" aria-labelledby="rev-title">
+    <h2 id="rev-title">Revisions</h2>
+    <ul>
+      <li>Publishers revise their figures. Charts, tiles and downloads always show the latest published values.</li>
+      <li>For FRED and Chicago Fed series the project also keeps a dated copy each time a series changes, so later
+        analysis can use only what was known at the time.</li>
+      <li>DOL files keep only the latest figures; every revision DOL makes to past weeks, months or quarters is
+        recorded in the <a href="{{ repo_url }}/blob/main/docs/data_revisions.md">data revision log</a>.</li>
+    </ul>
+  </section>
+</div>
+
+<section class="card prose" id="methods" aria-labelledby="meth-title">
+  <h2 id="meth-title">Method notes</h2>
+  <ul>
+    <li><strong>US totals from state reports.</strong> The US exhaustion rate and average benefit duration are sums
+      over all states, used only for months (quarters) in which every state reported. Our state figures match DOL's
+      published ones for the states we checked (Alabama, California, Florida, New York, Ohio, Texas), but the US total can
+      differ slightly from DOL's published US figure (0.08 percentage points for exhaustion and
+      0.02 weeks for duration in the 2026 Q2 comparison).</li>
+    <li><strong>October 2025.</strong> No household survey was collected during the federal government shutdown, so the
+      unemployment rate and other household-survey series have no October 2025 value. Charts show the gap; tiles say
+      so when it affects a comparison.</li>
+    <li><strong>High-yield credit spread.</strong> Planned originally, but its licence does not allow republishing, so
+      the Chicago Fed's NFCI credit subindex is shown instead.</li>
+    <li><strong>No forecast yet.</strong> The early-warning score and the 3–6 and 12-month forecast range come in a
+      later phase, once thresholds are tested on the 2001, 2008–09 and 2020 recessions.</li>
+  </ul>
+</section>
+
+<section class="card prose" id="disclaimer" aria-labelledby="disc-title">
+  <h2 id="disc-title">Disclaimer</h2>
+  <p><strong>Not an official forecast; public data only.</strong> This site is an independent project, not affiliated
+    with or endorsed by any of the publishers above. Figures are provided as is, without warranty of accuracy or
+    completeness; use them at your own risk and check the original source before relying on a number.</p>
+  <p>Found a wrong number or a broken download? <a href="{{ issues_url }}">Report a problem on GitHub</a>
+    (reports are public; a GitHub account is needed). The <a href="{{ repo_url }}">source code and data</a> are on
+    GitHub too.</p>
+</section>
+{% endblock %}

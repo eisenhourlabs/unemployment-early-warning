@@ -8,6 +8,7 @@ What it does, step by step:
        duration.py    -> duration.html     (7 charts)
        leading.py     -> leading.html      (summary table + 8 charts)
        downloads.py   -> data.html + every CSV / XLSX under site/data/
+       about.py       -> about.html        (definitions, sources, updates, revisions, disclaimer)
      Shared pieces (reading data, formats, chart builders) live in common.py.
   2. Adds the shared frame every page has: the freshness line, the stale-data badge (from the
      health check), the time control, the release calendar and the footer.
@@ -36,6 +37,7 @@ import pandas as pd
 import plotly
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+import about
 import downloads
 import duration
 import job_losses
@@ -60,7 +62,7 @@ DEFAULT_RANGE = "5y"
 
 # Top-bar links: (key, label, file). An empty file means "coming soon" (shown greyed out).
 NAV = [("overview", "Overview", "index.html"), ("job-losses", "Job Losses", "job-losses.html"),
-       ("duration", "Duration", "duration.html"), ("leading", "Leading", "leading.html"), ("data", "Data", "data.html"), ("about", "About", "")]
+       ("duration", "Duration", "duration.html"), ("leading", "Leading", "leading.html"), ("data", "Data", "data.html"), ("about", "About", "about.html")]
 
 
 # ===========================================================================
@@ -185,6 +187,9 @@ def main() -> None:
                                    if any(r["frequency"] == f for r in rows)],
                    "n_state": sum(1 for r in rows if r["state"]),
                    "page_data": page_data([], built)}, 0))
+    pages.append(("about.html", "about.html",
+                  {**frame, **about.build(), "page": "about", "title": "About", "has_charts": False,
+                   "calendar": release_calendar(), "page_data": page_data([], built)}, 0))
     print(f"  data/              {dl['n_files']} download files ({len(rows)} series / files, "
           f"{len(dl['excluded'])} excluded by licence)")
 

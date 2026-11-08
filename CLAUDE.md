@@ -70,6 +70,7 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 | `src/site/build_site.py` | Builds the "Unemployment Watch" website (Plotly + Jinja2) into `site/`: shared frame, renders each page |
 | `src/site/common.py` | Shared site pieces: data reading, formats, statistics, recession shading, chart builders |
 | `src/site/overview.py`, `job_losses.py`, `duration.py`, `leading.py` | One module per page: its charts, tiles, tables and text |
+| `src/site/about.py` | About page: definitions, sources (from the catalog), updates, revisions, method notes, disclaimer |
 | `src/site/downloads.py` | Data & Downloads page: writes every CSV / XLSX and bundle under `site/data/` (public licences only) |
 | `config/derived_columns.csv` | Descriptions of the columns we calculate in DOL files (used in download Columns sheets) |
 | `src/site/templates/`, `src/site/static/` | Templates (`base.html` = shared frame, `_macros.html` = chart card, `charts_page.html` = chart-grid pages) and the site's CSS / JavaScript (time control, dark mode, downloads) |
@@ -140,12 +141,19 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 - 2026-11-07: Stage 5 built locally: Data & Downloads page (170 series / files as CSV + XLSX, 6 bundle files,
   346 download files, ~60 MB in site/data/; licence exclusions listed). Browser check compares every CSV with its
   source and opens every XLSX. Reviewed by Troy and live (run 42445260168).
+- 2026-11-07: Stage 6 built locally: About page. All six Phase 2 pages built; browser check passes on all of them.
+  Waiting for Troy's review before pushing.
 - Watch: on 2026-11-08 ~03:55 UTC oui.doleta.gov briefly failed its certificate check (hostname mismatch) from
   this PC; it passed again minutes later. If a DOL step fails in a run, check this first.
 
 ## Next steps, in order
 Setup (steps 1-4) and Phase 1 are done. Phase 2 is built in stages; Troy reviews each one locally before the next.
-1. Stage 6: About page (definitions, sources, update schedule, revision policy, disclaimer).
+1. Stage 6 review: About page (built 2026-11-07; push and republish after Troy's review). Then Phase 2 is done.
+2. Phase 3: signals and forecast: backtest thresholds (2001, 2008-09, 2020, recent), composite early-warning score
+   (green / amber / red) on the Overview, forecast fan on the unemployment rate chart, signal colors on the
+   Leading page. Plan with Troy first; decisions go in docs/decisions.md.
+Open items to watch: first real Thursday run (2026-11-12); ETA 539 allowed age (42 days); Chicago Fed LMI terms of use;
+DOL certificate glitch seen once on 2026-11-08.
 
 ## Where planning lives
 The full plan, roadmap and decisions are kept in Troy's Claude project ("Unemployment Correlations"),

@@ -292,6 +292,32 @@ def check_data_page(browser, url, base):
     check(not errors, f"no browser errors at the end {errors[:3] if errors else ''}")
 
 
+def check_text_page(browser, url, name):
+    """A page without charts (e.g. About): loads cleanly, in-page links resolve, fits a phone screen."""
+    print(f"\n=== {name} ===")
+    page = browser.new_context(viewport={"width": 1280, "height": 900}).new_page()
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
+    page.goto(url)
+    page.wait_for_load_state("networkidle")
+    check(not errors, f"no browser errors {errors[:3] if errors else ''}")
+    check(page.locator(".timecontrol").count() == 0, "no time control on a page without charts")
+    anchors = page.eval_on_selector_all("a[href^='#']", "els => els.map(e => e.getAttribute('href').slice(1))")
+    missing = [a for a in anchors if page.locator(f"[id='{a}']").count() == 0]
+    check(not missing, f"{len(anchors)} in-page links all lead somewhere {missing}")
+    issues = page.eval_on_selector_all("a[href*='/issues/new']", "els => els.map(e => e.href)")
+    check(len(issues) >= 1, f"'Report a problem' link present: {issues[:1]}")
+    page.screenshot(path=str(SHOTS / f"{Path(name).stem}_desktop.png"), full_page=True)
+    pp = browser.new_context(viewport={"width": 400, "height": 860}, device_scale_factor=2,
+                             is_mobile=True, has_touch=True).new_page()
+    pp.goto(url)
+    pp.wait_for_load_state("networkidle")
+    overflow = pp.evaluate("document.documentElement.scrollWidth - window.innerWidth")
+    check(overflow <= 0, f"phone: page is not wider than the screen (overflow {overflow} px)")
+    pp.screenshot(path=str(SHOTS / f"{Path(name).stem}_phone.png"), full_page=False)
+
+
 def main() -> int:
     if not (SITE / "index.html").exists():
         sys.exit("site/index.html not found: run python src/site/build_site.py first")
@@ -308,6 +334,8 @@ def main() -> int:
         for i, href in enumerate(links):
             if href == "data.html":
                 check_data_page(browser, base + href, base)
+            elif href == "about.html":
+                check_text_page(browser, base + href, href)
             else:
                 check_page(browser, base + href, href, Path(href).stem, first_page=(i == 0))
         browser.close()

@@ -163,6 +163,19 @@ table.files td.dl, table.files td:nth-child(8) { white-space: nowrap; }
 .block { display: block; font-size: 0.78rem; }
 .excluded ul { margin: 0.4rem 0 0; padding-left: 1.1rem; }
 
+/* ---- About page ---- */
+.toc { margin-bottom: 16px; font-size: 0.9rem; }
+.prose { margin-bottom: 16px; max-width: 100%; }
+.prose dl { margin: 0.5rem 0 0; }
+.prose dt { font-weight: 600; margin-top: 0.7rem; }
+.prose dd { margin: 0.15rem 0 0; color: var(--text-2); max-width: 80ch; }
+.prose ul { padding-left: 1.1rem; margin: 0.4rem 0; }
+.prose li { margin-bottom: 0.35rem; max-width: 85ch; }
+.prose h3 { margin-top: 0.8rem; }
+table.sources { min-width: 640px; font-size: 0.85rem; }
+#sources { margin-bottom: 16px; }
+.badge-inline { padding: 0 6px; border-radius: 999px; background: var(--warn-bg); color: var(--warn-text); font-size: 0.85em; }
+
 /* ---- Release calendar ---- */
 .calendar-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
 .table-scroll { overflow-x: auto; }
