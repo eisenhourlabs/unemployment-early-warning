@@ -10,7 +10,8 @@ INPUTS  data/model/features_monthly.csv (features.py): candidate indicators, sig
         month seeing only what was published by then. Each is standardized with the TRAINING window's mean and
         standard deviation, capped at +/-4, and set to 0 ("average, no information") before the series exists.
 
-MODELS  (a) logit     penalized (L2 / ridge) logistic regression; penalty chosen by time-ordered cross-validation
+MODELS  (a) logit     penalized (L2 / ridge) logistic regression, FINAL form: weights constrained >= 0, inputs =
+                      the eight trigger measures (Troy's review, 2026-11-08); penalty chosen by time-ordered cross-validation
                       inside the training data (forward-chaining blocks, 6-month gap before each validation block)
         (b) equal     equal-weight index: average of the standardized inputs, turned into a probability by a
                       one-variable logistic fit (so it can be scored like the others)
@@ -55,6 +56,10 @@ EXCLUDE_2020 = ("2019-09-01", "2021-03-01")    # 6 months before event #13 throu
 SHOCK_SCARES = [3, 6, 11, 14]                  # one-off shocks: winter 1977, 1984 week, Katrina, Minnesota/Ohio
 MAIN = ["sahm", "claims_low", "claims_yoy", "cont_yoy", "temp_help", "yield_curve", "mfg", "nfci"]
 JOLTS = ["jolts_layoffs", "jolts_hires"]
+# FINAL MODEL (Troy's stage 3c review, 2026-11-08): the eight trigger measures, weights constrained >= 0.
+# JOLTS was tested in and left out: it made the out-of-sample score worse (docs/model.md 5.10).
+FINAL_FEATURES = MAIN
+FINAL_NONNEG = True
 C_GRID = [0.01, 0.03, 0.1, 0.3, 1.0, 3.0, 10.0]   # smaller C = stronger penalty
 CV_BLOCKS = 5
 CLIP = 4.0
@@ -167,7 +172,8 @@ class Fitted:
         z, self.mean, self.sd = standardize(X, X)
         self.C = choose_c(X, y, nonneg)
         self.logit = make_logit(self.C, nonneg).fit(z, y)
-        idx = z.mean(axis=1).to_frame("index")
+        self.equal_features = [f for f in features if f in MAIN]    # equal-weight index: trigger measures only
+        idx = z[self.equal_features].mean(axis=1).to_frame("index")
         self.equal = LogisticRegression(C=1e6, max_iter=5000).fit(idx, y)
         rates = {}
         for color in ["green", "amber", "red"]:
@@ -183,7 +189,7 @@ class Fitted:
         z = self.z(F.loc[rows])
         out = pd.DataFrame(index=rows)
         out["logit"] = self.logit.predict_proba(z)[:, 1]
-        out["equal"] = self.equal.predict_proba(z.mean(axis=1).to_frame("index"))[:, 1]
+        out["equal"] = self.equal.predict_proba(z[self.equal_features].mean(axis=1).to_frame("index"))[:, 1]
         out["layer1"] = self.status.loc[rows].map(self.layer1).fillna(self.base).values
         out["base"] = self.base
         return out
@@ -307,15 +313,18 @@ def main() -> None:
     status = trig.set_index("month")["overall"]                 # Layer 1 overall status, new rule
     ev_all = load_events()
     tgt = target(F.index, ev_all)
-
-    # ---- Main model: pseudo-OOS 1980-99 + OOS 2000-on, all four models ----
-    pred, coefs, latest_fit = run_oos(F, tgt, status, MAIN, 1980)
-
-    # ---- Amber threshold from pre-2000 data only: model fitted on 1968-1999, in-sample predictions ----
-    pre = tgt.index[tgt.usable & (tgt.index <= "1999-06-01")]
-    pre_fit = Fitted(F, tgt, status, pre, MAIN)
+    pre = tgt.index[tgt.usable & (tgt.index <= "1999-06-01")]   # training months for the threshold fit
     pre_rows = F.index[(F.index >= FIRST_FIT) & (F.index <= "1999-12-01")]
-    pre_pred = pre_fit.predict(F, pre_rows)
+
+    def threshold(features, nonneg, t=tgt, ev=ev_all):
+        """Amber threshold from pre-2000 data only (fit on 1968-1999, in-sample scores)."""
+        pre_t = t.index[t.usable & (t.index <= "1999-06-01")]
+        fitted = Fitted(F, t, status, pre_t, features, nonneg)
+        return pick_theta(fitted.predict(F, pre_rows).logit, ev)[0]
+
+    # ---- FINAL model: pseudo-OOS 1980-99 + OOS 2000-on, with the three comparison models ----
+    pred, coefs, latest_fit = run_oos(F, tgt, status, FINAL_FEATURES, 1980, nonneg=FINAL_NONNEG)
+    pre_pred = Fitted(F, tgt, status, pre, FINAL_FEATURES, FINAL_NONNEG).predict(F, pre_rows)
     thetas, theta_tables = {}, []
     for col in ["logit", "equal", "layer1"]:
         th, table = pick_theta(pre_pred[col], ev_all)
@@ -325,95 +334,67 @@ def main() -> None:
     theta_tables.append(table.assign(model="logit", basis="pseudo-OOS 1980-1999"))
     theta = thetas["logit"]
 
-    # ---- Evaluate 2000-on (and pseudo 1980-99 for reference) ----
     results = []
     for col in MODELS[:-1]:
-        results.append({"run": "main", "model": col, "theta": thetas[col],
+        results.append({"run": "final", "model": col, "theta": thetas[col],
                         **evaluate(pred, tgt, ev_all, thetas[col], col, "2000-01-01")})
-    pseudo = {"run": "main (pseudo-OOS 1980-1999)", "model": "logit", "theta": theta,
-              **evaluate(pred[pred.index <= "1999-12-01"], tgt, ev_all, theta, "logit", "1980-01-01")}
-    results.append(pseudo)
+    results.append({"run": "final (pseudo-OOS 1980-1999)", "model": "logit", "theta": theta,
+                    **evaluate(pred[pred.index <= "1999-12-01"], tgt, ev_all, theta, "logit", "1980-01-01")})
     rel = pd.concat([reliability(pred, tgt, c, "2000-01-01") for c in ["logit", "equal", "layer1"]])
 
-    # ---- Sensitivity runs (logit), side by side with the main run ----
-    sens = [{"run": "main", "theta": theta, **evaluate(pred, tgt, ev_all, theta, "logit", "2000-01-01"),
-             "C_latest": coefs.iloc[-1].C}]
-    variant_preds = {"main": pred.logit}
+    # ---- Sensitivity runs (logistic), each side by side with the final model ----
+    sens = [{"run": "FINAL (constrained >= 0, eight trigger measures)", "theta": theta,
+             **evaluate(pred, tgt, ev_all, theta, "logit", "2000-01-01"), "C_latest": coefs.iloc[-1].C}]
+    variant_preds = {}
 
-    #  (1) four one-off shock scares NOT counted as events
+    def add(name, key, features, nonneg=FINAL_NONNEG, t=tgt, ev=ev_all, first_year=1980, fit_from=FIRST_FIT,
+            start="2000-01-01", th=None):
+        p, c, _ = run_oos(F, t, status, features, first_year, fit_from=fit_from, nonneg=nonneg)
+        th = th if th is not None else threshold(features, nonneg, t, ev)
+        sens.append({"run": name, "theta": th, **evaluate(p, t, ev, th, "logit", start), "C_latest": c.iloc[-1].C})
+        variant_preds[key] = p.logit
+        return p, c
+
+    #  (0) the model before the review: unconstrained, without JOLTS
+    p_prev, c_prev = add("previous main (unconstrained, without JOLTS)", "previous_main", MAIN, nonneg=False)
+    rel = pd.concat([rel, reliability(p_prev.rename(columns={"logit": "logit_previous"}), tgt, "logit_previous",
+                                      "2000-01-01")])
+    #  (1) with JOLTS added (set to 0 before it exists, Dec 2000)
+    add("with JOLTS (0 before 2001)", "with_jolts", MAIN + JOLTS)
+    #  (2) four one-off shock scares NOT counted as events
     ev_ns = load_events(drop=SHOCK_SCARES)
-    tgt_ns = target(F.index, ev_ns)
-    p_ns, c_ns, _ = run_oos(F, tgt_ns, status, MAIN, 1980)
-    pre_ns = Fitted(F, tgt_ns, status, tgt_ns.index[tgt_ns.usable & (tgt_ns.index <= "1999-06-01")], MAIN)
-    th_ns, _ = pick_theta(pre_ns.predict(F, pre_rows).logit, ev_ns)
-    sens.append({"run": "shock scares #3, #6, #11, #14 not events", "theta": th_ns,
-                 **evaluate(p_ns, tgt_ns, ev_ns, th_ns, "logit", "2000-01-01"), "C_latest": c_ns.iloc[-1].C})
-    variant_preds["no_shock_scares"] = p_ns.logit
-
-    #  (2a) without temp help
-    feats = [f for f in MAIN if f != "temp_help"]
-    p_nt, c_nt, _ = run_oos(F, tgt, status, feats, 1980)
-    th_nt, _ = pick_theta(Fitted(F, tgt, status, pre, feats).predict(F, pre_rows).logit, ev_all)
-    sens.append({"run": "without temp help", "theta": th_nt,
-                 **evaluate(p_nt, tgt, ev_all, th_nt, "logit", "2000-01-01"), "C_latest": c_nt.iloc[-1].C})
-    variant_preds["no_temp_help"] = p_nt.logit
-
-    #  (2b) with JOLTS: fitted on 2001 on (JOLTS starts Dec 2000), tested from 2008; compared with the same
-    #       2001-on fit without JOLTS. Indicative only (one recession, 2008, in the test). No pre-2000 data,
-    #       so the main amber threshold is used.
-    p_j, c_j, _ = run_oos(F, tgt, status, MAIN + JOLTS, 2008, fit_from="2001-01-01")
-    p_j0, c_j0, _ = run_oos(F, tgt, status, MAIN, 2008, fit_from="2001-01-01")
-    sens.append({"run": "2001-on fit WITHOUT JOLTS (comparison for the next row), tested 2008-on", "theta": theta,
-                 **evaluate(p_j0, tgt, ev_all, theta, "logit", "2008-01-01"), "C_latest": c_j0.iloc[-1].C})
-    sens.append({"run": "2001-on fit WITH JOLTS, tested 2008-on (indicative)", "theta": theta,
-                 **evaluate(p_j, tgt, ev_all, theta, "logit", "2008-01-01"), "C_latest": c_j.iloc[-1].C})
-    variant_preds["jolts_2001fit"] = p_j.logit
-    variant_preds["no_jolts_2001fit"] = p_j0.logit
-
-    #  (3) claims revisions: claims measures from FRED's vintages from 2010 (as published), else current
+    add("shock scares #3, #6, #11, #14 not events", "no_shock_scares", FINAL_FEATURES,
+        t=target(F.index, ev_ns), ev=ev_ns)
+    #  (3) without temp help
+    add("without temp help", "no_temp_help", [f for f in FINAL_FEATURES if f != "temp_help"])
+    #  (4) JOLTS where it has real history: fitted from 2001, tested from 2008 (one recession; indicative)
+    add("2001-on fit WITHOUT JOLTS, tested 2008-on", "no_jolts_2001fit", MAIN, first_year=2008,
+        fit_from="2001-01-01", start="2008-01-01", th=theta)
+    add("2001-on fit WITH JOLTS, tested 2008-on (indicative)", "jolts_2001fit", FINAL_FEATURES, first_year=2008,
+        fit_from="2001-01-01", start="2008-01-01", th=theta)
+    #  (5) claims revisions: claims measures from FRED's vintages from 2010 (as published), else current
     Fv = F.copy()
     for a, b in [("claims_low", "claims_low_v"), ("claims_yoy", "claims_yoy_v"), ("cont_yoy", "cont_yoy_v")]:
         Fv[a] = F[b].where(F[b].notna(), F[a])
-    p_v, c_v, _ = run_oos(Fv, tgt, status, MAIN, 1980)
-    main_2010 = evaluate(pred, tgt, ev_all, theta, "logit", "2010-01-01")
-    vint_2010 = evaluate(p_v, tgt, ev_all, theta, "logit", "2010-01-01")
-    sens.append({"run": "main, scored 2010-on (current-vintage claims)", "theta": theta, **main_2010, "C_latest": coefs.iloc[-1].C})
-    sens.append({"run": "claims as published at the time (FRED vintages), scored 2010-on", "theta": theta, **vint_2010,
-                 "C_latest": c_v.iloc[-1].C})
+    p_v, c_v, _ = run_oos(Fv, tgt, status, FINAL_FEATURES, 1980, nonneg=FINAL_NONNEG)
     variant_preds["claims_vintage"] = p_v.logit
-    sens.append({"run": "main, scored 2010-on WITHOUT 2022-2023", "theta": theta, "C_latest": coefs.iloc[-1].C,
-                 **evaluate(pred, tgt, ev_all, theta, "logit", "2010-01-01", skip_years=(2022, 2023))})
-    sens.append({"run": "claims vintages, scored 2010-on WITHOUT 2022-2023", "theta": theta, "C_latest": c_v.iloc[-1].C,
-                 **evaluate(p_v, tgt, ev_all, theta, "logit", "2010-01-01", skip_years=(2022, 2023))})
-
-    #  (4) extra: coefficients constrained >= 0 (not in Troy's list; added because continued claims gets a
-    #      negative weight in the main fit, which makes the contributions hard to read)
-    p_nn, c_nn, nn_fit = run_oos(F, tgt, status, MAIN, 1980, nonneg=True)
-    th_nn, _ = pick_theta(Fitted(F, tgt, status, pre, MAIN, nonneg=True).predict(F, pre_rows).logit, ev_all)
-    sens.append({"run": "coefficients constrained >= 0", "theta": th_nn,
-                 **evaluate(p_nn, tgt, ev_all, th_nn, "logit", "2000-01-01"), "C_latest": c_nn.iloc[-1].C})
-    variant_preds["nonneg"] = p_nn.logit
-    c_nn.to_csv(MODEL / "score_coefficients_nonneg.csv", index=False)
-    rel = pd.concat([rel, reliability(p_nn.rename(columns={"logit": "logit_nonneg"}), tgt, "logit_nonneg",
-                                      "2000-01-01")])
+    for label, p, c, skip in [("final, scored 2010-on (current-vintage claims)", pred, coefs, ()),
+                              ("claims as published at the time (FRED vintages), scored 2010-on", p_v, c_v, ()),
+                              ("final, scored 2010-on WITHOUT 2022-2023", pred, coefs, (2022, 2023)),
+                              ("claims vintages, scored 2010-on WITHOUT 2022-2023", p_v, c_v, (2022, 2023))]:
+        sens.append({"run": label, "theta": theta, "C_latest": c.iloc[-1].C,
+                     **evaluate(p, tgt, ev_all, theta, "logit", "2010-01-01", skip_years=skip)})
     diff = (p_v.logit - pred.logit)[pred.index >= "2010-01-01"]
 
-    # ---- Contributions to the latest score (the model re-fitted in January of the latest year) ----
+    # ---- Contributions to the latest score (the final model re-fitted in January of the latest year) ----
     last = F.index[-1]
     z = latest_fit.z(F.loc[[last]]).iloc[0]
-    coef = pd.Series(latest_fit.logit.coef_[0], index=MAIN)
-    contrib = pd.DataFrame({"raw_value": F.loc[last, MAIN], "z": z, "coefficient": coef,
+    coef = pd.Series(latest_fit.logit.coef_[0], index=FINAL_FEATURES)
+    contrib = pd.DataFrame({"raw_value": F.loc[last, FINAL_FEATURES], "z": z, "coefficient": coef,
                             "contribution_log_odds": coef * z})
     contrib.loc["intercept", "contribution_log_odds"] = latest_fit.logit.intercept_[0]
     contrib.loc["total (log-odds)", "contribution_log_odds"] = contrib.contribution_log_odds.sum()
     contrib.loc["probability", "contribution_log_odds"] = pred.loc[last, "logit"]
-    z_nn = nn_fit.z(F.loc[[last]]).iloc[0]
-    coef_nn = pd.Series(nn_fit.logit.coef_[0], index=MAIN)
-    contrib["coefficient_nonneg"] = coef_nn
-    contrib["contribution_nonneg"] = coef_nn * z_nn
-    contrib.loc["intercept", "contribution_nonneg"] = nn_fit.logit.intercept_[0]
-    contrib.loc["total (log-odds)", "contribution_nonneg"] = contrib.contribution_nonneg.iloc[:len(MAIN) + 1].sum()
-    contrib.loc["probability", "contribution_nonneg"] = p_nn.loc[last, "logit"]
 
     # ---- Save ----
     out = pred.join(tgt)
@@ -423,6 +404,7 @@ def main() -> None:
     out.to_csv(MODEL / "score_oos.csv", date_format="%Y-%m-%d", index_label="month")
     pre_pred.join(tgt).to_csv(MODEL / "score_pre2000_insample.csv", date_format="%Y-%m-%d", index_label="month")
     coefs.to_csv(MODEL / "score_coefficients.csv", index=False)
+    c_prev.to_csv(MODEL / "score_coefficients_previous.csv", index=False)
     pd.DataFrame(results).to_csv(MODEL / "score_results.csv", index=False)
     pd.DataFrame(sens).to_csv(MODEL / "score_sensitivity.csv", index=False)
     rel.to_csv(MODEL / "score_reliability.csv", index=False)

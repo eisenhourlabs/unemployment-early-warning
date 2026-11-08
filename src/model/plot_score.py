@@ -3,7 +3,7 @@ Review charts for the early-warning score (stage 3c). Not part of the website.
 
   reports/score_history.png      out-of-sample score since 2000 (re-fitted each January on earlier data only),
                                  events shaded, amber and red lines, the 2020 window marked; thin lines show
-                                 two sensitivity runs (coefficients >= 0; claims as published at the time)
+                                 two comparison runs (the model before the review; claims as published at the time)
   reports/score_reliability.png  calibration: in each band of predicted probability, the share of months
                                  that were really followed by an event start within 6 months
 
@@ -63,8 +63,8 @@ def history():
             transform=ax.get_xaxis_transform(), va="top")
 
     ax.plot(x, s.logit_claims_vintage, color=MUTED, lw=1.0, ls=":", label="Sensitivity: claims as published at the time (2010 on)")
-    ax.plot(x, s.logit_nonneg, color=ORANGE, lw=1.1, label="Sensitivity: coefficients constrained ≥ 0")
-    ax.plot(x, s.logit, color=BLUE, lw=2.0, label="Score (main model, out of sample)")
+    ax.plot(x, s.logit_previous_main, color=ORANGE, lw=1.1, label="Before review: unconstrained, without JOLTS")
+    ax.plot(x, s.logit, color=BLUE, lw=2.0, label="Score (final model, out of sample)")
     ax.axhline(theta, color=AMBER, lw=1.4, ls="--")
     ax.axhline(0.5, color=RED, lw=1.4, ls="--")
     ax.text(s.index[-1], theta, f" Amber {theta:.0%}", color=INK2, fontsize=9, va="center", ha="left")
@@ -91,7 +91,7 @@ def calibration():
     fig, ax = plt.subplots(figsize=(7.5, 6.5))
     fig.patch.set_facecolor(SURFACE)
     ax.plot([0, 1], [0, 1], color=MUTED, lw=1, ls="--", label="Perfect calibration")
-    names = {"logit": ("Main model", BLUE), "logit_nonneg": ("Coefficients ≥ 0", ORANGE),
+    names = {"logit": ("Final model", BLUE), "logit_previous": ("Before review", ORANGE),
              "equal": ("Equal-weight index", AQUA)}
     for model, (label, color) in names.items():
         d = r[(r.model == model) & (r.months > 0)]
@@ -111,7 +111,7 @@ def calibration():
     ax.legend(loc="upper left", frameon=False, fontsize=9, labelcolor=INK2)
     fig.suptitle("Calibration of the out-of-sample score, 2000–2026", x=0.1, ha="left", fontsize=13, color=INK)
     fig.text(0.1, 0.905, "Bands 0–5, 5–10, 10–20, 20–35, 35–50, 50–100%; numbers = months in each band "
-             "(main model)", fontsize=8.5, color=INK2)
+             "(final model)", fontsize=8.5, color=INK2)
     fig.subplots_adjust(left=0.12, right=0.95, top=0.87, bottom=0.1)
     fig.savefig(REPORTS / "score_reliability.png", dpi=130, facecolor=SURFACE)
 

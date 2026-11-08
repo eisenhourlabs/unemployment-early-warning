@@ -184,17 +184,21 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 - 2026-11-08: Stage 3c built locally on `phase3a` (not pushed, website unchanged): early-warning score (ridge logistic,
   8 inputs, real-time), out of sample 2000-2026 Brier 0.114 / skill +0.14 (equal-weight +0.12, Layer 1 +0.01); amber 19%,
   red 50%; sensitivity runs incl. claims vintages (2022 false red hidden by revised claims) and an extra
-  coefficients->=0 run (+0.18); docs/model.md section 5, reports/score_history.png, score_reliability.png. Latest score
-  (Oct 2026) 2.4%. Waiting for Troy's review (decisions in docs/model.md 5.9).
+  coefficients->=0 run (+0.18); docs/model.md section 5, reports/score_history.png, score_reliability.png.
+- 2026-11-08: Stage 3c review applied (docs/model.md 5.10): FINAL score = ridge logistic on the 8 trigger measures,
+  weights >= 0, amber 20%, red 50%; out of sample 2000-2026 Brier 0.108, skill +0.18; JOLTS tested and left out (made it
+  worse); temp help kept; claims-revision effect to be stated, not modeled. Latest score (Oct 2026) 2.4%, green.
 
 ## Next steps, in order
 Setup (steps 1-4), Phase 1, Phase 2 and the Phase 2 review fixes are done and live.
-1. Stage 3c review: Troy decides docs/model.md 5.9 (coefficients >= 0, temp help, JOLTS, claims-revision handling,
-   thresholds). Do not start 3d until he says so. Merge `phase3a` into main and push only when he says "push".
-2. Stage 3d (forecasts), plan with Troy first. The score's probability feeds the mixture fans (plan Layer 3).
-3. Stage 3e per docs/phase3_plan.md. Stage 3e must also: show trigger signal colors for the panel (yield curve
+1. Stage 3d (forecasts), plan with Troy first, when he says to start. Merge `phase3a` into main and push only when he
+   says "push".
+   The final score's probability feeds the mixture fans (plan Layer 3).
+2. Stage 3e per docs/phase3_plan.md. Stage 3e must also: show trigger signal colors for the panel (yield curve
    labeled "long lead, often 12+ months"; NFCI caveat "real-time only since 2011"); move temp help and manufacturing
-   surveys to the Leading page as context only (not counted in the overall status); use the new overall rule.
+   surveys to the Leading page as context only (not counted in the overall status); use the new overall rule; state
+   the claims-revision effect on the methodology page (docs/model.md 5.10); move scikit-learn from
+   requirements-dev.txt to requirements.txt so the cloud can compute the score.
 Open items to watch: first real Thursday run (2026-11-12); ETA 539 allowed age (42 days); Chicago Fed LMI terms of use;
 DOL certificate glitch seen once on 2026-11-08.
 
