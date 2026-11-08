@@ -1,7 +1,7 @@
 {
  "model_year": 2026,
  "data_known_by": "2026-01-01",
- "frozen_at": "2026-11-08 20:56 UTC",
+ "frozen_at": "2026-11-08 22:48 UTC",
  "description": "Unemployment Watch early-warning model, frozen at the January re-fit (docs/model.md 5.10, 6; docs/phase3e_design.md). Model output, not official statistics.",
  "colour": {
   "amber_in": 0.2,
@@ -39,7 +39,7 @@
     "train_last": "2025-09",
     "train_events": 42,
     "C": 0.3,
-    "intercept": -3.759378063545002,
+    "intercept": -3.7593780635450007,
     "weights": {
      "sahm": 0.4589169011,
      "claims_low": 1.2183225749,
@@ -115,7 +115,7 @@
     "train_last": "2024-12",
     "train_events": 157,
     "C": 0.1,
-    "intercept": -0.9040123569711431,
+    "intercept": -0.904012356971143,
     "weights": {
      "sahm": 0.1446024947,
      "claims_low": 0.4565014719,
