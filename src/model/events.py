@@ -8,6 +8,9 @@ An event STARTS in the first month that either leg is "on":
     value of the prior 52 weeks (not counting the current week). A month's claims leg is on if any
     week ending in that month is on. Needs 52 weeks of history, so it can be tested from early 1968.
 
+Troy's rulings (config/event_notes.csv) can move an event's start (start_override; rule start kept in
+rule_start_month) and classify each event (recession / early signal / scare).
+
 An event ENDS once both legs have been off for QUIET_MONTHS (6) months in a row; its end month is the
 last month a leg was on. A new event cannot start until the previous one has ended, so those quiet
 months are also the minimum gap between events (decision 2026-11-08).
@@ -104,12 +107,29 @@ def months_between(a, b) -> int:
     return (b.year - a.year) * 12 + (b.month - a.month)
 
 
-def describe(events, flags, weekly, recessions) -> pd.DataFrame:
-    """One row per event with the measures Troy asked for."""
-    notes = pd.read_csv(NOTES, dtype=str).set_index("start_month")["note"] if NOTES.exists() else {}
+def read_notes() -> pd.DataFrame:
+    """Troy's rulings per event (config/event_notes.csv), keyed by the start month the rule gives:
+    start_override (a different start month, if any), classification (recession / early signal / scare),
+    and a one-line note."""
+    return pd.read_csv(NOTES, dtype=str, keep_default_na=False).set_index("start_month")
+
+
+def apply_overrides(events: list[tuple], notes: pd.DataFrame) -> list[tuple]:
+    """Turn [(start, end)] into [(rule start, start used, end)], applying any start_override."""
+    out = []
+    for start, end in events:
+        key = f"{start:%Y-%m}"
+        override = notes.start_override.get(key, "") if key in notes.index else ""
+        used = pd.Timestamp(override + "-01") if override else start
+        out.append((start, used, end))
+    return out
+
+
+def describe(events, flags, weekly, recessions, notes) -> pd.DataFrame:
+    """One row per event with the measures Troy asked for. `events` = [(rule start, start used, end)]."""
     last_month = flags.index[-1]
     rows = []
-    for i, (start, end) in enumerate(events):
+    for i, (rule_start, start, end) in enumerate(events):
         stop = end if end is not None else last_month
         window = flags.loc[start:stop]
 
@@ -134,7 +154,7 @@ def describe(events, flags, weekly, recessions) -> pd.DataFrame:
         # next event starts, so the run-up to the next downturn isn't credited to this one.
         search_end = stop + pd.DateOffset(months=PEAK_WINDOW_AFTER_END)
         if i + 1 < len(events):
-            search_end = min(search_end, events[i + 1][0] - pd.DateOffset(months=PEAK_STOP_BEFORE_NEXT))
+            search_end = min(search_end, events[i + 1][1] - pd.DateOffset(months=PEAK_STOP_BEFORE_NEXT))
         search_end = max(search_end, stop)       # but always search the event itself
         ur = flags.unrate
         ur_base = ur.loc[start - pd.DateOffset(months=12):start - pd.DateOffset(months=1)].min()
@@ -155,10 +175,11 @@ def describe(events, flags, weekly, recessions) -> pd.DataFrame:
         else:
             nber, vs_peak = "none", None
 
-        key = f"{start:%Y-%m}"
+        key = f"{rule_start:%Y-%m}"          # notes are keyed by the start the rule gives
         rows.append({
             "event": i + 1,
-            "start_month": key,
+            "start_month": f"{start:%Y-%m}",
+            "rule_start_month": key,       # differs from start_month only where Troy overrode the start
             "end_month": f"{end:%Y-%m}" if end is not None else "ongoing",
             "length_months": months_between(start, stop) + 1,
             "first_leg": first_leg,
@@ -175,9 +196,10 @@ def describe(events, flags, weekly, recessions) -> pd.DataFrame:
             "nber_recession": nber,
             "nber_months_in_event": rec_months,
             "start_vs_nber_peak_months": vs_peak,
-            "scare": not near,            # no NBER recession within 6 months of the event
+            "scare": not near,            # by rule: no NBER recession within 6 months of the event
+            "classification": notes.classification.get(key, "unreviewed") if key in notes.index else "unreviewed",
             "exclude_from_fit": start.year in EXCLUDE_FROM_FIT,
-            "note": notes.get(key, "") if len(notes) else "",
+            "note": notes.note.get(key, "") if key in notes.index else "",
         })
     return pd.DataFrame(rows)
 
@@ -192,11 +214,13 @@ def main() -> None:
     recessions = nber_recessions()
 
     events = find_events(flags.either_on, QUIET_MONTHS)
-    table = describe(events, flags, weekly, recessions)
+    notes = read_notes()
+    events = apply_overrides(events, notes)
+    table = describe(events, flags, weekly, recessions, notes)
 
     # Label each month with its event number (blank outside events).
     flags["event"] = pd.NA
-    for row, (start, end) in zip(table.itertuples(), events):
+    for row, (_, start, end) in zip(table.itertuples(), events):
         flags.loc[start:(end if end is not None else flags.index[-1]), "event"] = row.event
     flags["usrec"] = pd.read_csv(PROCESSED / "USREC.csv", parse_dates=["date"]).set_index("date")["value"]
 

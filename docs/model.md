@@ -78,47 +78,50 @@ Measured on **final (latest) data**, monthly, from January 1967.
   within 6 months either side. Otherwise it is a **scare**. "Start vs. NBER peak" is in months: negative means the
   event started before the peak.
 
-## 3. Event list (awaiting Troy's sign-off)
+## 3. Event list (signed off by Troy, 2026-11-08)
 
 Full detail in `data/model/events.csv`. Chart: `reports/events.png` (events shaded, NBER recessions marked).
 
-| # | Start | End | First leg | Other leg | Start vs. NBER peak | UR rise (pt) | Claims rise | NBER recession | Note |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | 1970-01 | 1971-10 | claims | UR +2 mo | +1 | 2.7 | +92% | 1969-12 to 1970-11 | GM strike (Sep–Nov 1970) inside the event |
-| 2 | 1973-12 | 1976-01 | claims | UR +7 mo | +1 | 4.4 | +154% | 1973-11 to 1975-03 | Oil embargo |
-| 3 | 1977-02 | 1977-02 | claims | none | – | 0.2 | +36% | none: **scare** | Severe winter, natural-gas shortages closed plants |
-| 4 | 1979-04 | 1981-04 | claims | UR +10 mo | −9 | 2.0 | +97% | 1980-01 to 1980-07 | **Check:** April 1979 is a one-month spike (Teamsters trucking strike, auto layoffs); claims back on from Oct 1979 |
-| 5 | 1981-11 | 1983-06 | both | same month | +4 | 3.6 | +67% | 1981-07 to 1982-11 | Deepest pre-2008 rise |
-| 6 | 1984-11 | 1984-11 | claims | none | – | 0.2 | +25% | none: **scare** | One week at +25.1%; cause not identified |
-| 7 | 1989-10 | 1990-02 | claims | none | −9 | 0.4 | +27% | linked to 1990-07 to 1991-03 | **Check:** early signal or scare? Then 7 quiet months before event 8 |
-| 8 | 1990-10 | 1992-10 | both | same month | +3 | 2.6 | +49% | 1990-07 to 1991-03 | Slow recovery |
-| 9 | 2000-11 | 2002-11 | claims | UR +7 mo | −4 | 2.2 | +84% | 2001-03 to 2001-11 | Claims led the NBER peak by 4 months |
-| 10 | 2003-07 | 2003-08 | unemployment | none | – | 0.5 | +10% | none: **scare** | Late tail of the 2001 "jobless recovery" |
-| 11 | 2005-10 | 2005-10 | claims | none | – | 0.1 | +27% | none: **scare** | Hurricanes Katrina and Rita |
-| 12 | 2008-02 | 2010-05 | unemployment | claims +5 mo | +2 | 5.6 | +118% | 2007-12 to 2009-06 | UR leg first; claims followed Jul 2008 |
-| 13 | 2020-03 | 2021-03 | claims | UR +1 mo | +1 | 11.3 | +2,524% | 2020-02 to 2020-04 | Pandemic. **Excluded from fitting** (decision 4) |
-| 14 | 2023-06 | 2023-07 | claims | none | – | 0.5 | +27% | none: **scare** | Minnesota summer benefits for school workers; Ohio fraud |
-| 15 | 2024-07 | 2024-09 | unemployment | none | – | 0.9 | +20% | none: **scare** | The mid-2024 Sahm-rule trigger |
+| # | Start | End | First leg | Other leg | Start vs. NBER peak | UR rise (pt) | Claims rise | NBER recession | Classification | Note |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | 1970-01 | 1971-10 | claims | UR +2 mo | +1 | 2.7 | +92% | 1969-12 to 1970-11 | recession | GM strike (Sep–Nov 1970) inside the event |
+| 2 | 1973-12 | 1976-01 | claims | UR +7 mo | +1 | 4.4 | +154% | 1973-11 to 1975-03 | recession | Oil embargo |
+| 3 | 1977-02 | 1977-02 | claims | none | – | 0.2 | +36% | none | **scare** | Severe winter, natural-gas shortages closed plants |
+| 4 | 1979-10 | 1981-04 | claims | UR +4 mo | −3 | 2.2 | +97% | 1980-01 to 1980-07 | recession | **Start overridden** from the rule's April 1979 (a one-month spike: Teamsters trucking strike, auto layoffs) |
+| 5 | 1981-11 | 1983-06 | both | same month | +4 | 3.6 | +67% | 1981-07 to 1982-11 | recession | Deepest pre-2008 rise |
+| 6 | 1984-11 | 1984-11 | claims | none | – | 0.2 | +25% | none | **scare** | One week at +25.1%; cause not identified |
+| 7 | 1989-10 | 1990-02 | claims | none | −9 | 0.4 | +27% | 1990-07 to 1991-03 | **early signal** | Of the 1990–91 recession; then 7 quiet months before event 8 |
+| 8 | 1990-10 | 1992-10 | both | same month | +3 | 2.6 | +49% | 1990-07 to 1991-03 | recession | Slow recovery |
+| 9 | 2000-11 | 2002-11 | claims | UR +7 mo | −4 | 2.2 | +84% | 2001-03 to 2001-11 | recession | Claims led the NBER peak by 4 months |
+| 10 | 2003-07 | 2003-08 | unemployment | none | – | 0.5 | +10% | none | **scare** | Late tail of the 2001 "jobless recovery" |
+| 11 | 2005-10 | 2005-10 | claims | none | – | 0.1 | +27% | none | **scare** | Hurricanes Katrina and Rita |
+| 12 | 2008-02 | 2010-05 | unemployment | claims +5 mo | +2 | 5.6 | +118% | 2007-12 to 2009-06 | recession | UR leg first; claims followed Jul 2008 |
+| 13 | 2020-03 | 2021-03 | claims | UR +1 mo | +1 | 11.3 | +2,524% | 2020-02 to 2020-04 | recession (pandemic) | Pandemic. **Excluded from fitting** (decision 4) |
+| 14 | 2023-06 | 2023-07 | claims | none | – | 0.5 | +27% | none | **scare** | Minnesota summer benefits for school workers; Ohio fraud |
+| 15 | 2024-07 | 2024-09 | unemployment | none | – | 0.9 | +20% | none | **scare** | The mid-2024 Sahm-rule trigger |
 
 "UR rise" is the peak minus the prior 12-month low. For #15 the peak is 4.4% in September 2025, inside the 12-month
 search window after the event.
 
-**What it says.** Every NBER recession since 1969 has an event. Starts range from 9 months before the NBER
-peak to 4 months after (median: 1 month after). NBER announces its dates many months later, so the event still
+**What it says.** Every NBER recession since 1969 has an event. Starts range from 4 months before the NBER
+peak to 4 months after (median: 1 month after); the early signal (#7) came 9 months before the 1990 peak. NBER announces its dates many months later, so the event still
 beats the official call. The claims leg came first in 5 of the 8 recessions (1970, 1973, 1979, 2000, 2020). The
 unemployment leg came first in 2008, and both legs came together in 1981 and 1990. There are **6 scares** (#3, 6, 10, 11, 14, 15): 6 false starts against 8 recession events
 in 57 years. Four of the scares are single-shock claims spikes (weather, a hurricane, a law change and fraud,
 and one unexplained week).
 
-### Decisions for Troy
+### Troy's rulings (2026-11-08)
 
-1. **Do the scares count as events** for fitting the score? Option A: yes, all of them (the score then learns
-   that some spikes fade). Option B: drop the identifiable one-off shocks (#3 winter, #11 hurricanes, #14
-   Minnesota / Ohio) and keep the rest. Option C: count only recession-linked events.
-2. **Event #4: start in April 1979 (as coded) or October 1979?** April 1979 is a strike-driven spike that faded.
-   The 6-month quiet rule merges it with the real onset only because the gap was 5 months, not 6.
-3. **Event #7 (Oct 1989 – Feb 1990):** an early signal of the 1990–91 recession, or a scare?
-4. **#10 (mid-2003):** a scare, or part of the 2001 downturn?
+Recorded in `config/event_notes.csv` (columns start_override and classification), applied by `events.py`.
+
+1. **Scares count as events** for fitting the score (option A): all 6 stay in, so the score learns that some
+   spikes fade. Only 2020 is excluded from fitting (decision 4).
+2. **Event #4 starts in October 1979,** not at the rule's April 1979 strike spike. `events.csv` keeps the
+   rule's start in `rule_start_month`; this is the only override.
+3. **Event #7 (Oct 1989 – Feb 1990) is an early signal** of the 1990–91 recession, not a scare.
+4. **Event #10 (mid-2003) is a scare.**
+
+Result: 15 events, of which 8 are recessions (2020 is excluded from fitting), 1 is an early signal and 6 are scares.
 
 ### Sensitivity to the quiet period
 

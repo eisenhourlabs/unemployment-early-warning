@@ -59,9 +59,9 @@ def main() -> None:
     # Event shading on both data panels.
     for ev in events.itertuples():
         s, e = month_span(ev.start_month, ev.end_month if ev.end_month != "ongoing" else last)
-        color = SCARE if ev.scare else EVENT
+        color = SCARE if ev.classification == "scare" else EVENT
         for ax in (ax_ur, ax_ic):
-            ax.axvspan(s, e, color=color, alpha=0.30 if ev.scare else 0.16, lw=0)
+            ax.axvspan(s, e, color=color, alpha=0.30 if ev.classification == "scare" else 0.16, lw=0)
 
     # Data lines.
     ax_ur.plot(flags.index, flags.unrate, color=LINE, lw=1.6)
@@ -78,7 +78,7 @@ def main() -> None:
         ax_tl.axvspan(s, e, ymin=0.55, ymax=0.95, color=NBER, lw=0)
     for ev in events.itertuples():
         s, e = month_span(ev.start_month, ev.end_month if ev.end_month != "ongoing" else last)
-        color = SCARE if ev.scare else EVENT
+        color = SCARE if ev.classification == "scare" else EVENT
         e = max(e, s + pd.Timedelta(days=MIN_STRIP_DAYS))   # keep 1-month events visible in the strip
         ax_tl.axvspan(s, e, ymin=0.08, ymax=0.48, color=color, lw=0)
         ax_tl.text(s, 0.28, f" {ev.event}", va="center", ha="right", fontsize=8.5, color=INK2,
@@ -112,7 +112,7 @@ def main() -> None:
     handles = [plt.Rectangle((0, 0), 1, 1, color=EVENT, alpha=0.35),
                plt.Rectangle((0, 0), 1, 1, color=SCARE, alpha=0.35),
                plt.Rectangle((0, 0), 1, 1, color=NBER)]
-    ax_ur.legend(handles, ["Event linked to an NBER recession", "Scare (no NBER recession within 6 months)",
+    ax_ur.legend(handles, ["Recession event (incl. early signal)", "Scare",
                            "NBER recession (timeline strip)"],
                  loc="upper left", frameon=False, fontsize=9, labelcolor=INK2, ncol=3)
     fig.text(0.06, 0.02, "Sources: BLS (UNRATE), U.S. Department of Labor (IC4WSA), NBER (USREC), via FRED.",

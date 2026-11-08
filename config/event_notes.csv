@@ -1,16 +1,16 @@
-start_month,note
-1970-01,"1969-70 recession; claims led by 2 months. The GM strike (Sep-Nov 1970) falls inside the event"
-1973-12,"1973-75 recession (oil embargo); claims on one month after the NBER peak; unemployment leg 7 months later"
-1977-02,"Scare: claims spike in the severe winter of Jan-Feb 1977 (natural-gas shortages closed plants); unemployment never rose"
-1979-04,"1980 recession. CHECK: April 1979 is a one-month claims spike (the Teamsters trucking strike and auto layoffs); claims were off May-Sep and back on from Oct 1979. Only 5 quiet months, so the rule joins them; with the October onset the start is 3 months before the NBER peak instead of 9"
-1981-11,"1981-82 recession; both legs on in the same month; deepest pre-2008 rise"
-1984-11,"Scare: one week at +25.1% (week ending 1984-11-03), just over the threshold; cause not identified"
-1989-10,"CHECK: claims-only spell (Oct 1989 and Jan-Feb 1990) 9 months before the 1990 NBER peak; then 7 quiet months before event 8. Early signal of the 1990-91 recession or a scare?"
-1990-10,"1990-91 recession; both legs on in the same month (3 months after the NBER peak); slow 'jobless' recovery"
-2000-11,"2001 recession; claims led the unemployment leg by 7 months and the NBER peak by 4 months"
-2003-07,"Scare by our rule (no NBER recession within 6 months): the late tail of the 2001 'jobless recovery'; unemployment peaked at 6.3% in June 2003"
-2005-10,"Scare: Hurricanes Katrina and Rita (Aug-Sep 2005); one week over +25%"
-2008-02,"2007-09 recession; the unemployment leg came first (Feb 2008) and claims followed in Jul 2008"
-2020-03,"2020 pandemic recession; claims rose about 25-fold in weeks. Excluded from fitting (decision 4)"
-2023-06,"Scare: claims jump in Jun-Jul 2023 (reported at the time to reflect Minnesota's new summer benefits for school workers and fraudulent claims in Ohio)"
-2024-07,"Scare: the widely reported Sahm-rule trigger of mid-2024 (July 2024 first printed at 4.3%, now 4.2%; partly faster labor-force growth; 4.4% by Sep 2025); claims never reached +25%"
+start_month,start_override,classification,note
+1970-01,,recession,1969-70 recession; claims led by 2 months. The GM strike (Sep-Nov 1970) falls inside the event
+1973-12,,recession,1973-75 recession (oil embargo); claims on one month after the NBER peak; unemployment leg 7 months later
+1977-02,,scare,Scare: claims spike in the severe winter of Jan-Feb 1977 (natural-gas shortages closed plants); unemployment never rose
+1979-04,1979-10,recession,"1980 recession. Start moved from Apr 1979 (rule) to Oct 1979 by Troy's ruling 2026-11-08: April 1979 was a one-month claims spike (Teamsters trucking strike, auto layoffs); claims were off May-Sep and back on from Oct 1979"
+1981-11,,recession,1981-82 recession; both legs on in the same month; deepest pre-2008 rise
+1984-11,,scare,"Scare: one week at +25.1% (week ending 1984-11-03), just over the threshold; cause not identified"
+1989-10,,early signal,"Early signal of the 1990-91 recession (Troy's ruling 2026-11-08): claims-only spell (Oct 1989, Jan-Feb 1990) 9 months before the NBER peak, then 7 quiet months before event 8"
+1990-10,,recession,1990-91 recession; both legs on in the same month (3 months after the NBER peak); slow 'jobless' recovery
+2000-11,,recession,2001 recession; claims led the unemployment leg by 7 months and the NBER peak by 4 months
+2003-07,,scare,Scare (Troy's ruling 2026-11-08): the late tail of the 2001 'jobless recovery'; unemployment peaked at 6.3% in June 2003
+2005-10,,scare,Scare: Hurricanes Katrina and Rita (Aug-Sep 2005); one week over +25%
+2008-02,,recession,2007-09 recession; the unemployment leg came first (Feb 2008) and claims followed in Jul 2008
+2020-03,,recession (pandemic),2020 pandemic recession; claims rose about 25-fold in weeks. Excluded from fitting (decision 4)
+2023-06,,scare,Scare: claims jump in Jun-Jul 2023 (reported at the time to reflect Minnesota's new summer benefits for school workers and fraudulent claims in Ohio)
+2024-07,,scare,"Scare: the widely reported Sahm-rule trigger of mid-2024 (July 2024 first printed at 4.3%, now 4.2%; partly faster labor-force growth; 4.4% by Sep 2025); claims never reached +25%"

@@ -166,12 +166,14 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   website unchanged): claims table from 1967 (rates from 1971; DOL has no covered employment before 1971), ALFRED
   vintages for 7 monthly series (TEMPHELPS / JOLTS only from 2010-11, PERMIT from 1999), `as_known_on` (matches
   FRED SAHMREALTIME in 97.7% of months), event list: 15 events since 1967 (8 recession-linked, 6 scares, 2020
-  excluded from fitting), docs/model.md, reports/events.png. Waiting for Troy's sign-off on the event list.
+  excluded from fitting), docs/model.md, reports/events.png. Troy's rulings applied the same day (scares count;
+  #4 starts Oct 1979; #7 early signal; #10 scare; in config/event_notes.csv). Troy is reviewing the list in his
+  Claude project before stage 3b.
 
 ## Next steps, in order
 Setup (steps 1-4), Phase 1, Phase 2 and the Phase 2 review fixes are done and live.
-1. Phase 3 stage 3a sign-off: Troy decides the four questions in docs/model.md section 3 (do scares count; 1979
-   start; event #7; event #10), then merge `phase3a` into main and push when he says "push".
+1. Phase 3 stage 3a: rulings applied; Troy is reviewing the event list in his Claude project. Do not start 3b
+   until he says so. Merge `phase3a` into main and push only when he says "push".
 2. Stage 3b (triggers): compute the Layer 1 rules historically with `as_known_on`, lead-time and false-alarm table;
    measure the claims revision effect with FRED's 2009+ claims vintages. Plan with Troy first.
 3. Stages 3c-3e per docs/phase3_plan.md.
