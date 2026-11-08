@@ -68,7 +68,7 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 | `data/processed/dol/` | DOL outputs (latest figures only) |
 | `docs/data_revisions.md` | Automatic log of DOL revisions |
 | `docs/dashboard_requirements.md` | What the Phase 2 dashboard must show |
-| `src/alerts/alerts.py` | Optional alerts (off) |
+| `src/alerts/alerts.py` | Alerts (off; repository variable ALERTS_ENABLED): colour change (called by live.py) and failed refresh (`--refresh-failed`); while off they print the text in the log |
 | `src/model/` | Phase 3 modeling: `build_claims_history.py` (claims table from 1967), `alfred_fetcher.py` (past vintages), `realtime.py` (`as_known_on(series, date)` + Sahm check), `events.py` (event definition and list), `plot_events.py` (review chart), `current_fetcher.py` (long histories of never-revised series), `triggers.py` (8 Layer 1 triggers monthly, real-time), `backtest_triggers.py` (leads, false alarms, adds-warning), `plot_triggers.py` (status chart), `features.py` (score inputs), `score.py` (early-warning score: fit, out-of-sample test, sensitivity runs), `plot_score.py` (score charts), `score_followups.py` (3d Part A: drivers, NSA claims test, calibration, colour stability, 3/12-month scores), `forecast.py` (fans: baseline + event-path mixture, backtest, stress paths), `nowcast.py` (next UR release), `benchmarks.py` (FOMC SEP / SPF comparison), `plot_forecast.py` (forecast charts), `part0.py` (3e Part 0: coherence, live as-of inputs, bias report), `freeze_model.py` (writes the frozen model each January), `live.py` (one "as of" result set from the frozen model) |
 | `config/model_series.csv`, `config/event_notes.csv`, `config/triggers.csv` | Modeling series: ALFRED / first-release / current vintage, release lag; Troy's event rulings and notes; Layer 1 trigger thresholds |
 | `data/model/` | Modeling data: `claims_weekly.csv`, `alfred/` (vintages + coverage), `current/` (GS10, TB3MS, T10Y3MM full history), `events.csv`, `event_flags_monthly.csv`, `claims_leg_weekly.csv`, `triggers_monthly.csv`, `trigger_episodes.csv`, `trigger_leads.csv`, `trigger_summary.csv`, `status_comparison.csv`, `features_monthly.csv`, `score_*.csv`, `forecast_*.csv`, `stress_paths.csv`, `nowcast.csv`, `benchmark_summary.csv`, `frozen/model_<year>.json` (frozen model), `live_latest.json` + `score_display_weekly.csv` / `score_display_monthly.csv` (what the site reads), `live_history.csv` (one row per live run) + `live_fans_history.csv` (each run's fans) |
@@ -84,7 +84,10 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 | `site/` | Built website (not committed; rebuilt and published to GitHub Pages by the workflow) |
 | `src/checks/check_site.py` | Browser check of the built site (Playwright + Edge; PC only, `requirements-dev.txt`) |
 | `docs/phase2_design.md` | Approved Phase 2 design (pages, charts, conventions, time control) |
-| `.github/workflows/refresh-data.yml` | Scheduled cloud refresh (weekday mornings + Thursday after claims), then build + publish the site |
+| `.github/workflows/refresh-data.yml` | Scheduled cloud refresh (weekday mornings + Thursday after claims), then the model step (tests, model inputs, `live.py --archive`, only with a new claims week or jobs report), then build + publish the site; manual runs have a "publish" box (untick for a branch test) |
+| `.github/workflows/refit-model.yml` | January re-fit (15 Jan + manual; test = tick the box or push branch `refit-dry-run`): full modeling chain, `freeze_model.py`, `refit_summary.py` -> `reports/refit_<year>.md`, opens a pull request for review |
+| `data/archive/YYYY/` | Permanent record of every live run (one JSON per run, create-only: the run fails rather than overwrite) |
+| `tests/` | Unit tests (`python -m unittest discover -s tests -v`); the refresh workflow runs them before the model step |
 | `.github/workflows/publish-site.yml` | Rebuild + publish the site (no data fetch) when site code, config or requirements change on main |
 | `docs/decisions.md` | Decision log — keep it current |
 | `docs/getting_started.md` | Manual setup steps (fallback) |
@@ -94,6 +97,7 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 - Fetch a few series: `python src\fetchers\fred_fetcher.py UNRATE ICSA CCSA`
 - Fetch everything (~160 series, ~2 min): `python src\fetchers\fred_fetcher.py`
 - Test alerts (prints only while off): `python src\alerts\alerts.py`
+- Tests: `python -m unittest discover -s tests -v`
 - DOL pipeline, in order (run the FRED fetch first):
   `python src\fetchers\dol_national.py`, `python src\fetchers\dol_state.py`,
   `python src\fetchers\dol_recent_weeks.py`, `python src\transforms\dol_rates.py`, `python src\checks\dol_checks.py`
@@ -224,13 +228,19 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   notes, Duration 13/26-week fan + what-ifs, Leading Signal column, Data & Downloads "Early-warning model" section
   (5 files), About line. Browser check: 757 pass on all 7 pages (contexts now closed per page). docs/model.md 7.2.
   Approved by Troy; fast-forwarded into main and pushed; "Publish site" run 42529017045 green; verified live.
-- NEXT (Troy's item 3): after the Nov 12 claims release (8:30 am ET), run live.py, check its output, commit the
-  data\model files and push (main and phase3a), so the score doesn't show "not updated" (first possible on Nov 18).
-  Troy will ask; it can't run unprompted. Then stage 3e-3.
+- 2026-11-08: Stage 3e-3 built and committed on phase3a (pushed; NOT merged): refresh workflow model step (archive,
+  status, alerts printed while off, failure record), refit-model.yml + refit_summary.py, site "model run failed" /
+  "release delayed" notes, About fixes, scikit-learn in requirements.txt, tests/test_live_archive.py. Actions setting
+  "create and approve pull requests" switched on. Dry runs green: Refresh data on phase3a with publish off (run
+  42530598066; first archive file data/archive/2026/2026-11-08_ic2026-10-31_ur2026-10.json); Re-fit test (run
+  42530635563) reproduced the 2026 model exactly and opened [TEST] PR #1 (refit-2026-test -> refit-dry-run): do not
+  merge; close it and delete branches refit-2026-test and refit-dry-run after review. Browser check 759 pass.
+  Waiting for Troy's go to merge. If merged before Thu Nov 12 7:35 am CT, that Thursday's scheduled run is the first
+  automated live run; if not, run live.py by hand after the 8:30 am ET release, commit data\model, push.
 
 ## Next steps, in order
 Setup (steps 1-4), Phase 1, Phase 2 and the Phase 2 review fixes are done and live.
-1. docs/phase3e_design.md is APPROVED (decisions at its end). 3e-1 and 3e-2 are done and live; next 3e-3,
+1. docs/phase3e_design.md is APPROVED (decisions at its end). 3e-1 and 3e-2 are done and live; 3e-3 built (awaiting go),
    each reviewed locally before merging to main and publishing. Switch on the Actions pull-request setting in 3e-3.
    Push phase3a / merge to main only when he says so.
 2. Stage 3e per docs/phase3_plan.md. Stage 3e must also: show trigger signal colors for the panel (yield curve

@@ -1235,3 +1235,16 @@ green. Nowcast for November waits for the reference-week claims (after 26 Novemb
   after 61 weeks from 12.7), no fan, and the score driver line ("currently the largest downward pull").
 - **Continuing claims rate (Duration):** 13 and 26-week fan (1.07% (1.02-1.13), 1.05% (0.97-1.14)) and what-ifs; the 52-week
   range is not shown (80% bands held 68% of outcomes, 2000-2026 excluding 2020).
+
+### 7.3 Stage 3e-3: automation, archive, alerts, re-fit
+
+- **Weekly live run** (Refresh data workflow): tests → model inputs (claims history, ALFRED vintages for UNRATE, TEMPHELPS,
+  the factory surveys and NFCI, Treasury rates, trigger history) → `live.py --archive`. The run proceeds only with a new
+  claims week or unemployment month since the last archived run; it writes a create-only archive file, appends to
+  `live_history.csv`, writes `live_status.json` and prints a colour-change alert (alerts off).
+- **Frozen model only:** nothing is re-estimated between January re-fits.
+- **January re-fit** (Re-fit model workflow): the whole chain, `freeze_model.py <year>`, `refit_summary.py` (old vs. new
+  weights, today's score and fans under both, backtest skill and coverage, gate, event list), then a pull request.
+- **Reproducibility check (test re-fit, 8 November 2026):** re-fitting the 2026 model in the cloud gave identical weights,
+  intercepts and penalties and the same score skill (+0.180). Fan coverage moved by at most 1 point (simulation noise:
+  the earlier local run also simulated the live origin, which shifts the random-number sequence).
