@@ -194,13 +194,16 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   follow-ups (A1 drivers 2024-26; NSA claims not adopted; recalibration not adopted, verbal bands proposed; hysteresis
   proposed; 3/12-month scores skill +0.22/+0.21) and forecast fans (UR 3/6/12 and continuing claims 13/26 wk pass the
   gate; continuing claims 52 wk fails; initial claims fans no real gain; nowcast ratio 0.90; SPF / FOMC beat our point
-  forecasts). Stopped at the gate; waiting for Troy's decisions (model.md 6, "Decisions for Troy (stage 3d)").
+  forecasts). Stopped at the gate.
+- 2026-11-08: Stage 3d complete (decisions delegated by Troy; model.md 6 "Stage 3d decisions (final)"): verbal bands
+  above 35%, colour hysteresis 20/15 and 50/40, initial-claims fans not shown, in-progress rule needs 3 months,
+  nowcast shown, FOMC SEP marker allowed. Site shows: UR fans 3/6/12, continuing claims fans 13/26 wk, nowcast,
+  stress paths, score.
 
 ## Next steps, in order
 Setup (steps 1-4), Phase 1, Phase 2 and the Phase 2 review fixes are done and live.
-1. Stage 3d review: Troy decides docs/model.md section 6 "Decisions for Troy (stage 3d)" (verbal bands, hysteresis, NSA
-   claims, initial-claims fans, in-progress rule, nowcast, benchmark markers). Do not start 3e until he says so. Push
-   phase3a / merge to main only when he says so.
+1. Stage 3e (site), plan with Troy first, when he says to start. Push phase3a / merge to main only when he says so.
+   Use docs/model.md section 6 "Stage 3d decisions (final)" for what the site shows and how.
 2. Stage 3e per docs/phase3_plan.md. Stage 3e must also: show trigger signal colors for the panel (yield curve
    labeled "long lead, often 12+ months"; NFCI caveat "real-time only since 2011"); move temp help and manufacturing
    surveys to the Leading page as context only (not counted in the overall status); use the new overall rule; state

@@ -20,8 +20,9 @@ MIXTURE     With probability P (the event probability for the matching horizon: 
                  (recessions + the early signal) and scare paths kept separate and mixed by their share of events;
                  the event is assumed to start at a uniformly random time within the horizon. 2020 is never used.
                  Unemployment-rate paths are added in points; claims-rate paths are applied as log (percentage) changes.
-  in progress    if an event is already in progress at the origin, the deterioration weight is 1 and the path is
-                 picked up at the event's current age, using past events that lasted at least that long.
+  in progress    if an event is already in progress at the origin AND has lasted IN_PROGRESS_MIN_MONTHS (3) months,
+                 the deterioration weight is 1 and the path is picked up at the event's current age, using past
+                 events that lasted at least that long. Younger events use the normal mixture.
 BANDS       10 / 25 / 50 / 75 / 90 percentiles of 4,000 simulated draws (baseline or deterioration, plus a resampled
             baseline residual). Center = the median.
 BENCHMARKS  no-change; climatology (no-change center plus the empirical quantiles of all past h-step changes).
@@ -52,6 +53,10 @@ CV_BLOCKS = 5
 DRAWS = 4000
 CLIP = 4.0
 BACKTEST_FROM = "2000-01-01"
+# An event in progress takes the deterioration weight to 1 only once it has lasted this many months; before that the
+# usual probability-weighted mixture applies (stage 3d review: avoids leaning on recession paths during short scares,
+# which rarely last 3 months).
+IN_PROGRESS_MIN_MONTHS = 3
 COVID = (pd.Timestamp("2020-03-01"), pd.Timestamp("2021-03-01"))   # 2020: reported separately, never fitted
 RNG = np.random.default_rng(20261108)
 
@@ -244,7 +249,11 @@ def main() -> None:
                     base_pred = float(model.predict(standardize(Xref, x))[0])
                     in_prog, starts, covid = regime(m)
                     # Event paths known by this origin (path observed far enough).
+                    age_now = 0
                     if in_prog:
+                        cur0 = ev[(ev.start <= m) & (m <= ev.end) & (ev.group != "2020")].iloc[0]
+                        age_now = (m.year - cur0.start.year) * 12 + m.month - cur0.start.month + 1   # months, incl. start
+                    if in_prog and age_now >= IN_PROGRESS_MIN_MONTHS:
                         cur = ev[(ev.start <= m) & (m <= ev.end) & (ev.group != "2020")].iloc[0]
                         age_m = (m.year - cur.start.year) * 12 + m.month - cur.start.month
                         k_l = (L - (cur.start - pd.DateOffset(months=1))).days // 30 if ser.freq == "M" else None

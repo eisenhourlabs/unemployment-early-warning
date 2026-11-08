@@ -1040,3 +1040,42 @@ events it was too low (0.46 point). So today's downward-leaning median is not a 
 6. **Nowcast on the site:** show it as "next release nowcast" next to no-change? Its gain is modest (RMSE −10%).
 7. **Benchmark markers:** FOMC SEP (public, FRED) could be a marker in 3e. SPF needs the Philadelphia Fed's OK first.
    Chicago Fed: not without written permission.
+
+### Stage 3d decisions (final, 2026-11-08)
+
+Troy asked Claude to decide using best judgement; he leaned towards showing the nowcast.
+
+| # | Decision | Reason |
+| --- | --- | --- |
+| 1 | **Score display:** percentages up to 35%; above that, verbal bands, **"elevated"** (35–50%) and **"more likely than not"** (50%+). Raw score, no recalibration | Recalibration made the Brier score worse. Only 7–9 independent episodes per band above 35%, so the percentages there aren't precise enough to print |
+| 2 | **Colour hysteresis:** amber entered at 20%, kept until the score falls below 15%; red entered at 50%, kept until below 40% | Judged on pre-2000 data: the same warnings with about 20% fewer colour changes. After 2000: weekly changes 3.2 → 2.6 a year, false reds 2 → 1 |
+| 3 | **NSA claims input: not adopted** | It didn't meet the adoption rule (A2) |
+| 4 | **Initial-claims-rate fans: not shown.** The initial-claims-rate history and its stress paths stay | Accuracy vs. no-change 0.98 / 0.93 / 0.93, with every 90% interval including 1: no demonstrated gain, and a fan implies forecasting skill |
+| 5 | **"In progress" rule changed:** the deterioration weight goes to 1 only once an event has lasted **3 months** (`IN_PROGRESS_MIN_MONTHS`); before that the usual probability-weighted mixture applies | Tested before adopting: every target and horizon got slightly more accurate (table below), coverage stayed on target, gate results unchanged. The 12-month median spike after the 2003 scare fell from 7.9% to 5.9%. The 2024–25 readings stay high (event #15 did last 3 months, and the score stayed high afterwards) |
+| 6 | **Nowcast: shown**, as "next release nowcast" with a typical-error range (±0.2 point, from the RMSE of 0.155) beside the last published rate | It beats no-change (RMSE −10%) and halved the error in 2020's fast-moving months. No reason not to show it, provided the page says that it doesn't hit the exact published decimal more often than no-change does |
+| 7 | **Benchmark markers:** FOMC SEP median (FRED `UNRATEMD`, public) may be shown as a marker in 3e. SPF: only after the Philadelphia Fed confirms reuse. Chicago Fed: no | Terms checked 2026-11-08 (see the B5 / B6 notes above) |
+
+**Final forecast evaluation** (2000–2026 excluding 2020, with the 3-month in-progress rule; this replaces the B8 table above):
+
+| Target | h | RMSE ratio | Pinball skill | 50% band: all / event / quiet | 80% band: all / event / quiet | On the site |
+| --- | --- | --- | --- | --- | --- | --- |
+| Unemployment rate | 3 mo | 0.80 | +0.23 | 50 / 51 / 49 | 81 / 80 / 81 | yes |
+| | 6 mo | 0.74 | +0.28 | 53 / 49 / 54 | 79 / 76 / 80 | yes |
+| | 12 mo | 0.73 | +0.31 | 52 / 53 / 52 | 77 / 78 / 77 | yes, lower confidence |
+| Continuing claims rate | 13 wk | 0.87 | +0.18 | 53 / 54 / 52 | 77 / 85 / 74 | yes |
+| | 26 wk | 0.84 | +0.20 | 45 / 43 / 46 | 73 / 76 / 72 | yes |
+| | 52 wk | 0.86 | +0.16 | 36 / 37 / 34 | 67 / 66 / 67 | **no** (fails coverage) |
+| Initial claims rate | 13 / 26 / 52 wk | 0.98 / 0.93 / 0.93 | +0.05 / +0.06 / +0.05 | all: 50 / 47 / 46 | all: 80 / 78 / 73 | **no** (no demonstrated gain) |
+
+Event by event, the share of outcomes inside the 80% band is unchanged (table above). Today's fans changed by at most 0.03
+point. The benchmark comparison was re-run with the new fans: our matched-timing errors fell slightly (SPF one quarter
+ahead: ours 0.24 vs. SPF 0.20), and the conclusion stands.
+
+**Stage 3d is complete. Stage 3e (the site) shows:**
+- the score, with the display rules in 1 and 2;
+- the unemployment-rate fans at 3, 6 and 12 months (12 labeled lower confidence);
+- the continuing-claims-rate fans at 13 and 26 weeks;
+- the nowcast;
+- the 2001-type and 2008-type stress paths for all three targets, labeled what-ifs;
+- the FOMC SEP marker;
+- the methodology text from A1 and 5.10.
