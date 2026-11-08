@@ -202,6 +202,96 @@ def check_page(browser, url, name, shots_prefix, first_page):
     check(not errors, f"no browser errors at the end {errors[:3] if errors else ''}")
 
 
+def check_data_page(browser, url, base):
+    """Data & Downloads page: links, file contents, filters, licence exclusions, phone layout."""
+    import urllib.request
+
+    import pandas as pd
+    from openpyxl import load_workbook
+
+    print(f"\n=== data.html ===\nLoad")
+    page = browser.new_context(viewport={"width": 1280, "height": 900}).new_page()
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
+    page.goto(url)
+    page.wait_for_selector("#row-count")
+    check(not errors, f"no browser errors {errors[:3] if errors else ''}")
+    check(page.locator(".timecontrol").count() == 0, "no time control on a page without charts")
+
+    print("Filters")
+    total = page.locator("table.files tbody tr").count()
+    visible = lambda: page.locator("table.files tbody tr:not([hidden])").count()
+    n_state = page.locator("table.files tbody tr[data-state]:not([data-state=''])").count()
+    check(visible() == total - n_state, f"default view hides the {n_state} state series ({visible()} of {total} shown)")
+    page.check("input[name=states]")
+    check(visible() == total, f"'Show state series' shows all {total}")
+    page.fill("input[name=q]", "icsa")
+    check(0 < visible() < 5, f"search 'icsa' narrows to {visible()} rows")
+    page.fill("input[name=q]", "")
+    page.select_option("select[name=frequency]", "monthly")
+    rows = page.locator("table.files tbody tr:not([hidden])")
+    freqs = set(page.eval_on_selector_all("table.files tbody tr:not([hidden])", "els => els.map(e => e.dataset.frequency)"))
+    check(freqs == {"monthly"}, f"frequency filter: {rows.count()} monthly rows only ({freqs})")
+    page.select_option("select[name=frequency]", "")
+    page.uncheck("input[name=states]")
+    page.screenshot(path=str(SHOTS / "data_desktop.png"), full_page=True)
+
+    print("Every download link")
+    links = page.eval_on_selector_all("a[download]", "els => els.map(e => e.getAttribute('href'))")
+    bad = []
+    for href in links:
+        try:
+            with urllib.request.urlopen(base + href, timeout=30) as r:
+                if r.status != 200:
+                    bad.append(href)
+        except Exception as e:
+            bad.append(f"{href} ({e})")
+    check(not bad, f"{len(links)} download links all answer {bad[:3] if bad else ''}")
+
+    print("File contents")
+    mismatched = []
+    for href in [l for l in links if l.endswith(".csv") and "/bundles/" not in l]:
+        got = pd.read_csv(SITE / href, dtype=str)
+        if "/series/" in href:
+            sid = Path(href).stem
+            src = pd.read_csv(ROOT / "data" / "processed" / f"{sid}.csv", dtype=str).rename(columns={"value": sid})
+        else:
+            src = pd.read_csv(ROOT / "data" / "processed" / "dol" / Path(href).name, dtype=str)
+        if not got.fillna("").equals(src.fillna("")):
+            mismatched.append(href)
+    check(not mismatched, f"every series / DOL CSV equals its source file row for row {mismatched[:3]}")
+    bad_xlsx = []
+    for href in [l for l in links if l.endswith(".xlsx")]:
+        names = load_workbook(SITE / href, read_only=True).sheetnames
+        want = (["Data", "Columns", "About"] if ("/dol/" in href or "dol_weekly" in href)
+                else ["Daily", "Weekly (Sat)", "Weekly (Fri)", "Monthly", "Dictionary"] if "everything" in href else ["Data", "About"])
+        if names != want:
+            bad_xlsx.append(f"{href}: {names}")
+    check(not bad_xlsx, f"every XLSX opens with the expected sheets {bad_xlsx[:3]}")
+
+    print("Licence exclusions")
+    with open(ROOT / "config" / "series_catalog.csv", newline="") as f:
+        import csv as _csv
+        blocked = [r["series_id"] for r in _csv.DictReader(f) if r["license"] != "public"]
+    blocked += ["CFLMI"]   # the Chicago Fed LMI files are saved as CFLMI*.csv
+    leaks = [str(p.relative_to(SITE)) for p in (SITE / "data").rglob("*") if any(b in p.name for b in blocked)]
+    for p in (SITE / "data" / "bundles").glob("*.csv"):
+        header = p.open().readline()
+        leaks += [f"{p.name}: column {b}" for b in blocked if b in header]
+    check(not leaks, f"no restricted / unconfirmed series in any download ({', '.join(blocked)}) {leaks[:3]}")
+
+    print("Phone width (400 px)")
+    pp = browser.new_context(viewport={"width": 400, "height": 860}, device_scale_factor=2,
+                             is_mobile=True, has_touch=True).new_page()
+    pp.goto(url)
+    pp.wait_for_selector("#row-count")
+    overflow = pp.evaluate("document.documentElement.scrollWidth - window.innerWidth")
+    check(overflow <= 0, f"phone: page is not wider than the screen (overflow {overflow} px; the table scrolls inside its box)")
+    pp.screenshot(path=str(SHOTS / "data_phone.png"), full_page=False)
+    check(not errors, f"no browser errors at the end {errors[:3] if errors else ''}")
+
+
 def main() -> int:
     if not (SITE / "index.html").exists():
         sys.exit("site/index.html not found: run python src/site/build_site.py first")
@@ -216,7 +306,10 @@ def main() -> int:
         nav.close()
         check(len(links) >= 1, f"top bar links: {links}")
         for i, href in enumerate(links):
-            check_page(browser, base + href, href, Path(href).stem, first_page=(i == 0))
+            if href == "data.html":
+                check_data_page(browser, base + href, base)
+            else:
+                check_page(browser, base + href, href, Path(href).stem, first_page=(i == 0))
         browser.close()
 
     print(f"\nScreenshots in {SHOTS}")

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{#- Data & Downloads page: bundles, a searchable table of every download, the Excel how-to, and what's excluded. -#}
+
+{% block content %}
+<div class="page-intro">
+  <h1>Data &amp; downloads</h1>
+  <p>Every public series behind the site, as CSV or Excel, refreshed with the site. Each file keeps the same
+    address, so a spreadsheet linked to it stays current.</p>
+</div>
+
+<div class="grid">
+  <section class="card" aria-labelledby="bundles-title">
+    <h2 id="bundles-title">Bundles</h2>
+    <ul class="bundle-list">
+      {%- for b in bundles %}
+      <li><strong>{{ b.name }}</strong> <span class="muted">· {{ b.detail }}</span><br>
+        {%- if b.csv %} <a href="{{ b.csv }}" download>CSV</a>{% endif %}
+        {%- if b.csv and b.xlsx %} · {% endif %}
+        {%- if b.xlsx %}<a href="{{ b.xlsx }}" download>XLSX</a>{% endif %}</li>
+      {%- endfor %}
+    </ul>
+  </section>
+  <section class="card howto" aria-labelledby="howto-title">
+    <h2 id="howto-title">Keep a spreadsheet up to date</h2>
+    <ol>
+      <li>Right-click a <strong>CSV</strong> link below and copy the link address.</li>
+      <li>In Excel: <strong>Data → From Web</strong>, paste the link, then <strong>Load</strong>.</li>
+      <li>Later, <strong>Data → Refresh All</strong> pulls the latest figures.</li>
+    </ol>
+    <p class="muted">Addresses look like <code>…/data/series/ICSA.csv</code> and never change.
+      Each XLSX has an About sheet with the source, units and citation; DOL files also have a Columns sheet
+      describing every column.</p>
+  </section>
+</div>
+
+<section class="card" aria-labelledby="files-title">
+  <h2 id="files-title">All series and files</h2>
+  <form class="filters" id="filters" role="search" aria-label="Filter the list">
+    <label class="grow">Search <input type="search" name="q" placeholder="Name or ID, e.g. claims or ICSA"></label>
+    <label>Page <select name="page"><option value="">All</option>
+      {%- for p in pages %}<option value="{{ p }}">{{ p }}</option>{% endfor %}</select></label>
+    <label>Source <select name="source"><option value="">All</option>
+      {%- for s in sources %}<option value="{{ s }}">{{ s }}</option>{% endfor %}</select></label>
+    <label>Frequency <select name="frequency"><option value="">All</option>
+      {%- for f in frequencies %}<option value="{{ f }}">{{ f }}</option>{% endfor %}</select></label>
+    <label class="check"><input type="checkbox" name="states"> Show state series ({{ n_state }})</label>
+  </form>
+  <p class="muted" id="row-count" aria-live="polite"></p>
+  <div class="table-scroll">
+  <table class="files">
+    <thead><tr><th>Name</th><th>ID</th><th>Source</th><th>Frequency</th><th>Units</th><th>Adj.</th>
+      <th>Latest</th><th>Updated</th><th>Download</th></tr></thead>
+    <tbody>
+      {%- for r in rows %}
+      <tr data-search="{{ (r.name ~ ' ' ~ r.id)|lower }}" data-page="{{ r.page_label }}" data-source="{{ r.source }}"
+          data-frequency="{{ r.frequency }}" data-state="{{ r.state }}"{% if r.state %} hidden{% endif %}>
+        <td>{{ r.name }}</td>
+        <td><code>{{ r.id }}</code></td>
+        <td><a href="{{ r.source_url }}">{{ r.source }}</a></td>
+        <td>{{ r.frequency }}</td>
+        <td>{{ r.units }}</td>
+        <td>{{ r.sa }}</td>
+        <td class="num">{{ r.latest_value }}<span class="muted block">{{ r.latest_date }}</span></td>
+        <td>{{ r.updated }}</td>
+        <td class="dl"><a href="{{ r.csv }}" download>CSV</a> · <a href="{{ r.xlsx }}" download>XLSX</a></td>
+      </tr>
+      {%- endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p class="chart-footer">"Updated" is the publisher's last update for FRED series and the date we last checked DOL
+    for DOL files. DOL files keep only the latest figures; revisions are logged in the project's
+    <a href="{{ repo_url }}/blob/main/docs/data_revisions.md">data revision log</a>.</p>
+</section>
+
+<section class="card excluded" aria-labelledby="excluded-title">
+  <h2 id="excluded-title">Not available for download</h2>
+  <ul>
+    {%- for x in excluded %}
+    <li><strong>{{ x.name }}</strong> <code>{{ x.id }}</code>: {{ x.reason }}.</li>
+    {%- endfor %}
+    <li><strong>Footprint weights</strong>: kept private; never published.</li>
+  </ul>
+</section>
+{% endblock %}
+
+{% block scripts %}<script src="assets/data.js"></script>{% endblock %}

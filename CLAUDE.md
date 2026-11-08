@@ -70,6 +70,8 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 | `src/site/build_site.py` | Builds the "Unemployment Watch" website (Plotly + Jinja2) into `site/`: shared frame, renders each page |
 | `src/site/common.py` | Shared site pieces: data reading, formats, statistics, recession shading, chart builders |
 | `src/site/overview.py`, `job_losses.py`, `duration.py`, `leading.py` | One module per page: its charts, tiles, tables and text |
+| `src/site/downloads.py` | Data & Downloads page: writes every CSV / XLSX and bundle under `site/data/` (public licences only) |
+| `config/derived_columns.csv` | Descriptions of the columns we calculate in DOL files (used in download Columns sheets) |
 | `src/site/templates/`, `src/site/static/` | Templates (`base.html` = shared frame, `_macros.html` = chart card, `charts_page.html` = chart-grid pages) and the site's CSS / JavaScript (time control, dark mode, downloads) |
 | `site/` | Built website (not committed; rebuilt and published to GitHub Pages by the workflow) |
 | `src/checks/check_site.py` | Browser check of the built site (Playwright + Edge; PC only, `requirements-dev.txt`) |
@@ -135,12 +137,17 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   scan of FRED notes: ICE high-yield spread dropped (restricted; files removed, NFCICREDIT added instead);
   U. Michigan sentiment charted with citation, no downloads. Browser check passes on all four pages.
   Reviewed by Troy and live (run 42443436321).
+- 2026-11-07: Stage 5 built locally: Data & Downloads page (170 series / files as CSV + XLSX, 6 bundle files,
+  346 download files, ~60 MB in site/data/; licence exclusions listed). Browser check compares every CSV with its
+  source and opens every XLSX. Waiting for Troy's review before pushing.
+- Watch: on 2026-11-08 ~03:55 UTC oui.doleta.gov briefly failed its certificate check (hostname mismatch) from
+  this PC; it passed again minutes later. If a DOL step fails in a run, check this first.
 
 ## Next steps, in order
 Setup (steps 1-4) and Phase 1 are done. Phase 2 is built in stages; Troy reviews each one locally before the next.
-1. Stage 5: Data & Downloads page (catalog, CSV/XLSX per series, bundles, stable links; DOL downloads per
-   docs/dashboard_requirements.md). Chicago Fed LMI data not offered until its terms are confirmed;
-   series with licence restricted / citation-required are never offered as downloads.
+1. Stage 5 review: Data & Downloads page (built 2026-11-07; push and republish after Troy's review).
+   Chicago Fed LMI data stays out of downloads until its terms are confirmed; series with licence
+   restricted / citation-required are never offered as downloads.
 2. Stage 6: About page (definitions, sources, update schedule, revision policy, disclaimer).
 
 ## Where planning lives

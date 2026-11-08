@@ -39,6 +39,7 @@
     {%- endif %}
   </p>
 
+  {%- if has_charts %}
   <div class="timecontrol" role="group" aria-label="Time range for every chart on this page">
     <span class="tc-label">Time:</span>
     {%- for key, label in range_buttons %}
@@ -55,6 +56,7 @@
       <button type="submit">Apply</button>
     </form>
   </div>
+  {%- endif %}
 </div>
 
 <main class="wrap">
@@ -79,7 +81,10 @@
 </footer>
 
 <script id="page-data" type="application/json">{{ page_data | safe }}</script>
+{%- if has_charts %}
 <script src="assets/plotly.min.js"></script>
+{%- endif %}
 <script src="assets/site.js"></script>
+{% block scripts %}{% endblock %}
 </body>
 </html>

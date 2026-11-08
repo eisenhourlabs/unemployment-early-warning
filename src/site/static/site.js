@@ -137,13 +137,13 @@
   var customForm = document.getElementById("tc-custom");
   function markButtons() {
     tcButtons.forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.range === current.key)); });
-    if (current.key === "custom") {
+    if (current.key === "custom" && customForm) {
       customForm.hidden = false;
       customForm.elements.from.value = current.from;
       customForm.elements.to.value = current.to;
     }
   }
-  tcButtons.forEach(function (b) {
+  tcButtons.forEach(function (b) {   // (pages without charts have no time control: nothing to wire up)
     b.addEventListener("click", function () {
       if (b.dataset.range === "custom") {
         customForm.hidden = !customForm.hidden;
@@ -160,7 +160,7 @@
       markButtons(); writeUrl(); applyPageRange();
     });
   });
-  customForm.addEventListener("submit", function (e) {
+  if (customForm) customForm.addEventListener("submit", function (e) {
     e.preventDefault();
     var from = customForm.elements.from.value, to = customForm.elements.to.value;
     if (!isDate(from) || !isDate(to) || from >= to) { customForm.elements.to.setCustomValidity("End date must be after the start date"); customForm.reportValidity(); return; }

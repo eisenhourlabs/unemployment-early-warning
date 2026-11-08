@@ -7,6 +7,7 @@ What it does, step by step:
        job_losses.py  -> job-losses.html   (7 charts)
        duration.py    -> duration.html     (7 charts)
        leading.py     -> leading.html      (summary table + 8 charts)
+       downloads.py   -> data.html + every CSV / XLSX under site/data/
      Shared pieces (reading data, formats, chart builders) live in common.py.
   2. Adds the shared frame every page has: the freshness line, the stale-data badge (from the
      health check), the time control, the release calendar and the footer.
@@ -35,6 +36,7 @@ import pandas as pd
 import plotly
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+import downloads
 import duration
 import job_losses
 import leading
@@ -58,7 +60,7 @@ DEFAULT_RANGE = "5y"
 
 # Top-bar links: (key, label, file). An empty file means "coming soon" (shown greyed out).
 NAV = [("overview", "Overview", "index.html"), ("job-losses", "Job Losses", "job-losses.html"),
-       ("duration", "Duration", "duration.html"), ("leading", "Leading", "leading.html"), ("data", "Data", ""), ("about", "About", "")]
+       ("duration", "Duration", "duration.html"), ("leading", "Leading", "leading.html"), ("data", "Data", "data.html"), ("about", "About", "")]
 
 
 # ===========================================================================
@@ -138,6 +140,7 @@ def main() -> None:
         "recession_views": RECESSION_VIEWS,
         "default_range": DEFAULT_RANGE,
         "repo_url": REPO_URL,
+        "has_charts": True,          # the Data page sets this to False (no time control, no plotly.js)
     }
 
     # Build every page's content before touching site/, so a failure leaves the old folder alone.
@@ -171,6 +174,19 @@ def main() -> None:
         shutil.copy(f, OUT / "assets" / f.name)
     # plotly.js ships inside the Python plotly package, so the browser version always matches.
     shutil.copy(Path(plotly.__file__).parent / "package_data" / "plotly.min.js", OUT / "assets" / "plotly.min.js")
+
+    # Every download file (CSV / XLSX) and the Data page's table
+    dl = downloads.build(OUT, built)
+    rows = dl["rows"]
+    pages.append(("data.html", "data.html",
+                  {**frame, **dl, "page": "data", "title": "Data & Downloads", "has_charts": False,
+                   "pages": sorted({r["page_label"] for r in rows}), "sources": sorted({r["source"] for r in rows}),
+                   "frequencies": [f for f in ("daily", "weekly", "monthly", "quarterly")
+                                   if any(r["frequency"] == f for r in rows)],
+                   "n_state": sum(1 for r in rows if r["state"]),
+                   "page_data": page_data([], built)}, 0))
+    print(f"  data/              {dl['n_files']} download files ({len(rows)} series / files, "
+          f"{len(dl['excluded'])} excluded by licence)")
 
     env = Environment(loader=FileSystemLoader(HERE / "templates"), autoescape=select_autoescape(["html"]))
     for template, out_name, context, n_charts in pages:

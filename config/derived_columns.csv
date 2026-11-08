@@ -1,0 +1,23 @@
+file,column,description,how_calculated
+national_weekly,source_initial,"Where the initial claims figures for this week come from: ETA 539 (DOL's official weekly report), news release, advance (newest week) or news release, revised",src/fetchers/dol_recent_weeks.py
+national_weekly,source_continued,"Where the continued claims figures for this week come from (same values as source_initial; continued claims lag initial claims by a week)",src/fetchers/dol_recent_weeks.py
+national_weekly,cw_regular_state,"Continued weeks claimed, regular state UI programs (sum of all states, ar539 c8)","Sum of ar539 cw_state_ui over all areas by reflected week; blank unless every area reported"
+national_weekly,cw_eb,"Continued weeks claimed, Extended Benefits (sum of all states)","Sum of ar539 cw_eb_total over all areas by reflected week; blank unless every area reported"
+national_weekly,cw_state_additional,"Continued weeks claimed, state additional benefit programs (sum of all states)","Sum of ar539 cw_state_additional_total over all areas by reflected week; blank unless every area reported"
+national_weekly,cw_all_programs,"Continued weeks claimed, all programs: regular state + UCFE + UCX + EB + state additional + STC/workshare","Sum of the cw_ program columns; blank unless every program total is available"
+claims_rates_weekly,source_initial,"Where the initial claims figures for this week come from (ETA 539 or news release, advance / revised)",src/fetchers/dol_recent_weeks.py
+claims_rates_weekly,source_continued,"Where the continued claims figures for this week come from (ETA 539 or news release, advance / revised)",src/fetchers/dol_recent_weeks.py
+claims_rates_weekly,ic_rate_sa,"SA initial claims rate: seasonally adjusted initial claims as a percent of covered employment (the site shows this x 100 = per 10,000 covered workers)",ic_sa / covered_employment x 100
+claims_rates_weekly,ic_rate_nsa,"NSA initial claims rate: not seasonally adjusted initial claims as a percent of covered employment",ic_nsa / covered_employment x 100
+claims_rates_weekly,ic_rate_sa_4wk,"4-week average of the SA initial claims rate (percent)",Mean of the latest 4 weekly ic_rate_sa values
+claims_rates_weekly,ic_rate_nsa_4wk,"4-week average of the NSA initial claims rate (percent)",Mean of the latest 4 weekly ic_rate_nsa values
+claims_rates_weekly,cc_rate_sa,"SA continuing claims rate: seasonally adjusted continued claims as a percent of covered employment (matches DOL's insured unemployment rate within rounding)",cc_sa / covered_employment x 100
+claims_rates_weekly,cc_rate_nsa,"NSA continuing claims rate: not seasonally adjusted continued claims as a percent of covered employment",cc_nsa / covered_employment x 100
+claims_rates_weekly,cc_rate_sa_4wk,"4-week average of the SA continuing claims rate (percent)",Mean of the latest 4 weekly cc_rate_sa values
+claims_rates_weekly,cc_rate_nsa_4wk,"4-week average of the NSA continuing claims rate (percent)",Mean of the latest 4 weekly cc_rate_nsa values
+claims_rates_weekly,iur_sa_published,"DOL's published insured unemployment rate, seasonally adjusted (percent, 1 decimal), for comparison",From the ETA 539 national report / FRED IURSA
+exhaustion_duration_monthly,first_payments,"First payments, state UI (ar5159 c51), for the month",From ar5159; US = sum of all areas
+exhaustion_duration_monthly,final_payments,"Final payments (claimants who exhausted benefits), state UI (ar5159 c56), for the month",From ar5159; US = sum of all areas
+exhaustion_duration_monthly,weeks_compensated,"Weeks compensated, all weeks, state UI (ar5159 c38), for the month",From ar5159; US = sum of all areas
+exhaustion_duration_monthly,exhaustion_rate_12m,"12-month exhaustion rate (percent): share of claimants who use up their state benefits","12-month average final payments / 12-month average first payments lagged 6 months x 100 (DOL definition)"
+exhaustion_duration_monthly,avg_duration_12m,"Average benefit duration (weeks), all claimants",12-month weeks compensated / 12-month first payments (DOL definition)

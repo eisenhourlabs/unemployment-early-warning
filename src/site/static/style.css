@@ -146,6 +146,23 @@ main { padding-block: 12px 24px; }
 .summary .arrow { color: var(--text-2); }
 .summary table { min-width: 640px; }
 
+/* ---- Data & Downloads page ---- */
+.bundle-list { margin: 0.4rem 0 0; padding-left: 1.1rem; }
+.bundle-list li { margin-bottom: 0.5rem; }
+.howto ol { margin: 0.4rem 0; padding-left: 1.2rem; }
+code { font-size: 0.85em; }
+.filters { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: flex-end; margin: 8px 0; font-size: 0.85rem; }
+.filters label { display: flex; flex-direction: column; gap: 2px; color: var(--text-2); }
+.filters label.grow { flex: 1 1 220px; }
+.filters label.check { flex-direction: row; align-items: center; gap: 6px; }
+.filters input[type=search], .filters select { font: inherit; padding: 4px 6px; border: 1px solid var(--border);
+  border-radius: 6px; background: var(--surface); color: var(--text); min-height: 32px; }
+table.files { min-width: 900px; font-size: 0.85rem; }
+table.files td.num { white-space: nowrap; }
+table.files td.dl, table.files td:nth-child(8) { white-space: nowrap; }
+.block { display: block; font-size: 0.78rem; }
+.excluded ul { margin: 0.4rem 0 0; padding-left: 1.1rem; }
+
 /* ---- Release calendar ---- */
 .calendar-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
 .table-scroll { overflow-x: auto; }

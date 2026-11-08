@@ -2,4 +2,5 @@ pandas>=2.0
 requests>=2.31
 plotly==7.1.0     # charts (also supplies plotly.min.js for the site; pinned so the site doesn't change unexpectedly)
 jinja2==3.1.6     # HTML templates for the site
+openpyxl==3.1.5   # writes the Excel (XLSX) downloads
 tzdata            # time-zone data so "site updated ... CT" works on Windows too
