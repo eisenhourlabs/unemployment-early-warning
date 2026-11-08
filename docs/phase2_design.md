@@ -1,13 +1,14 @@
 # Phase 2 Dashboard Design: Unemployment Watch
 
 Approved by Troy, November 7, 2026. This is the build brief for Phase 2.
+Updated November 7, 2026 (Stage 1 review): DOL claims-rate history starts in 1995, not 1967.
 
 ## Summary
 
 Phase 2 ships Unemployment Watch, a six-page static website on GitHub Pages: Overview, Job Losses, Duration, Leading Indicators, Data & Downloads, and About. Every chart and download reads from the same data files the pipeline already produces, so the site rebuilds itself after each data refresh with no manual step.
 
 - **Built with:** Python + Plotly charts + simple HTML templates. All Python, so you can read and maintain it, with interactive charts and no server to run (details below).
-- **Headline measures:** the SA initial claims rate and SA continuing claims rate from the DOL data, with history back to 1967 and recession shading, alongside the unemployment rate.
+- **Headline measures:** the SA initial claims rate and SA continuing claims rate from the DOL data, with weekly history back to 1995 (the start of our DOL data) and recession shading, alongside the unemployment rate.
 - **The state map** comes in Phase 4. The **early-warning score and forecast fan** arrive in Phase 3; the Overview leaves room for them now.
 - **All decisions are settled** (table at the end), including a page-wide time control that opens charts on the last 5 years.
 
@@ -66,7 +67,7 @@ On a phone the same blocks stack in one column, in this order. The dashed box is
 | Element | Series | Why |
 | --- | --- | --- |
 | Early-warning score panel | Placeholder: "Arrives in Phase 3" | Reserves the top-left spot so the layout doesn't change later |
-| 5 headline tiles | Unemployment rate; SA initial claims (4-wk avg); SA initial claims rate; SA continuing claims rate; Sahm indicator. Each shows latest, change vs. prior period and vs. a year ago, and percentile since 1967 (1948 for the unemployment rate) | Answers "how unusual is this?" in one glance |
+| 5 headline tiles | Unemployment rate; SA initial claims (4-wk avg); SA initial claims rate; SA continuing claims rate; Sahm indicator. Each shows latest, change vs. prior period and vs. a year ago, and percentile on full history: since 1995 for the two claims rates (DOL data), 1967 for SA initial claims (FRED), 1948 for the unemployment rate | Answers "how unusual is this?" in one glance |
 | "What changed this week" | 3–5 auto-written sentences from fixed rules, e.g. "SA initial claims rose 8,000 to 228,000, the highest since March" | Gives the news without reading charts |
 | Unemployment rate | UNRATE with recession shading; forecast fan added in Phase 3 | The headline everyone knows |
 | Claims rates, small pair | SA initial claims rate and SA continuing claims rate | The two IUI drivers |
@@ -183,7 +184,7 @@ Three ways to get data, all regenerated on every refresh so downloads always mat
 1. **From any chart:** a "Download CSV" button gives exactly the series on that chart, in the selected range, and "Download image" gives a PNG for slides.
 2. **From the Data & Downloads page:** a searchable, filterable catalog (by page, source, frequency). Each row shows name, series ID, source (linked), frequency, units, SA/NSA, latest date and value, and last updated, with **CSV** and **XLSX** buttons. The XLSX has a second sheet with the series' metadata and source link.
 3. **Bundles** for people who want everything at once:
-   - **DOL weekly claims (merged):** one table from 1967 with every DOL weekly column, the calculated rates, and the source flag (DOL weekly report vs. preliminary news release). CSV and XLSX.
+   - **DOL weekly claims (merged):** one table from 1995 with every DOL weekly column, the calculated rates, and the source flag (DOL weekly report vs. preliminary news release). CSV and XLSX.
    - **All weekly series** and **all monthly series**: wide CSVs, one column per series.
    - **Everything workbook:** one XLSX, one sheet per frequency, plus a data dictionary sheet.
 

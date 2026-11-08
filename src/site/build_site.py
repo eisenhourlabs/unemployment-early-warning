@@ -389,20 +389,32 @@ def weekly_tile(name, s: pd.Series, decimals, unit, change_unit, since_label, no
     }
 
 
+def vs_month(s: pd.Series, wanted, missing_word: str) -> tuple:
+    """Value to compare against for a monthly tile: the wanted month, or the last month before it if the
+    wanted month has no value. Returns (value, label), e.g. (4.4, 'Sep 2025 (Oct 2025 not collected)')."""
+    wanted = pd.Timestamp(wanted)
+    used_date, value = value_on_or_before(s, wanted)
+    label = fmt_month(used_date)
+    if used_date != wanted:
+        label += f" ({fmt_month(wanted)} {missing_word})"
+    return value, label
+
+
 def build_tiles(claims: pd.DataFrame) -> list[dict]:
     tiles = []
 
     # 1. Unemployment rate (monthly, from 1948)
     ur = fred("UNRATE")
     latest_date, latest = ur.index[-1], ur.iloc[-1]
-    prev_date, prev = ur.index[-2], ur.iloc[-2]
-    yr_date, yr = value_on_or_before(ur, latest_date - pd.DateOffset(years=1))
+    # A survey month can be missing (no October 2025 survey: government shutdown); the tile says so.
+    prev, prev_label = vs_month(ur, latest_date - pd.DateOffset(months=1), "not collected")
+    yr, yr_label = vs_month(ur, latest_date - pd.DateOffset(years=1), "not collected")
     tiles.append({
         "name": "Unemployment rate",
         "value": f"{latest:.1f}%",
         "as_of": fmt_month(latest_date),
-        "changes": [f"{fmt_change(latest - prev, 1, ' pt')} vs. {fmt_month(prev_date)}",
-                    f"{fmt_change(latest - yr, 1, ' pt')} vs. {fmt_month(yr_date)}"],
+        "changes": [f"{fmt_change(latest - prev, 1, ' pt')} vs. {prev_label}",
+                    f"{fmt_change(latest - yr, 1, ' pt')} vs. {yr_label}"],
         "percentile": percentile_text(ur, latest, ur.index[0].year),
     })
 
@@ -427,12 +439,13 @@ def build_tiles(claims: pd.DataFrame) -> list[dict]:
     # 5. Sahm indicator vs. the 0.50 recession threshold (no percentile)
     sahm = fred("SAHMREALTIME")
     s_date, s = sahm.index[-1], sahm.iloc[-1]
+    s_prev, s_prev_label = vs_month(sahm, s_date - pd.DateOffset(months=1), "not published")
     gap = 0.50 - s
     tiles.append({
         "name": "Sahm indicator",
         "value": f"{s:.2f}",
         "as_of": fmt_month(s_date),
-        "changes": [f"{fmt_change(s - sahm.iloc[-2], 2)} vs. {fmt_month(sahm.index[-2])}",
+        "changes": [f"{fmt_change(s - s_prev, 2)} vs. {s_prev_label}",
                     (f"{gap:.2f} points below the threshold" if gap > 0
                      else f"{-gap:.2f} points above the threshold")],
         "percentile": "Recession signal at 0.50 or more",
@@ -474,18 +487,27 @@ def what_changed(claims: pd.DataFrame, built: datetime) -> list[str]:
         sentences.append(f"SA initial claims {moved(d)} {fmt_claims(abs(d))} to {fmt_claims(ic.iloc[-1])} in the week "
                          f"ending {fmt_date(ic.index[-1])}{tag}{since_clause(ic)}.")
 
-    # Rule 2: 4-week average, with a streak of 3+ weeks
+    # Rule 2: SA initial claims 4-week average, with a streak of 3+ weeks
     ic4 = fred("IC4WSA")
     d4 = ic4.iloc[-1] - ic4.iloc[-2]
     n = streak(ic4)
     streak_txt = (f", its {ordinal(abs(n))} straight weekly {'rise' if n > 0 else 'decline'}" if abs(n) >= 3 else "")
     if d4 == 0:
-        sentences.append(f"The 4-week average was unchanged at {fmt_claims(ic4.iloc[-1])}.")
+        sentences.append(f"The SA initial claims 4-week average was unchanged at {fmt_claims(ic4.iloc[-1])}.")
     else:
-        sentences.append(f"The 4-week average, which smooths out weekly noise, {moved(d4)} {fmt_claims(abs(d4))} "
-                         f"to {fmt_claims(ic4.iloc[-1])}{streak_txt}.")
+        sentences.append(f"The SA initial claims 4-week average, which smooths out weekly noise, {moved(d4)} "
+                         f"{fmt_claims(abs(d4))} to {fmt_claims(ic4.iloc[-1])}{streak_txt}.")
 
-    # Rule 3: SA continuing claims (one week behind initial claims)
+    # Rule 3: SA initial claims 4-week average vs. a year ago (52 weeks earlier)
+    yr_date, yr = value_on_or_before(ic4, ic4.index[-1] - timedelta(days=364))
+    pct = 100 * (ic4.iloc[-1] / yr - 1)
+    if round(pct, 1) == 0:
+        sentences.append(f"The SA initial claims 4-week average is about the same as a year ago ({fmt_claims(yr)}).")
+    else:
+        sentences.append(f"The SA initial claims 4-week average is {abs(pct):.1f}% {'above' if pct > 0 else 'below'} "
+                         f"a year ago ({fmt_claims(yr)}).")
+
+    # Rule 4: SA continuing claims (one week behind initial claims)
     cc = fred("CCSA")
     dc = cc.iloc[-1] - cc.iloc[-2]
     csrc = nw["source_continued"].get(cc.index[-1], "")
@@ -496,15 +518,6 @@ def what_changed(claims: pd.DataFrame, built: datetime) -> list[str]:
     else:
         sentences.append(f"SA continuing claims {moved(dc)} {fmt_claims(abs(dc))} to {fmt_claims(cc.iloc[-1])} in the "
                          f"week ending {fmt_date(cc.index[-1])}{ctag}{since_clause(cc)}.")
-
-    # Rule 4: initial claims 4-week average vs. a year ago
-    yr_date, yr = value_on_or_before(ic4, ic4.index[-1] - timedelta(days=364))
-    pct = 100 * (ic4.iloc[-1] / yr - 1)
-    if round(pct, 1) == 0:
-        sentences.append(f"The 4-week average is about the same as a year ago ({fmt_claims(yr)}).")
-    else:
-        sentences.append(f"The 4-week average is {abs(pct):.1f}% {'above' if pct > 0 else 'below'} a year ago "
-                         f"({fmt_claims(yr)}).")
 
     # Rule 5: unemployment rate and Sahm indicator, only if FRED updated them in the past 7 days
     meta = fred_metadata()
@@ -528,14 +541,19 @@ def what_changed(claims: pd.DataFrame, built: datetime) -> list[str]:
 # Frame: freshness line, stale badge, release calendar
 # ===========================================================================
 def freshness(claims: pd.DataFrame, built: datetime) -> dict:
-    last = claims.dropna(subset=["ic_rate_sa"]).iloc[-1]
+    def latest_week(rate_col, source_col, label):
+        """'initial claims week ending Oct 31, 2026 (advance)'"""
+        last = claims.dropna(subset=[rate_col]).iloc[-1]
+        text = f"{label} week ending {fmt_date(last.week_ended)}"
+        if is_preliminary(last[source_col]):
+            text += " (" + last[source_col].split(",")[1].strip() + ")"
+        return text
+
     ur = fred("UNRATE")
-    claims_txt = f"claims week ending {fmt_date(last.week_ended)}"
-    if is_preliminary(last.source_initial):
-        claims_txt += f" ({prelim_label(last.source_initial).replace('preliminary ', '').strip('()')})"
     local = built.astimezone(CENTRAL)
     return {
-        "claims": claims_txt,
+        "claims": latest_week("ic_rate_sa", "source_initial", "initial claims") + " · "
+                  + latest_week("cc_rate_sa", "source_continued", "continuing claims"),
         "unemployment": f"unemployment rate {fmt_month(ur.index[-1])}",
         "updated": f"site updated {fmt_date(local)} {local:%I:%M %p}".replace(" 0", " ") + " CT",
     }
