@@ -130,15 +130,14 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   Reviewed by Troy and live (run 42441206087).
 - 2026-11-07: Stage 3 built locally: Duration page (7 charts; average benefit duration = all-claimant weeks paid
   vs. ETA 218 weeks entitled); CC4WSA from 1967, UEMPMED / LNS13025703 from 1948. Browser check passes on all
-  three pages. Waiting for Troy's review before pushing.
+  three pages. Reviewed by Troy and live (run 42442110406).
 
 ## Next steps, in order
 Setup (steps 1-4) and Phase 1 are done. Phase 2 is built in stages; Troy reviews each one locally before the next.
-1. Stage 3 review: Duration page (built 2026-11-07; push and republish after Troy's review).
-2. Stage 4: Leading Indicators page (summary table + 8 charts).
-3. Stage 5: Data & Downloads page (catalog, CSV/XLSX per series, bundles, stable links; DOL downloads per
+1. Stage 4: Leading Indicators page (summary table + 8 charts).
+2. Stage 5: Data & Downloads page (catalog, CSV/XLSX per series, bundles, stable links; DOL downloads per
    docs/dashboard_requirements.md). Chicago Fed data not offered until its terms are confirmed.
-4. Stage 6: About page (definitions, sources, update schedule, revision policy, disclaimer).
+3. Stage 6: About page (definitions, sources, update schedule, revision policy, disclaimer).
 
 ## Where planning lives
 The full plan, roadmap and decisions are kept in Troy's Claude project ("Unemployment Correlations"),
