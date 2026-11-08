@@ -8,9 +8,9 @@ import pandas as pd
 from common import DOL, claims_weekly, fred, line_chart, line_with_comparison, weekly_claims_chart
 from overview import cc_rate_chart
 
-INTRO = ("How long people stay unemployed drives how long IUI claims last (claim severity). Continuing claims "
-         "show it weekly; exhaustion and benefit duration come monthly and quarterly from DOL's state reports; "
-         "the household survey and JOLTS hiring add the wider picture.")
+INTRO = ("How long unemployment lasts. State UI continuing claims show it weekly; exhaustion and benefit duration "
+         "come monthly and quarterly from DOL's state UI reports; the household survey and JOLTS hiring add the "
+         "wider picture.")
 
 
 def us_rows(filename: str, date_col: str) -> pd.DataFrame:
@@ -39,8 +39,8 @@ def build() -> dict:
     level["source"] = level.week_ended.map(sources).fillna("ETA 539")
     charts.append(weekly_claims_chart(
         "cc-level", "SA continued claims",
-        "Number of people still claiming benefits; continued claims run a week behind initial claims.",
-        "Source: DOL weekly claims via FRED (CCSA, CC4WSA). Seasonally adjusted, number of people claiming, weekly.",
+        "Number of people still claiming state UI benefits; continued claims run a week behind initial claims.",
+        "Source: DOL state UI claims via FRED (CCSA, CC4WSA). Seasonally adjusted, number of people claiming, weekly.",
         level, "cc_sa", "cc_sa_4wk", "source", "Continued claims (SA)", "%{y:,.0f}",
         ["week_ended", "cc_sa", "cc_sa_4wk", "source"]))
 
@@ -49,7 +49,7 @@ def build() -> dict:
     charts.append(line_chart(
         "exhaustion-rate", "Exhaustion rate (12-month)",
         "Share of claimants who use up all their state benefits before finding work.",
-        "Source: DOL ETA 5159 (state claims and payments), our calculation: 12-month average final payments ÷ "
+        "DOL standard definition · NSA, 12-month average. Source: DOL ETA 5159 (state UI claims and payments), our calculation: 12-month average final payments ÷ "
         "12-month average first payments 6 months earlier. Percent, US. US = sum of all states (can differ "
         "slightly from DOL's published US figure: 0.08 pp in 2026 Q2). Monthly, dated at month end.",
         monthly["exhaustion_rate_12m"], "Exhaustion rate", "Percent of claimants", "%{y:.1f}%",
@@ -59,8 +59,9 @@ def build() -> dict:
     quarterly = us_rows("benefit_duration_quarterly.csv", "quarter_ended")
     charts.append(line_with_comparison(
         "benefit-duration", "Average benefit duration",
-        "Weeks of benefits paid per claimant, against weeks entitled: the closest public match to IUI benefit months.",
-        "Source: DOL ETA 5159 and ETA 218, our calculation. Bold: 12-month weeks compensated ÷ 12-month first "
+        "Weeks of state UI benefits paid per claimant, against weeks entitled. For involuntary unemployment "
+        "insurance (IUI), the closest public match to benefit months.",
+        "DOL standard definition · NSA, 12-month average. Source: DOL ETA 5159 and ETA 218, our calculation. Bold: 12-month weeks compensated ÷ 12-month first "
         "payments, all claimants, monthly. Grey: average potential (entitled) duration of new claimants, "
         "quarterly. Weeks, US; quarters with a state missing are left blank.",
         monthly["avg_duration_12m"], "Average weeks paid (all claimants)", "ME",

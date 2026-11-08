@@ -62,7 +62,8 @@ STATE_JS = """() => [...document.querySelectorAll('.chart')].map(gd => {
     tr.x.forEach((x, i) => {
       x = String(x).slice(0, 10); const y = tr.y[i];
       if (y !== null && x > last) last = x;
-      if (y === null || x < r[0] || x > r[1]) return;
+      const always = tr.meta && tr.meta.ref;
+      if (y === null || (!always && (x < r[0] || x > r[1]))) return;
       n++; lo = Math.min(lo, y); hi = Math.max(hi, y);
     });
   });
@@ -114,6 +115,28 @@ def check_page(browser, url, name, shots_prefix, first_page):
             check(c["last"] == rows[-1][0], f"{c['id']}: last date on chart {c['last']} = last date in data {rows[-1][0]}")
     expect_window(state, specs, years_before(today, 5), today, "default 5Y")
     page.screenshot(path=str(SHOTS / f"{shots_prefix}_desktop.png"), full_page=True)
+
+    print("Drag-zoom and no runaway redraws")
+    target = next(s for s in specs if not s["fixed"])["id"]
+    page.locator(f"#chart-{target}").scroll_into_view_if_needed()   # the mouse can only drag what is on screen
+    box = page.locator(f"#chart-{target} .nsewdrag").bounding_box()
+    page.mouse.move(box["x"] + box["width"] * 0.55, box["y"] + box["height"] / 2)
+    page.mouse.down()
+    page.mouse.move(box["x"] + box["width"] * 0.85, box["y"] + box["height"] / 2, steps=8)
+    page.mouse.up()
+    page.wait_for_timeout(600)
+    zoomed = next(c for c in page.evaluate(STATE_JS) if c["id"] == f"chart-{target}")
+    check(zoomed["x"][0] > years_before(today, 5), f"drag-zoom on {target} narrows the dates ({zoomed['x']})")
+    if zoomed["n"]:
+        fits = zoomed["y"][0] <= zoomed["lo"] and zoomed["y"][1] >= zoomed["hi"]
+        check(fits, f"drag-zoom on {target} rescales the y-axis to the zoomed dates")
+    # Count chart updates over one second: a settled page makes none (a feedback loop would make many).
+    n_updates = page.evaluate("""() => new Promise(done => {
+      let n = 0; document.querySelectorAll('.chart').forEach(gd => gd.on('plotly_relayout', () => n++));
+      setTimeout(() => done(n), 1000); })""")
+    check(n_updates == 0, f"no chart keeps redrawing itself ({n_updates} updates in 1 second)")
+    page.goto(url)
+    page.wait_for_selector("body[data-ready=true]")
 
     print("Time control buttons")
     views = {v["key"]: (v["start"], v["end"]) for v in pdata["recessionViews"]}
@@ -251,7 +274,7 @@ def check_data_page(browser, url, base):
 
     print("File contents")
     mismatched = []
-    for href in [l for l in links if l.endswith(".csv") and "/bundles/" not in l]:
+    for href in [l for l in links if l.endswith(".csv") and ("/series/" in l or "/dol/" in l)]:
         got = pd.read_csv(SITE / href, dtype=str)
         if "/series/" in href:
             sid = Path(href).stem
@@ -269,6 +292,25 @@ def check_data_page(browser, url, base):
         if names != want:
             bad_xlsx.append(f"{href}: {names}")
     check(not bad_xlsx, f"every XLSX opens with the expected sheets {bad_xlsx[:3]}")
+
+    print("Data dictionary and table columns")
+    headers = page.eval_on_selector_all("table.files thead th", "els => els.map(e => e.textContent.trim())")
+    check(all(h in headers for h in ["Latest value", "Date", "Updated / checked"]),
+          f"table columns include Latest value, Date, Updated / checked ({headers})")
+    dd_path = SITE / "data" / "data_dictionary.csv"
+    dd = pd.read_csv(dd_path) if dd_path.exists() else pd.DataFrame()
+    check(list(dd.columns) == ["file", "column", "definition", "units"],
+          f"data/data_dictionary.csv has file, column, definition, units ({list(dd.columns)})")
+    dol_rows = page.locator("table.files tbody tr[data-kind='DOL']")
+    n_dol = dol_rows.count()
+    linked = page.locator("table.files tbody tr[data-kind='DOL'] a[href='data/data_dictionary.csv']").count()
+    check(n_dol > 0 and linked == n_dol, f"all {n_dol} DOL rows link to the data dictionary ({linked} linked)")
+    dol_files = {Path(l).name for l in links if "/dol/" in l and l.endswith(".csv")}
+    missing = sorted(dol_files - set(dd["file"])) if len(dd) else sorted(dol_files)
+    blank = int(dd["definition"].isna().sum() + dd["units"].isna().sum()) if len(dd) else -1
+    check(not missing and blank == 0, f"dictionary covers every DOL file, no blank definitions or units {missing}")
+    header = next(load_workbook(SITE / "data" / "dol" / "ar539.xlsx", read_only=True)["Columns"].iter_rows(values_only=True))
+    check("units" in header, f"DOL XLSX Columns sheet has a units column ({header})")
 
     print("Licence exclusions")
     with open(ROOT / "config" / "series_catalog.csv", newline="") as f:
@@ -318,6 +360,29 @@ def check_text_page(browser, url, name):
     pp.screenshot(path=str(SHOTS / f"{Path(name).stem}_phone.png"), full_page=False)
 
 
+def check_wording() -> None:
+    """Words that must not appear on any public page (review 2026-11-07): the term "footprint" and any count
+    of states until Phase 4, and "IUI" except where it is spelled out as
+    "involuntary unemployment insurance (IUI)". Scans each page's full HTML, including the chart data."""
+    import re
+
+    print("\n=== Wording on every page ===")
+    pages = sorted(SITE.glob("*.html"))
+    hits = []
+    for p in pages:
+        text = p.read_text(encoding="utf-8")
+        for pattern, why in [(r"(?i)footprint", "the word footprint"),
+                             (r"\b\d+\s+(?:footprint\s+)?states\b", "a count of states"),
+                             (r"\(\s*132\s*\)|\b132 state", "the number of state series")]:
+            for m in re.finditer(pattern, text):
+                hits.append(f"{p.name}: {why}: ...{text[max(0, m.start() - 40):m.end() + 20]}...")
+        n_iui = len(re.findall(r"\bIUI\b", text))
+        n_spelled = text.count("involuntary unemployment insurance (IUI)")
+        if n_iui != n_spelled:
+            hits.append(f"{p.name}: {n_iui - n_spelled} 'IUI' without 'involuntary unemployment insurance (IUI)'")
+    check(not hits, f"{len(pages)} pages free of 'footprint', state counts and unexplained 'IUI' {hits[:3]}")
+
+
 def main() -> int:
     if not (SITE / "index.html").exists():
         sys.exit("site/index.html not found: run python src/site/build_site.py first")
@@ -331,6 +396,7 @@ def main() -> int:
         links = nav.eval_on_selector_all(".pages a[href]", "els => els.map(e => e.getAttribute('href'))")
         nav.close()
         check(len(links) >= 1, f"top bar links: {links}")
+        check_wording()
         for i, href in enumerate(links):
             if href == "data.html":
                 check_data_page(browser, base + href, base)

@@ -52,8 +52,23 @@ def decimals_for(s: pd.Series, series_id: str) -> int:
     return 2
 
 
+PERCENTILE_START = 1990   # one start year for every percentile in the table; later starts are flagged
+
+
+def standardized_change(s: pd.Series, change: float) -> float:
+    """The 3-month change divided by the typical size of 3-month changes since PERCENTILE_START (their
+    standard deviation, using month-end values), so moves in different units can be compared and sorted."""
+    monthly = s[s.index.year >= PERCENTILE_START].resample("ME").last().dropna()
+    spread = (monthly - monthly.shift(3)).std()
+    return change / spread if spread and spread > 0 else 0.0
+
+
 def summary_table() -> list[dict]:
-    """One row per active catalog series on the 'leading' page (add a catalog row to add a table row)."""
+    """One row per active catalog series on the 'leading' page (add a catalog row to add a table row).
+
+    Sorted by direction toward risk (catalog column risk_direction: 'down' = falling is toward risk):
+    first the indicators moving toward risk, largest standardized move first; then unchanged; then those
+    moving away from risk. Arrows show direction only; colors wait for Phase 3 backtests."""
     meta = fred_metadata()
     with open(ROOT / "config" / "series_catalog.csv", newline="") as f:
         rows = [r for r in csv.DictReader(f)
@@ -70,6 +85,15 @@ def summary_table() -> list[dict]:
         dec = decimals_for(s, sid)
         change = round(latest - before, dec)
         units = "% change vs. a year ago" if sid in YEAR_AGO_CHANGE else UNITS.get(sid, meta.loc[sid, "units"])
+        risky_way = r.get("risk_direction", "")
+        z = standardized_change(s, latest - before)
+        if change == 0 or not risky_way:
+            group, label = 1, "unchanged" if change == 0 else ""
+        else:
+            toward = (change < 0) == (risky_way == "down")
+            group, label = (0, "toward risk") if toward else (2, "away from risk")
+        start_year = max(s.index[0].year, PERCENTILE_START)
+        late_start = s.index[0] > pd.Timestamp(f"{PERCENTILE_START}-01-31")
         table.append({
             "name": r["name"],
             "units": units,
@@ -79,10 +103,15 @@ def summary_table() -> list[dict]:
             "change": "unchanged" if change == 0 else f"{'+' if change > 0 else '−'}{abs(change):,.{dec}f}",
             "arrow": "→" if change == 0 else ("↑" if change > 0 else "↓"),
             "direction": "flat" if change == 0 else ("up" if change > 0 else "down"),
-            "percentile": percentile_text(s, latest, s.index[0].year),
+            "risk": label,
+            "percentile": percentile_text(s[s.index.year >= PERCENTILE_START], latest,
+                                          fmt_month(s.index[0]) if late_start else start_year),
+            "late_start": late_start,
             "lead": r["typical_lead"],
+            "sort": (group, -abs(z)),
+            "yield_curve": sid == "T10Y3M",
         })
-    return table
+    return sorted(table, key=lambda row: row["sort"])
 
 
 def build() -> dict:
@@ -138,6 +167,7 @@ def build() -> dict:
     charts.append(line_chart(
         "sentiment", "Consumer sentiment",
         "Worried consumers spend less, and their worries often include their own jobs.",
+        f"FRED publishes this series with about a one-month delay (latest: {fmt_month(fred('UMCSENT').index[-1])}). "
         "Source: Surveys of Consumers, University of Michigan: Consumer Sentiment © [UMCSENT], retrieved from FRED, "
         "Federal Reserve Bank of St. Louis (https://fred.stlouisfed.org/series/UMCSENT/). Copyright Surveys of "
         "Consumers, University of Michigan; reprinted with permission. Index, 1966 Q1 = 100, not seasonally "

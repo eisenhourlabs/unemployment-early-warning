@@ -1,0 +1,52 @@
+# Rebuilds and publishes the website when the site's code or settings change, without fetching new data.
+# (The scheduled "Refresh data" workflow fetches data and then rebuilds the site the same way.)
+# Uses the data already saved in the repository. If the build fails, the publish step is skipped and the
+# previous version of the site stays online.
+name: Publish site
+
+on:
+  push:
+    branches: [main]
+    paths:                    # only changes that affect the site
+      - "src/site/**"
+      - "config/**"
+      - "requirements.txt"
+      - ".github/workflows/publish-site.yml"
+  workflow_dispatch: {}       # adds a "Run workflow" button for manual runs
+
+concurrency:                  # same group as "Refresh data": never build while a data refresh is running
+  group: refresh-data
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.15"
+      - run: pip install -r requirements.txt
+      - name: Build the site
+        run: python src/site/build_site.py
+      - name: Package the site for GitHub Pages
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
+  # Publish. Runs only if the build succeeded, so a broken build never replaces the live site.
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write                      # allowed to publish to GitHub Pages
+      id-token: write                   # proves to Pages that this workflow is the publisher
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publish to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

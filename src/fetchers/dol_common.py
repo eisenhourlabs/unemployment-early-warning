@@ -24,7 +24,11 @@ FETCH_LOG = ROOT / "data" / "fetch_log.csv"
 METADATA = DOL_DIR / "_metadata.csv"
 REVISIONS = ROOT / "docs" / "data_revisions.md"
 
-START_DATE = "1995-01-01"   # all DOL data starts here (decision 2026-11-07)
+START_DATE = "1995-01-01"   # DOL state files start here (decision 2026-11-07)
+# The national weekly report (ETA 539) starts earlier: covered employment, the denominator of the claims rates,
+# is published from 1971 (decision 2026-11-07, Phase 2 review). Coverage expanded in 1978 (state and local
+# government workers), so rates before and after 1978 are not strictly comparable; the charts mark it.
+NATIONAL_START_DATE = "1971-01-01"
 OUI = "https://oui.doleta.gov/unemploy"
 HEADERS = {"User-Agent": "unemployment-early-warning (github.com/eisenhourlabs/unemployment-early-warning)"}
 

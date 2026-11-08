@@ -43,16 +43,16 @@
       {%- for s in sources %}<option value="{{ s }}">{{ s }}</option>{% endfor %}</select></label>
     <label>Frequency <select name="frequency"><option value="">All</option>
       {%- for f in frequencies %}<option value="{{ f }}">{{ f }}</option>{% endfor %}</select></label>
-    <label class="check"><input type="checkbox" name="states"> Show state series ({{ n_state }})</label>
+    <label class="check"><input type="checkbox" name="states"> Show state series</label>
   </form>
   <p class="muted" id="row-count" aria-live="polite"></p>
   <div class="table-scroll">
   <table class="files">
     <thead><tr><th>Name</th><th>ID</th><th>Source</th><th>Frequency</th><th>Units</th><th>Adj.</th>
-      <th>Latest</th><th>Updated</th><th>Download</th></tr></thead>
+      <th>Latest value</th><th>Date</th><th>Updated / checked</th><th>Download</th></tr></thead>
     <tbody>
       {%- for r in rows %}
-      <tr data-search="{{ (r.name ~ ' ' ~ r.id)|lower }}" data-page="{{ r.page_label }}" data-source="{{ r.source }}"
+      <tr data-kind="{{ r.kind }}" data-search="{{ (r.name ~ ' ' ~ r.id)|lower }}" data-page="{{ r.page_label }}" data-source="{{ r.source }}"
           data-frequency="{{ r.frequency }}" data-state="{{ r.state }}"{% if r.state %} hidden{% endif %}>
         <td>{{ r.name }}</td>
         <td><code>{{ r.id }}</code></td>
@@ -60,16 +60,19 @@
         <td>{{ r.frequency }}</td>
         <td>{{ r.units }}</td>
         <td>{{ r.sa }}</td>
-        <td class="num">{{ r.latest_value }}<span class="muted block">{{ r.latest_date }}</span></td>
-        <td>{{ r.updated }}</td>
-        <td class="dl"><a href="{{ r.csv }}" download>CSV</a> · <a href="{{ r.xlsx }}" download>XLSX</a></td>
+        <td class="num">{{ r.latest_value }}</td>
+        <td class="nowrap">{{ r.latest_date }}</td>
+        <td class="nowrap">{% if r.kind == "DOL" %}checked {% endif %}{{ r.updated }}</td>
+        <td class="dl"><a href="{{ r.csv }}" download>CSV</a> · <a href="{{ r.xlsx }}" download>XLSX</a>
+          {%- if r.dictionary %} · <a href="{{ r.dictionary }}" download>Columns</a>{% endif %}</td>
       </tr>
       {%- endfor %}
     </tbody>
   </table>
   </div>
-  <p class="chart-footer">"Updated" is the publisher's last update for FRED series and the date we last checked DOL
-    for DOL files. DOL files keep only the latest figures; revisions are logged in the project's
+  <p class="chart-footer">"Updated" is the publisher's last update for FRED series; "checked" is the date we last
+    checked DOL for DOL files. "Columns" is the <a href="data/data_dictionary.csv" download>data dictionary</a>
+    (file, column, definition, units) for every DOL file. DOL files keep only the latest figures; revisions are logged in the project's
     <a href="{{ repo_url }}/blob/main/docs/data_revisions.md">data revision log</a>.</p>
 </section>
 
@@ -79,7 +82,6 @@
     {%- for x in excluded %}
     <li><strong>{{ x.name }}</strong> <code>{{ x.id }}</code>: {{ x.reason }}.</li>
     {%- endfor %}
-    <li><strong>Footprint weights</strong>: kept private; never published.</li>
   </ul>
 </section>
 {% endblock %}

@@ -92,7 +92,8 @@
       if (tr.visible === false || tr.visible === "legendonly" || !tr.y) return;
       for (var i = 0; i < tr.x.length; i++) {
         var x = String(tr.x[i]).slice(0, 10), y = tr.y[i];
-        if (y === null || y === undefined || x < x0 || x > x1) continue;
+        var always = tr.meta && tr.meta.ref;   // reference lines (pre-recession averages) always stay in view
+        if (y === null || y === undefined || (!always && (x < x0 || x > x1))) continue;
         if (y < lo) lo = y;
         if (y > hi) hi = y;
       }
@@ -103,11 +104,33 @@
     return [lo - pad, hi + pad];
   }
 
+  // Labels for the dotted reference lines (layout.meta.refs), placed for the y-axis range shown. Labels whose
+  // lines would sit closer than about one line of text on screen are merged into one label, so they never overlap.
+  function refLabels(gd, y) {
+    var refs = gd.layout.meta && gd.layout.meta.refs;
+    var others = (gd.layout.annotations || []).filter(function (a) { return a.name !== "ref"; });
+    var hidden = gd.data.some(function (tr) { return tr.meta && tr.meta.ref && tr.visible === "legendonly"; });
+    if (!refs || !y || hidden) return others;
+    var h = (gd._fullLayout && gd._fullLayout._size && gd._fullLayout._size.h) || 250;
+    var px = function (v) { return (v - y[0]) / (y[1] - y[0]) * h; };
+    var groups = [];
+    refs.slice().sort(function (a, b) { return a.value - b.value; }).forEach(function (r) {
+      var g = groups[groups.length - 1];
+      if (g && px(r.value) - px(g[g.length - 1].value) < 14) g.push(r); else groups.push([r]);
+    });
+    var color = THEMES[themeName()].text;
+    return others.concat(groups.map(function (g) {
+      return { name: "ref", xref: "paper", x: 1, xanchor: "right", y: g[g.length - 1].value, yanchor: "bottom",
+               showarrow: false, text: g.map(function (r) { return r.text; }).join(" · "), font: { size: 10, color: color } };
+    }));
+  }
+
   var busy = false;   // true while this script changes a chart, so our own changes don't trigger the listeners
   function setView(chart, x0, x1) {
     var gd = chart.el, y = yRange(gd, x0, x1, chart.zero);
     var update = { "xaxis.range": [x0, x1] };
     if (y) update["yaxis.range"] = y; else update["yaxis.autorange"] = true;
+    if (gd.layout.meta && gd.layout.meta.refs) update.annotations = refLabels(gd, y);
     busy = true;
     return Plotly.relayout(gd, update).then(function () { busy = false; }, function () { busy = false; });
   }
@@ -177,15 +200,21 @@
     var config = { responsive: true, displayModeBar: false, doubleClick: false, displaylogo: false };
     return Plotly.newPlot(chart.el, f.data, f.layout, config).then(function (gd) {
       var y = yRange(gd, w[0], w[1], chart.zero);
-      if (y) { busy = true; return Plotly.relayout(gd, { "yaxis.range": y }).then(function () { busy = false; return gd; }); }
+      if (y) {
+        var first = { "yaxis.range": y };
+        if (gd.layout.meta && gd.layout.meta.refs) first.annotations = refLabels(gd, y);
+        busy = true;
+        return Plotly.relayout(gd, first).then(function () { busy = false; return gd; });
+      }
       return gd;
     }).then(function (gd) {
       // The reader zoomed one chart by dragging: rescale its y-axis to the new dates.
       gd.on("plotly_relayout", function (ev) {
         if (busy) return;
+        // A drag-zoom reports "xaxis.range[0]" / "[1]". This script's own updates use "xaxis.range", so they are
+        // ignored here; otherwise charts updating at the same time could keep re-triggering each other.
         var x0 = ev["xaxis.range[0]"], x1 = ev["xaxis.range[1]"];
-        if (x0 === undefined && ev["xaxis.range"]) { x0 = ev["xaxis.range"][0]; x1 = ev["xaxis.range"][1]; }
-        if (x0 !== undefined) setView(chart, String(x0).slice(0, 10), String(x1).slice(0, 10));
+        if (x0 !== undefined && x1 !== undefined) setView(chart, String(x0).slice(0, 10), String(x1).slice(0, 10));
       });
       // A legend click hid or showed a line: rescale to what's left.
       gd.on("plotly_restyle", function () {

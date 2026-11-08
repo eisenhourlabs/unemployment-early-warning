@@ -85,7 +85,8 @@ def freshness(built: datetime) -> dict:
         "claims": latest_week("ic_rate_sa", "source_initial", "initial claims") + " · "
                   + latest_week("cc_rate_sa", "source_continued", "continuing claims"),
         "unemployment": f"unemployment rate {fmt_month(ur.index[-1])}",
-        "updated": f"site updated {fmt_date(local)} {local:%I:%M %p}".replace(" 0", " ") + " CT",
+        "updated": f"site updated {fmt_date(local)} {local:%I:%M %p}".replace(" 0", " ")
+                   + " CT (data refreshed weekday mornings; also rebuilt when the site changes)",
     }
 
 
@@ -109,13 +110,14 @@ def release_calendar() -> list[dict]:
     if not path.exists():
         return []
     cal = pd.read_csv(path, dtype=str).fillna("")
+    # The Chicago Fed indicators are not shown on the site (terms of use unconfirmed), so neither is their date.
+    cal = cal[~cal.release.str.startswith("Chicago Fed")]
     rows = []
     for r in cal.itertuples(index=False):
         next_txt = (f"{pd.Timestamp(r.next_date):%a}, {fmt_date(r.next_date)}" if r.next_date
                     else "date not available")
         rows.append({"release": r.release, "next": next_txt, "time": r.time_et + " ET" if r.next_date else "",
-                     "detail": r.detail, "after": fmt_date(r.following_date) if r.following_date else "",
-                     "url": r.source_url, "sort": r.next_date or "9999"})
+                     "detail": r.detail, "url": r.source_url, "sort": r.next_date or "9999"})
     return sorted(rows, key=lambda x: x["sort"])
 
 
@@ -185,7 +187,6 @@ def main() -> None:
                    "pages": sorted({r["page_label"] for r in rows}), "sources": sorted({r["source"] for r in rows}),
                    "frequencies": [f for f in ("daily", "weekly", "monthly", "quarterly")
                                    if any(r["frequency"] == f for r in rows)],
-                   "n_state": sum(1 for r in rows if r["state"]),
                    "page_data": page_data([], built)}, 0))
     pages.append(("about.html", "about.html",
                   {**frame, **about.build(), "page": "about", "title": "About", "has_charts": False,

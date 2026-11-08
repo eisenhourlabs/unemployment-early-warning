@@ -4,9 +4,9 @@
 {% block content %}
 <div class="page-intro">
   <h1>About Unemployment Watch</h1>
-  <p>An early-warning view of US unemployment built entirely from public data. It follows the two things that
-    drive involuntary unemployment insurance claims: <strong>new job losses</strong> (how often claims start) and
-    <strong>how long unemployment lasts</strong> (how long claims run). It refreshes itself every weekday morning.</p>
+  <p>An early-warning view of US unemployment built from public and free-to-use data. It follows two things:
+    <strong>new job losses</strong> (how often people start claiming state UI benefits) and <strong>how long
+    unemployment lasts</strong> (how long they keep claiming). It refreshes itself every weekday morning.</p>
 </div>
 
 <nav class="card toc" aria-label="On this page">
@@ -20,10 +20,22 @@
     <dt>SA and NSA</dt>
     <dd>Seasonally adjusted (SA) figures remove regular patterns such as January layoffs and holiday weeks, so one
       week can be compared with the next. Not seasonally adjusted (NSA) figures are the raw counts.</dd>
+    <dt>State UI claims</dt>
+    <dd>Claims for state unemployment insurance (UI) benefits, reported by each state to the U.S. Department of Labor
+      (DOL). These are the "claims" throughout this site.</dd>
     <dt>Initial claims</dt>
-    <dd>New applications for state unemployment benefits in a week: the fastest public signal of job losses.</dd>
+    <dd>New applications for state UI benefits in a week: the fastest public signal of job losses.</dd>
     <dt>Continued (continuing) claims</dt>
     <dd>People still claiming benefits; reported for the week before the initial claims week, so they run a week behind.</dd>
+    <dt>ETA 539</dt>
+    <dd>DOL's weekly claims report: national and state initial and continued claims, covered employment and the
+      insured unemployment rate. Published every Thursday with the news release; the official figures follow.</dd>
+    <dt>ETA 5159</dt>
+    <dd>DOL's monthly report of state UI claims and payments: first payments, weeks compensated, final payments
+      (exhaustions) and amounts paid, by state.</dd>
+    <dt>ETA 218</dt>
+    <dd>DOL's quarterly report of benefit rights and experience: how many weeks new claimants are entitled to, and how
+      many weeks claimants who exhausted benefits actually received, by state.</dd>
     <dt>Covered employment</dt>
     <dd>The number of jobs covered by state unemployment insurance (about 154 million), published by the
       Department of Labor (DOL). It is the denominator of the two claims rates.</dd>
@@ -49,7 +61,8 @@
       Shown against the average number of weeks claimants are entitled to (DOL's ETA 218 report).</dd>
     <dt>Percentile</dt>
     <dd>The share of all past observations at or below the latest value, over the full history shown on the tile or
-      table (for example "62nd percentile since 1995"). At the extremes the site says "lowest" or "highest since".</dd>
+      table (for example "62nd percentile since 1971"). At the extremes the site says "Lowest since 1971 (start of
+      data)": the data begin there, so it is not an all-time record.</dd>
     <dt>Sahm indicator</dt>
     <dd>The 3-month average unemployment rate minus the lowest 3-month average of the prior 12 months. Readings of
       0.50 or more have come in the early months of most past US recessions (St. Louis Fed, real-time version).</dd>
@@ -126,6 +139,14 @@
       published ones for the states we checked (Alabama, California, Florida, New York, Ohio, Texas), but the US total can
       differ slightly from DOL's published US figure (0.08 percentage points for exhaustion and
       0.02 weeks for duration in the 2026 Q2 comparison).</li>
+    <li><strong>Why claims rates start in 1971.</strong> The rates divide claims by covered employment, and DOL's weekly
+      report publishes covered employment from 1971 (claims themselves go back to 1967). In 1978 UI coverage expanded
+      to most state and local government workers, so covered employment jumped and rates before and after 1978 are not
+      strictly comparable; the rate charts mark it. DOL's state files (ETA 539 by state, 5159, 218) start in 1995 by
+      choice of this project.</li>
+    <li><strong>Reference lines.</strong> The dotted lines on the two claims-rate charts are the average SA weekly rate
+      over the 12 months up to each of the last three NBER business-cycle peaks (April 2000 to March 2001, January to
+      December 2007, March 2019 to February 2020), and over 2019.</li>
     <li><strong>October 2025.</strong> No household survey was collected during the federal government shutdown, so the
       unemployment rate and other household-survey series have no October 2025 value. Charts show the gap; tiles say
       so when it affects a comparison.</li>
@@ -138,8 +159,7 @@
 
 <section class="card prose" id="disclaimer" aria-labelledby="disc-title">
   <h2 id="disc-title">Disclaimer</h2>
-  <p><strong>Not an official forecast; public data only.</strong> This site is an independent project, not affiliated
-    with or endorsed by any of the publishers above. Figures are provided as is, without warranty of accuracy or
+  <p>This site is an independent project, not affiliated with or endorsed by any of the publishers above. Figures are provided as is, without warranty of accuracy or
     completeness; use them at your own risk and check the original source before relying on a number.</p>
   <p>Found a wrong number or a broken download? <a href="{{ issues_url }}">Report a problem on GitHub</a>
     (reports are public; a GitHub account is needed). The <a href="{{ repo_url }}">source code and data</a> are on

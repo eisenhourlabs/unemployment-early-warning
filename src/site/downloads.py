@@ -4,13 +4,14 @@ Data & Downloads page: writes every downloadable file into site/data/ and lists 
 What it writes (each file has a permanent address, so Excel's Data > From Web can refresh it):
   site/data/series/<ID>.csv / .xlsx   every public FRED series (national and state)
   site/data/dol/<file>.csv / .xlsx     every DOL file (state files with plain column names)
+  site/data/data_dictionary.csv        every column of every DOL file: file, column, definition, units
   site/data/bundles/                   dol_weekly_claims.csv / .xlsx, weekly_series.csv, monthly_series.csv,
                                        everything.xlsx (one sheet per frequency + a data dictionary)
 Each XLSX has an "About" sheet (source, units, link, citation); DOL files also get a "Columns" sheet
 with the description of every column (config/dol_columns.csv and config/derived_columns.csv).
 
 What it never writes: series whose catalog licence is not "public" (e.g. U. Michigan sentiment:
-citation-required; Chicago Fed Labor Market Indicators: terms not yet confirmed) and footprint weights.
+citation-required; Chicago Fed Labor Market Indicators: terms not yet confirmed) and the private state weights.
 Called by build_site.py.
 """
 
@@ -31,6 +32,42 @@ PAGE_LABELS = {"overview": "Overview", "job_losses": "Job Losses", "duration": "
 SA_SHORT = {"Seasonally Adjusted": "SA", "Not Seasonally Adjusted": "NSA",
             "Seasonally Adjusted Annual Rate": "SAAR", "Smoothed Seasonally Adjusted": "SA (smoothed)"}
 STATE_TEMPLATES = {"ICLAIMS": "STATE_ICLAIMS", "CCLAIMS": "STATE_CCLAIMS", "UR": "STATE_UR"}
+
+# One short list of unit labels for the whole page (FRED uses many spellings for the same thing).
+UNIT_LABELS = {"%": "Percent", "Rate": "Percent", "Percent": "Percent", "Percentage Points": "Percentage points",
+               "Number": "Number", "Persons": "Number", "Level in Thousands": "Thousands",
+               "Thousands of Persons": "Thousands", "Thousands of Units": "Thousands", "Hours": "Hours",
+               "Weeks": "Weeks", "Index": "Index", "+1 or 0": "0/1 indicator"}
+
+
+def unit_label(fred_units: str, sa: str) -> str:
+    """Standard unit label; seasonally adjusted annual rates say so (e.g. building permits)."""
+    label = UNIT_LABELS.get(fred_units, fred_units)
+    return label + (", annual rate" if sa == "SAAR" else "")
+
+
+def column_units(column: str) -> str:
+    """Units of a DOL column, from its name (the naming follows config/dol_columns.csv)."""
+    c = column.lower()
+    if c.endswith(("_ended", "_date")) or c == "date":
+        return "Date"
+    if c == "state":
+        return "State code"
+    if c.startswith("source_") or c.endswith("_status"):
+        return "Text"
+    if c.startswith("amt_"):
+        return "Dollars"
+    if c.endswith("_sf"):
+        return "Seasonal factor (x100)"
+    if "iur" in c or "rate" in c or "pct" in c:
+        return "Percent"
+    if "avg_weeks" in c or "avg_duration" in c:
+        return "Weeks"
+    if c.startswith(("cw_", "wc_")) or c == "weeks_compensated":
+        return "Number of weeks claimed or paid"
+    if c == "covered_employment":
+        return "Number of jobs"
+    return "Number"
 
 # DOL files offered for download: (file stem, catalog row, frequency, report name in config/dol_columns.csv)
 DOL_FILES = [
@@ -92,8 +129,9 @@ def fred_entries() -> list[dict]:
         entries.append({
             "kind": "FRED", "id": sid, "name": m["title"] if is_state else row["name"],
             "title": m["title"], "source": row["source"], "source_url": f"https://fred.stlouisfed.org/series/{sid}",
-            "frequency": row["frequency"], "units": m["units"], "sa": SA_SHORT.get(m["seasonal_adjustment"],
-                                                                                 m["seasonal_adjustment"]),
+            "frequency": row["frequency"],
+            "sa": SA_SHORT.get(m["seasonal_adjustment"], m["seasonal_adjustment"]),
+            "units": unit_label(m["units"], SA_SHORT.get(m["seasonal_adjustment"], "")),
             "page": row["dashboard_page"], "state": sid[:2] if is_state else "",
             "updated": str(m["last_updated"])[:10], "csv": f"data/series/{sid}.csv", "xlsx": f"data/series/{sid}.xlsx",
             "path": PROCESSED / f"{sid}.csv",
@@ -114,7 +152,7 @@ def dol_entries() -> list[dict]:
             "kind": "DOL", "id": stem, "name": m["description"] if m is not None else cat[cat_id]["name"],
             "title": cat[cat_id]["name"], "source": "DOL (derived)" if stem in DOL_DERIVED else "DOL",
             "source_url": source if source.startswith("http") else DOL_CLAIMS_PAGE,
-            "frequency": freq, "units": "See Columns sheet", "sa": "SA and NSA" if stem.startswith(("national", "claims", "seasonal")) else "NSA",
+            "frequency": freq, "units": "Various (see data dictionary)", "sa": "SA and NSA" if stem.startswith(("national", "claims", "seasonal")) else "NSA",
             "page": cat[cat_id]["dashboard_page"], "state": "",
             "updated": str(m["last_checked_utc"])[:10] if m is not None else last_check,
             "csv": f"data/dol/{stem}.csv", "xlsx": f"data/dol/{stem}.xlsx", "path": DOL / f"{stem}.csv", "report": report,
@@ -126,7 +164,7 @@ def dol_entries() -> list[dict]:
 # Column descriptions for DOL files
 # ===========================================================================
 def column_descriptions(stem: str, report: str, columns) -> list[list]:
-    """[column, description, DOL code, how confirmed / calculated] for each column of a DOL file."""
+    """[column, description, units, DOL code, how confirmed / calculated] for each column of a DOL file."""
     derived = pd.read_csv(ROOT / "config" / "derived_columns.csv")
     derived = {(r.file, r.column): r for r in derived.itertuples(index=False)}
     mapping = pd.read_csv(ROOT / "config" / "dol_columns.csv")
@@ -136,16 +174,16 @@ def column_descriptions(stem: str, report: str, columns) -> list[list]:
     for col in columns:
         d = next((derived[(f, col)] for f in files if (f, col) in derived), None)
         if d is not None:
-            rows.append([col, d.description, "", d.how_calculated])
+            rows.append([col, d.description, column_units(col), "", d.how_calculated])
             continue
         same_report = mapping[(mapping.report == report) & (mapping.name == col)]
         anywhere = mapping[mapping.name == col]
         hit = same_report if len(same_report) else anywhere
         if len(hit):
             r = hit.iloc[0]
-            rows.append([col, r.description, f"{r.report} {r.code}", r.basis])
+            rows.append([col, r.description, column_units(col), f"{r.report} {r.code}", r.basis])
         else:
-            rows.append([col, "", "", ""])
+            rows.append([col, "", column_units(col), "", ""])
     return rows
 
 
@@ -219,7 +257,7 @@ def write_entry_files(e: dict, out, built: datetime) -> pd.DataFrame:
     text.to_csv(out / e["csv"], index=False)
     sheets = [("Data", df), ("About", about_sheet(e, built))]
     if e["kind"] == "DOL":
-        sheets.insert(1, ("Columns", [["column", "description", "DOL code", "how confirmed / calculated"]]
+        sheets.insert(1, ("Columns", [["column", "description", "units", "DOL code", "how confirmed / calculated"]]
                           + column_descriptions(e["id"], e["report"], df.columns)))
     write_xlsx(out / e["xlsx"], sheets)
     return df
@@ -269,12 +307,21 @@ def build(out, built: datetime) -> dict:
     weekly.to_csv(bdir / "dol_weekly_claims.csv", index=False)
     write_xlsx(bdir / "dol_weekly_claims.xlsx", [
         ("Data", weekly),
-        ("Columns", [["column", "description", "DOL code", "how confirmed / calculated"]]
+        ("Columns", [["column", "description", "units", "DOL code", "how confirmed / calculated"]]
          + column_descriptions("dol_weekly_claims", "eta539_national", weekly.columns)),
         ("About", [["Unemployment Watch bundle", "DOL weekly claims (merged), from 1995"],
                    ["Contents", "national_weekly.csv joined with claims_rates_weekly.csv on week_ended"],
                    ["Source", f"U.S. Department of Labor, ETA 539 ({DOL_CLAIMS_PAGE}); preliminary weeks via FRED"],
                    ["File built (UTC)", built.strftime("%Y-%m-%d %H:%M")]])])
+    # Data dictionary: every column of every DOL file (and the merged bundle), one CSV linked from each DOL row
+    dictionary_rows = []
+    for e in dol:
+        for col, desc, units, *_ in column_descriptions(e["id"], e["report"], frames[e["id"]].columns):
+            dictionary_rows.append({"file": f"{e['id']}.csv", "column": col, "definition": desc, "units": units})
+    for col, desc, units, *_ in column_descriptions("dol_weekly_claims", "eta539_national", weekly.columns):
+        dictionary_rows.append({"file": "bundles/dol_weekly_claims.csv", "column": col, "definition": desc, "units": units})
+    pd.DataFrame(dictionary_rows).to_csv(out / "data" / "data_dictionary.csv", index=False)
+
     by_freq = {"daily": wide(fred, frames, "daily"),
                "weekly": wide(fred, frames, "weekly", "Saturday"),          # claims weeks end on Saturday
                "weekly_friday": wide(fred, frames, "weekly", "Friday"),     # NFCI weeks end on Friday
@@ -297,11 +344,11 @@ def build(out, built: datetime) -> dict:
         {"name": "DOL weekly claims (merged), from 1995", "detail": "Every weekly DOL column, the calculated rates "
          "and the source flag (ETA 539 or preliminary news release)", "csv": "data/bundles/dol_weekly_claims.csv",
          "xlsx": "data/bundles/dol_weekly_claims.xlsx"},
-        {"name": "All weekly series", "detail": f"{len(by_freq['weekly'].columns) - 1} series side by side, one column each "
-         "(weeks ending Saturday: claims)", "csv": "data/bundles/weekly_series.csv", "xlsx": ""},
-        {"name": "Weekly series ending Friday", "detail": f"{len(by_freq['weekly_friday'].columns) - 1} series "
-         "(Chicago Fed NFCI and its credit subindex)", "csv": "data/bundles/weekly_friday_series.csv", "xlsx": ""},
-        {"name": "All monthly series", "detail": f"{len(by_freq['monthly'].columns) - 1} series side by side, one column each",
+        {"name": "All weekly series", "detail": "Side by side, one column each (weeks ending Saturday: claims)",
+         "csv": "data/bundles/weekly_series.csv", "xlsx": ""},
+        {"name": "Weekly series ending Friday", "detail": "Chicago Fed NFCI and its credit subindex",
+         "csv": "data/bundles/weekly_friday_series.csv", "xlsx": ""},
+        {"name": "All monthly series", "detail": "Side by side, one column each",
          "csv": "data/bundles/monthly_series.csv", "xlsx": ""},
         {"name": "Everything workbook", "detail": "One sheet per frequency (daily, weekly ending Saturday, weekly "
          "ending Friday, monthly) plus a data dictionary",
@@ -309,6 +356,7 @@ def build(out, built: datetime) -> dict:
     ]
     rows = [{k: e[k] for k in ("kind", "id", "name", "source", "source_url", "frequency", "units", "sa", "page",
                                "state", "updated", "csv", "xlsx", "latest_date", "latest_value")}
+            | {"dictionary": "data/data_dictionary.csv" if e["kind"] == "DOL" else ""}
             | {"page_label": PAGE_LABELS.get(e["page"], e["page"])} for e in dol + fred]
     return {"rows": rows, "bundles": bundles, "excluded": excluded(),
-            "n_files": len(fred) * 2 + len(dol) * 2 + 6}
+            "n_files": len(fred) * 2 + len(dol) * 2 + 7}
