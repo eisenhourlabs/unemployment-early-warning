@@ -69,9 +69,9 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 | `docs/data_revisions.md` | Automatic log of DOL revisions |
 | `docs/dashboard_requirements.md` | What the Phase 2 dashboard must show |
 | `src/alerts/alerts.py` | Optional alerts (off) |
-| `src/model/` | Phase 3 modeling: `build_claims_history.py` (claims table from 1967), `alfred_fetcher.py` (past vintages), `realtime.py` (`as_known_on(series, date)` + Sahm check), `events.py` (event definition and list), `plot_events.py` (review chart) |
-| `config/model_series.csv`, `config/event_notes.csv` | Modeling series: ALFRED or current vintage, release lag; one-line notes per event |
-| `data/model/` | Modeling data: `claims_weekly.csv`, `alfred/` (vintages + coverage), `events.csv`, `event_flags_monthly.csv`, `claims_leg_weekly.csv` |
+| `src/model/` | Phase 3 modeling: `build_claims_history.py` (claims table from 1967), `alfred_fetcher.py` (past vintages), `realtime.py` (`as_known_on(series, date)` + Sahm check), `events.py` (event definition and list), `plot_events.py` (review chart), `current_fetcher.py` (long histories of never-revised series), `triggers.py` (8 Layer 1 triggers monthly, real-time), `backtest_triggers.py` (leads, false alarms, adds-warning), `plot_triggers.py` (status chart) |
+| `config/model_series.csv`, `config/event_notes.csv`, `config/triggers.csv` | Modeling series: ALFRED / first-release / current vintage, release lag; Troy's event rulings and notes; Layer 1 trigger thresholds |
+| `data/model/` | Modeling data: `claims_weekly.csv`, `alfred/` (vintages + coverage), `current/` (GS10, TB3MS, T10Y3MM full history), `events.csv`, `event_flags_monthly.csv`, `claims_leg_weekly.csv`, `triggers_monthly.csv`, `trigger_episodes.csv`, `trigger_leads.csv`, `trigger_summary.csv` |
 | `docs/model.md`, `reports/` | Phase 3 method and results (grows each stage); review charts (not on the site) |
 | `src/signals/`, `src/forecast/` | Phase 3: triggers, composite score, forecast fan |
 | `src/site/build_site.py` | Builds the "Unemployment Watch" website (Plotly + Jinja2) into `site/`: shared frame, renders each page |
@@ -104,7 +104,9 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   then open http://localhost:8000 (Ctrl+C stops the server)
 - Check the built site in a browser (once: `pip install -r requirements-dev.txt`): `python src\checks\check_site.py`
 - Phase 3 modeling data, in order: `python src\model\build_claims_history.py`, `python src\model\alfred_fetcher.py`
-  (~1 min), `python src\model\realtime.py` (Sahm check), `python src\model\events.py`, `python src\model\plot_events.py`
+  (~3 min), `python src\model\current_fetcher.py`, `python src\model\realtime.py` (Sahm check), `python src\model\events.py`,
+  `python src\model\plot_events.py`, `python src\model\triggers.py` (~15 s), `python src\model\backtest_triggers.py`,
+  `python src\model\plot_triggers.py`
 
 ## Status (2026-11-07)
 - Phase 0 done: folders, catalog (35 active rows), footprint weights, FRED fetcher (tested only against
@@ -167,16 +169,22 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   vintages for 7 monthly series (TEMPHELPS / JOLTS only from 2010-11, PERMIT from 1999), `as_known_on` (matches
   FRED SAHMREALTIME in 97.7% of months), event list: 15 events since 1967 (8 recession-linked, 6 scares, 2020
   excluded from fitting), docs/model.md, reports/events.png. Troy's rulings applied the same day (scares count;
-  #4 starts Oct 1979; #7 early signal; #10 scare; in config/event_notes.csv). Troy is reviewing the list in his
-  Claude project before stage 3b.
+  #4 starts Oct 1979; #7 early signal; #10 scare; in config/event_notes.csv). Troy reviewed the list in his
+  Claude project.
+- 2026-11-08: Stage 3b built locally on `phase3a` (not pushed, website unchanged): 8 Layer 1 triggers monthly since 1967
+  on real-time data where it exists (Sahm, yield curve real-time throughout; temp help / manufacturing / NFCI revised
+  before 2011-15; claims current-vintage), backtest of leads and false alarms, overall status chart
+  reports/layer1_status.png, docs/model.md section 4. Drop candidates flagged, nothing dropped. Waiting for Troy's review.
 
 ## Next steps, in order
 Setup (steps 1-4), Phase 1, Phase 2 and the Phase 2 review fixes are done and live.
-1. Phase 3 stage 3a: rulings applied; Troy is reviewing the event list in his Claude project. Do not start 3b
-   until he says so. Merge `phase3a` into main and push only when he says "push".
-2. Stage 3b (triggers): compute the Layer 1 rules historically with `as_known_on`, lead-time and false-alarm table;
-   measure the claims revision effect with FRED's 2009+ claims vintages. Plan with Troy first.
-3. Stages 3c-3e per docs/phase3_plan.md.
+1. Stage 3b review: Troy decides on the flagged triggers (docs/model.md 4.6) and the 3-month "still on" condition
+   added during the build (4.2). Do not start 3c until he says so. Merge `phase3a` into main and push only when he
+   says "push".
+2. Stage 3c (score), plan with Troy first. REQUIRED (Troy, 2026-11-08): fit the score (a) with and without the four
+   one-off shock scares (#3, #6, #11, #14), and (b) with and without TEMPHELPS and JOLTS, and report the differences.
+   Also measure the claims revision effect with FRED's 2009+ claims vintages (ICSA / CCSA).
+3. Stages 3d-3e per docs/phase3_plan.md.
 Open items to watch: first real Thursday run (2026-11-12); ETA 539 allowed age (42 days); Chicago Fed LMI terms of use;
 DOL certificate glitch seen once on 2026-11-08.
 

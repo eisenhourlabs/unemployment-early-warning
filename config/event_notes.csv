@@ -13,4 +13,4 @@ start_month,start_override,classification,note
 2008-02,,recession,2007-09 recession; the unemployment leg came first (Feb 2008) and claims followed in Jul 2008
 2020-03,,recession (pandemic),2020 pandemic recession; claims rose about 25-fold in weeks. Excluded from fitting (decision 4)
 2023-06,,scare,Scare: claims jump in Jun-Jul 2023 (reported at the time to reflect Minnesota's new summer benefits for school workers and fraudulent claims in Ohio)
-2024-07,,scare,"Scare: the widely reported Sahm-rule trigger of mid-2024 (July 2024 first printed at 4.3%, now 4.2%; partly faster labor-force growth; 4.4% by Sep 2025); claims never reached +25%"
+2024-07,,scare,"Scare: the widely reported Sahm-rule trigger of mid-2024 (July 2024 first printed at 4.3%, now 4.2%; partly faster labor-force growth; 4.4% by Sep 2025); claims never reached +25%. The unemployment rate rose 0.9 point and stayed elevated, which matters for claims even though it wasn't a recession"

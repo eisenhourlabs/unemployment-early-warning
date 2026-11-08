@@ -16,6 +16,9 @@ How it decides, per row of config/model_series.csv:
     Before the series' first ALFRED vintage there is nothing truly real-time, so it uses the earliest
     vintage, keeps only observations at least release_lag_days old, and marks the result not real-time
     (decision 2026-11-08: TEMPHELPS before 2011, JOLTS before 2010, PERMIT before 1999).
+  * vintage_source = alfred_first (NFCI): data/model/alfred/<ID>.csv holds each week's first published
+    value; a week is known on date D if it was first published by D. Before the archive began (May 2011),
+    the earliest archived vintage is used, cut back by release_lag_days, and marked not real-time.
   * vintage_source = current: uses today's figures (DOL claims, our rule) and keeps only observations at
     least release_lag_days old by date D.
 
@@ -36,6 +39,7 @@ ROOT = Path(__file__).resolve().parents[2]
 CONFIG = ROOT / "config" / "model_series.csv"
 ALFRED_DIR = ROOT / "data" / "model" / "alfred"
 CLAIMS = ROOT / "data" / "model" / "claims_weekly.csv"
+CURRENT_DIR = ROOT / "data" / "model" / "current"     # long histories from current_fetcher.py
 PROCESSED = ROOT / "data" / "processed"
 
 
@@ -54,7 +58,11 @@ def _alfred(series_id: str) -> pd.DataFrame:
 
 @lru_cache(maxsize=None)
 def _current(series_id: str) -> pd.Series:
-    """Today's figures: from the claims table if the column is there, otherwise data/processed/<ID>.csv."""
+    """Today's figures: data/model/current/<ID>.csv if it exists (full history), then the claims table,
+    otherwise data/processed/<ID>.csv."""
+    if (CURRENT_DIR / f"{series_id}.csv").exists():
+        df = pd.read_csv(CURRENT_DIR / f"{series_id}.csv", parse_dates=["date"])
+        return df.set_index("date")["value"]
     claims = pd.read_csv(CLAIMS, parse_dates=["week_ended"]).set_index("week_ended")
     if series_id in claims.columns:
         return claims[series_id].dropna()
@@ -80,6 +88,21 @@ def as_known_on(series_id: str, as_of) -> pd.Series:
         else:
             # Before ALFRED's archive starts: earliest vintage, cut back by the usual publication lag.
             rows = df[(df.realtime_start <= first_vintage) & (df.realtime_end >= first_vintage)]
+            out = pd.Series(rows.value.values, index=pd.to_datetime(rows.date), name=series_id)
+            out = out[out.index + lag <= d]
+            out.attrs.update(real_time=False, source="alfred-earliest")
+    elif cfg.vintage_source == "alfred_first":
+        # First releases only (NFCI): a week is known from its first publication, at its first value.
+        df = _alfred(series_id)
+        d_text = d.strftime("%Y-%m-%d")
+        first_vintage = df.realtime_start.min()
+        if d_text >= first_vintage:
+            rows = df[df.realtime_start <= d_text]
+            out = pd.Series(rows.value.values, index=pd.to_datetime(rows.date), name=series_id)
+            # Weeks before the archive began are at their earliest archived values, not first releases.
+            out.attrs.update(real_time=True, source="alfred-first-release")
+        else:
+            rows = df[df.realtime_start == first_vintage]
             out = pd.Series(rows.value.values, index=pd.to_datetime(rows.date), name=series_id)
             out = out[out.index + lag <= d]
             out.attrs.update(real_time=False, source="alfred-earliest")

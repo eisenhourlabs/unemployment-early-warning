@@ -98,7 +98,7 @@ Full detail in `data/model/events.csv`. Chart: `reports/events.png` (events shad
 | 12 | 2008-02 | 2010-05 | unemployment | claims +5 mo | +2 | 5.6 | +118% | 2007-12 to 2009-06 | recession | UR leg first; claims followed Jul 2008 |
 | 13 | 2020-03 | 2021-03 | claims | UR +1 mo | +1 | 11.3 | +2,524% | 2020-02 to 2020-04 | recession (pandemic) | Pandemic. **Excluded from fitting** (decision 4) |
 | 14 | 2023-06 | 2023-07 | claims | none | – | 0.5 | +27% | none | **scare** | Minnesota summer benefits for school workers; Ohio fraud |
-| 15 | 2024-07 | 2024-09 | unemployment | none | – | 0.9 | +20% | none | **scare** | The mid-2024 Sahm-rule trigger |
+| 15 | 2024-07 | 2024-09 | unemployment | none | – | 0.9 | +20% | none | **scare** | The mid-2024 Sahm-rule trigger. The unemployment rate rose 0.9 point and stayed elevated, which matters for claims even though it wasn't a recession |
 
 "UR rise" is the peak minus the prior 12-month low. For #15 the peak is 4.4% in September 2025, inside the 12-month
 search window after the event.
@@ -132,3 +132,185 @@ Result: 15 events, of which 8 are recessions (2020 is excluded from fitting), 1 
 | 12 | 11 | Merges 1979 with 1981–82, 1989 with 1990–91, 2000 with 2003, and 2023 with 2024. The 1981–82 and 1990–91 recessions would no longer start their own events, so 12 is too long |
 
 The list is otherwise the same under all three, so the 6-month choice changes only the 1979 split.
+
+## 4. Layer 1 triggers: backtest (stage 3b)
+
+Scripts: `src/model/triggers.py` (monthly values and colors), `src/model/backtest_triggers.py` (leads, false alarms,
+"adds warning"), `src/model/plot_triggers.py` (chart). Thresholds: `config/triggers.csv`. Outputs:
+`data/model/triggers_monthly.csv`, `trigger_episodes.csv`, `trigger_leads.csv`, `trigger_summary.csv`;
+chart `reports/layer1_status.png`.
+
+### 4.1 How the triggers are computed
+
+Each month is judged on **what had been published by its last day** (`as_known_on`). For example, the end-of-August 2024
+Sahm value (0.53) uses the July unemployment rate released on August 2, and matches FRED's real-time Sahm series for July.
+
+| # | Trigger | Amber | Red | Data and basis |
+| --- | --- | --- | --- | --- |
+| 1 | Sahm indicator | ≥ 0.30 pt | ≥ 0.50 pt | UNRATE vintages: **real-time** from 1967 |
+| 2 | SA initial claims 4-wk avg vs. 52-week low | +15% | +25% | IC4WSA from Feb 1968, current-vintage (our rule), 5-day release lag |
+| 3 | SA initial claims 4-wk avg vs. a year ago | +10% | +20% | as above |
+| 4 | SA continued claims (4-wk avg) vs. a year ago | +10% | +20% | CCSA from Feb 1968, current-vintage, 12-day lag |
+| 5 | Temp help jobs, 6-month change | < 0 | < −3% | TEMPHELPS from Aug 1990; real-time from 2011, **revised** before |
+| 6 | Yield curve (10y − 3m, monthly average) | inverted 3+ months in a row | the 12 months after such an inversion ends | GS10 − TB3MS before 1982, T10Y3M from 1982; never revised, so **real-time** |
+| 7 | Manufacturing surveys (Philly + Empire average) | below 0 for 3 months in a row | 3-month average below −15 | Philly from 1968, Empire added from Jul 2001; real-time from 2014–15, **revised** before |
+| 8 | Financial conditions (NFCI) | above 0 | above 0.5 | NFCI first releases from 2011 (real-time); before that, the history as published in May 2011, from 1973 (**revised**) |
+
+**Overall Layer 1 status** (plan): red if any of triggers 1–4 is red; amber if two or more triggers are amber or red;
+otherwise green. From 1967 to 2026 it was green 59% of months, amber 14% and red 27% (the red months are mostly inside events).
+**October 2026: all eight triggers green; overall green.**
+
+**Yield-curve splice check.** For 1982–2026, where both exist, the official 10y − 3m spread averages 0.12 point below
+GS10 − TB3MS (largest gap 0.80), and the two agree on whether the curve is inverted in 97.6% of months.
+
+**NFCI is kept as first releases only.** The index is re-estimated every week, so its full vintage history would be
+about 2 million rows. The trigger only needs the latest value known at each date, and that is the week's first
+release. One example of why real-time matters: in late March 2020 the first-release NFCI was −0.17 (green). Today's
+revised history shows that week as tighter.
+
+### 4.2 How warning and false alarms are measured
+
+- **Episode:** a run of months in which a trigger is at least amber (or, separately, red), with gaps of up to 2 months
+  bridged so flicker doesn't count twice.
+- **Warning:** an episode warns an event if it starts in the 12 months before the event's start (or in the start
+  month) **and is still on within 3 months of the start**. Lead = months from the episode's start to the event's start.
+  Otherwise the table says *late +k* (first on k months after the start), *on since YYYY-MM* (already on from an
+  episode that began more than 12 months earlier), *none*, or *n/a* (no data yet).
+- **Outcome of each episode** that starts outside an event: **hit** if a recession, the early signal or 2020 starts within
+  12 months while the episode is live; **followed by a scare** if only a scare does; otherwise a **false alarm**.
+- **Adds warning:** a trigger adds warning for an event if its amber lead is at least 1 month longer than the best
+  amber lead among the baseline triggers (1–4; for a baseline trigger, the other three), or it warns when they don't.
+  This is judged on the 7 recessions used for fitting plus the early signal (#7).
+- **Flags (nothing dropped):** *drop candidate* = adds warning in none of the events it can be tested on; *weak* = adds in
+  only one, or (amber) has more false alarms than hits.
+
+**One change from the plan we agreed:** the "still on within 3 months of the start" condition. Without it, a one-month
+blip a year before an event counted as a 12-month warning. For example, initial claims vs. a year ago were amber for one
+month in February 2007, then quiet for a year, yet that counted as a 12-month warning of the 2008 event. The condition
+changed 37 of 300 lead cells.
+
+### 4.3 Months of warning
+
+Months before the event's start (0 = same month); 12-month window. \* = this trigger relied on revised (not real-time) data there.
+
+**Amber:**
+
+| Trigger | 1970 #1 | 1973 #2 | 1979 #4 | 1981 #5 | 1990 #8 | 2000 #9 | 2008 #12 | Early signal #7 | 2020 #13 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 Sahm | 3 | late +3 | late +5 | 0 | 0 | late +5 | 1 | late +12 | late +1 |
+| 2 Claims vs. 52-wk low | 1 | 0 | 6 | 1 | 2 | 3 | late +1 | 4 | 3 |
+| 3 Claims vs. year ago | 1 | 0 | 6 | 1 | 2 | 0 | late +1 | 0 | 0 |
+| 4 Continued claims vs. year ago | 2 | late +1 | late +1 | late +1 | 12 | late +2 | 1 | 0 | late +1 |
+| 5 Temp help | n/a | n/a | n/a | n/a | 1\* | 0\* | on since 2006-12\* | n/a | late +1 |
+| 6 Yield curve | 0 | 4 | 8 | on since 1979-02 | on since 1989-08 | 2 | on since 2006-10 | 2 | 7 |
+| 7 Manufacturing surveys | 0\* | late +3 | 4\* | late +1 | on since 1989-07 | late +3 | late +1 | 3\* | late +1 |
+| 8 NFCI | n/a | 10\* | on since 1978-04\* | on since 1978-04\* | 1\* | late +1 | 6\* | on since 1987-04\* | none |
+| **Overall status** | 2 | 4 | 8 | on since 1979-02 | on since 1989-06 | 0 | on since 2006-12 | 4 | 6 |
+
+**Red:**
+
+| Trigger | 1970 #1 | 1973 #2 | 1979 #4 | 1981 #5 | 1990 #8 | 2000 #9 | 2008 #12 | Early signal #7 | 2020 #13 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 Sahm | 2 | late +4 | late +7 | late +1 | late +2 | late +8 | late +3 | none | late +2 |
+| 2 Claims vs. 52-wk low | 0 | 0 | 0 | late +1 | late +1 | 0 | late +5 | 0 | 0 |
+| 3 Claims vs. year ago | 0 | late +1 | 0 | 0 | late +1 | late +1 | late +3 | 0 | 0 |
+| 4 Continued claims vs. year ago | 0 | late +2 | late +6 | late +4 | late +1 | late +4 | late +3 | none | late +1 |
+| 5 Temp help | n/a | n/a | n/a | n/a | late +6 | late +3 | late +3 | n/a | late +2 |
+| 6 Yield curve | late +1 | late +7 | late +7 | 2 | on since 1989-09 | late +3 | 8 | 1 | 5 |
+| 7 Manufacturing surveys | late +2 | late +10 | 1 | late +1 | 1 | late +3 | late +9 | late +5 | late +1 |
+| 8 NFCI | n/a | 9 | 4 | on since 1979-06 | none | none | late +1 | none | none |
+| **Overall status** | 2 | 0 | 0 | 0 | late +1 | 0 | late +3 | 0 | 0 |
+
+**Scares, amber** (did the trigger "warn" of a spike that faded?):
+
+| Trigger | 1977 #3 | 1984 #6 | 2003 #10 | 2005 #11 | 2023 #14 | 2024 #15 |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 Sahm | 5 | none | 0 | none | late +5 | 3 |
+| 2 Claims vs. 52-wk low | 0 | 2 | none | 1 | 3 | 1 |
+| 3 Claims vs. year ago | 0 | late +3 | none | 1 | 0 | late +3 |
+| 4 Continued claims vs. year ago | none | none | none | none | 2 | none |
+| 5 Temp help | n/a | n/a | 8\* | none | 6 | on since 2022-12 |
+| 6 Yield curve | none | none | none | late +12 | 5 | on since 2023-01 |
+| 7 Manufacturing surveys | none | none | none | none | 11 | late +10 |
+| 8 NFCI | none | 7\* | none | none | none | none |
+| **Overall status** | 5 | 2 | none | 1 | 6 | on since 2022-12 |
+
+**Yield curve with a 24-month window** (amber): 1970 0, 1973 4, 1979 8, 1981 on since 1979-02, 1990 **14**, 2000 2,
+2008 **16**, early signal 2, 2020 7. The curve warned of every recession within two years. With the 12-month window it only
+gets credit for four of the seven, because its lead is often longer than a year.
+
+### 4.4 Summary per trigger
+
+Hits, scares and false alarms count episodes that start outside events. False alarms per decade use the years with data.
+
+| Trigger | Level | Recessions warned (≤ 12 mo) | Median lead | Hits | Followed by scare | False alarms | False alarms / decade | Adds warning (of 8) | Flag |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 Sahm | amber | 4 of 7 | 0.5 | 4 | 3 | 4 | 0.7 | 1 (#1 +1) | weak |
+|  | red | 1 of 7 | 2 | 1 | 1 | 0 | 0.0 | | |
+| 2 Claims vs. 52-wk low | amber | 6 of 7 | 1.5 | 8 | 5 | 8 | 1.4 | 2 (#7 +4, #9 +3) | keep |
+|  | red | 4 of 7 | 0 | 6 | 2 | 1 | 0.2 | | |
+| 3 Claims vs. year ago | amber | 6 of 7 | 1 | 8 | 3 | 5 | 0.9 | 0 | **drop candidate** |
+|  | red | 3 of 7 | 0 | 5 | 1 | 1 | 0.2 | | |
+| 4 Continued claims vs. year ago | amber | 3 of 7 | 2 | 3 | 1 | 0 | 0.0 | 1 (#8 +10) | weak |
+|  | red | 1 of 7 | 0 | 1 | 1 | 0 | 0.0 | | |
+| 5 Temp help | amber | 2 of 3 | 0.5 | 2 | 1 | 5 | 1.4 | 0 (of 3) | **drop candidate** |
+|  | red | 0 of 3 | – | 0 | 2 | 5 | 1.4 | | |
+| 6 Yield curve | amber | 4 of 7 | 3 | 6 | 1 | 2 | 0.3 | 2 (#2 +4, #4 +2) | keep |
+|  | red | 2 of 7 | 5 | 4 | 0 | 2 | 0.3 | | |
+| 7 Manufacturing surveys | amber | 2 of 7 | 2 | 3 | 1 | 4 | 0.7 | 0 | **drop candidate** |
+|  | red | 2 of 7 | 1 | 2 | 1 | 2 | 0.3 | | |
+| 8 NFCI | amber | 3 of 6 | 6 | 3 | 1 | 3 | 0.6 | 2 of 7 (#2 +10\*, #12 +5\*) | keep (revised data only) |
+|  | red | 2 of 6 | 6.5 | 2 | 0 | 5 | 0.9 | | |
+| **Overall status** | amber | 4 of 7 (the other 3 "on since") | 3 | 6 | 4 | 4 | 0.7 | | |
+|  | red | 5 of 7 | 0 | 7 | 2 | 1 | 0.2 | | |
+
+False alarms, by start month (amber unless noted): Sahm 1967-10, 1986-05, 2023-11, 2025-12; claims vs. 52-wk low
+1969-07, 1972-07, 1973-08, 1976-09, 1995-07, 1995-11, 2006-05, 2017-09 (all 1–2 months long); claims vs. year ago 1985-02,
+1994-02, 1995-09, 2007-02, 2024-10; temp help 1995-07, 2006-12, 2016-05, 2019-06, 2021-08; yield curve 1967-01, 2006-10;
+manufacturing 1995-06, 2012-08, 2015-10, 2025-05; NFCI 1978-04, 1987-04, 1998-10. Overall amber: 1967-10, 1985-02, 1995-07,
+2006-12. Overall red: 1979-04 (the trucking-strike spike; event #4's start was moved past it).
+
+### 4.5 What it says
+
+1. **Every recession found the overall status already amber or red at its start.** In three of them (1981, 1990, 2008)
+   it had been amber for more than 12 months. Under our scoring that long run counts as a false alarm: the 2006-12
+   episode began 16 months before the 2008 event. Measured within 12 months, overall amber gave a median of 3 months'
+   warning. Overall red came at or before the start in 5 of 7 recessions (in the start month in four, 2 months
+   early in 1970) and 1–3 months late in 1990 and 2008.
+2. **The claims triggers give the earliest dependable warning, but it is short.** Trigger 2 at amber warned of 6 of the 7
+   recessions with a median lead of 1.5 months, and of the early signal by 4 months. Its 8 false alarms are all one- or
+   two-month blips. Red on trigger 2 *is* the event's claims leg, so its red "lead" is 0 by construction.
+3. **The Sahm indicator mostly comes late in real time** (amber late in 3 of 7, red late in 6 of 7). It adds warning only once.
+   Its role on the dashboard is as the well-known confirmation, not as an early warning.
+4. **The yield curve gives the longest warning,** but often more than 12 months ahead. It is also behind the long
+   amber runs in 2006–08 and 2022–25. The 2022–24 inversion was followed only by scares (#14, #15).
+5. **NFCI, the manufacturing surveys and temp help** add little, and **all of their warnings before 2011–15 rest on revised
+   data**, so even the help NFCI appears to give (1973, 2008) has never been seen in real time. In 2020, NFCI's first
+   releases stayed green.
+6. **Against the plan's goal** of about one false amber per real one: overall amber had 6 hits, 4 false alarms and 4
+   episodes followed by scares. That is close to the target if scares count as half-right, which is a fair reading given
+   your decision that scares count as events.
+
+### 4.6 Candidates to drop (flagged only; nothing has been dropped)
+
+| Trigger | Flag | Why | Points in its favor |
+| --- | --- | --- | --- |
+| 3 Claims vs. year ago | drop candidate | Never earlier than triggers 1, 2 and 4 | Catches slow grinds by design; often ties trigger 2 |
+| 5 Temp help | drop candidate | No added warning in 3 testable recessions (all on revised data); 5 false alarms in 36 years, 3 of them real-time since 2016 | Only 3 recessions to test; plan lists it as a score candidate |
+| 7 Manufacturing surveys | drop candidate | No added warning in 8; mostly late | Real-time only since 2014–15 |
+| 1 Sahm | weak | Adds warning once (1970, +1 month) | The best-known rule; part of the event definition |
+| 4 Continued claims vs. year ago | weak | Adds once (1990, +10); usually late | The severity (duration) side, which matters for IUI claim severity rather than frequency |
+
+**Read these flags with care: they are fragile.** With 8 events to judge, one event moves a trigger between "keep",
+"weak" and "drop candidate". Before the 3-month "still on" condition was added, Sahm and continued claims were drop
+candidates, and claims vs. year ago, the yield curve and NFCI each changed by one event. Stage 3c will test the same
+indicators out of sample in the score, which is the better test of whether they help.
+
+### 4.7 Caveats
+
+- Seven recessions (one more, 2020, shown separately) is a small sample. Every count above should be read with that in mind.
+- Claims triggers use today's claims figures (our rule). Seasonal-factor revisions could move a borderline month. The
+  effect will be measured with FRED's 2009+ claims vintages in stage 3c.
+- Events are dated on final data and triggers on real-time data. A trigger can be "late +1" partly because the
+  last week of the event's start month was published the following month (for example 1990-10, trigger 2 red).
+- The 12-month window favors fast indicators. The 24-month view for the yield curve shows what a longer window would credit.

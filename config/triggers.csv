@@ -1,0 +1,9 @@
+trigger_id,order,name,series,amber,red,rule
+sahm,1,Sahm indicator,UNRATE,0.30,0.50,"3-month average of the unemployment rate minus its lowest 3-month average of the prior 12 months (points); amber >= amber, red >= red"
+claims_vs_low,2,SA initial claims 4-wk avg vs. 52-week low,IC4WSA,0.15,0.25,"Latest 4-week average / lowest 4-week average of the prior 52 weeks - 1; amber >= 15%, red >= 25%"
+claims_yoy,3,SA initial claims 4-wk avg vs. a year ago,IC4WSA,0.10,0.20,"Latest 4-week average / the 4-week average 52 weeks earlier - 1; amber >= 10%, red >= 20%"
+cont_claims_yoy,4,SA continued claims vs. a year ago,CCSA,0.10,0.20,"4-week average of SA continued claims / the same average 52 weeks earlier - 1; amber >= 10%, red >= 20%"
+temp_help,5,"Temporary help jobs, 6-month change",TEMPHELPS,0.00,-0.03,"Latest month / 6 months earlier - 1; amber below 0, red below -3%"
+yield_curve,6,Yield curve (10y - 3m),GS10 - TB3MS before 1982; T10Y3MM from 1982,3,12,"Monthly average spread. Amber: below 0 for 3+ months in a row (amber = that many months). Red: the 12 months (red = that many months) after a qualifying inversion ends"
+mfg_surveys,7,Regional manufacturing surveys (Philly + Empire avg),GACDFSA066MSFRBPHI; GACDISA066MSFRBNY,0,-15,"Average of the Philadelphia Fed and Empire State general activity indexes (Philly alone before Jul 2001). Amber: below 0 for 3 months in a row; red: 3-month average below -15"
+nfci,8,Financial conditions (NFCI),NFCI,0.0,0.5,"Latest weekly NFCI (first release); amber above 0, red above 0.5"

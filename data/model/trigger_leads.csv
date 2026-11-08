@@ -1,0 +1,301 @@
+trigger,level,window,event,start_month,group,lead,lead_months,basis
+sahm,amber,12,1,1970-01,recession,3,3.0,real-time
+sahm,amber,12,2,1973-12,recession,late +3,,real-time
+sahm,amber,12,3,1977-02,scare,5,5.0,real-time
+sahm,amber,12,4,1979-10,recession,late +5,,real-time
+sahm,amber,12,5,1981-11,recession,0,0.0,real-time
+sahm,amber,12,6,1984-11,scare,none,,real-time
+sahm,amber,12,7,1989-10,early signal,late +12,,real-time
+sahm,amber,12,8,1990-10,recession,0,0.0,real-time
+sahm,amber,12,9,2000-11,recession,late +5,,real-time
+sahm,amber,12,10,2003-07,scare,0,0.0,real-time
+sahm,amber,12,11,2005-10,scare,none,,real-time
+sahm,amber,12,12,2008-02,recession,1,1.0,real-time
+sahm,amber,12,13,2020-03,2020,late +1,,real-time
+sahm,amber,12,14,2023-06,scare,late +5,,real-time
+sahm,amber,12,15,2024-07,scare,3,3.0,real-time
+sahm,red,12,1,1970-01,recession,2,2.0,real-time
+sahm,red,12,2,1973-12,recession,late +4,,real-time
+sahm,red,12,3,1977-02,scare,2,2.0,real-time
+sahm,red,12,4,1979-10,recession,late +7,,real-time
+sahm,red,12,5,1981-11,recession,late +1,,real-time
+sahm,red,12,6,1984-11,scare,none,,real-time
+sahm,red,12,7,1989-10,early signal,none,,real-time
+sahm,red,12,8,1990-10,recession,late +2,,real-time
+sahm,red,12,9,2000-11,recession,late +8,,real-time
+sahm,red,12,10,2003-07,scare,none,,real-time
+sahm,red,12,11,2005-10,scare,none,,real-time
+sahm,red,12,12,2008-02,recession,late +3,,real-time
+sahm,red,12,13,2020-03,2020,late +2,,real-time
+sahm,red,12,14,2023-06,scare,none,,real-time
+sahm,red,12,15,2024-07,scare,late +1,,real-time
+claims_vs_low,amber,12,1,1970-01,recession,1,1.0,current-vintage
+claims_vs_low,amber,12,2,1973-12,recession,0,0.0,current-vintage
+claims_vs_low,amber,12,3,1977-02,scare,0,0.0,current-vintage
+claims_vs_low,amber,12,4,1979-10,recession,6,6.0,current-vintage
+claims_vs_low,amber,12,5,1981-11,recession,1,1.0,current-vintage
+claims_vs_low,amber,12,6,1984-11,scare,2,2.0,current-vintage
+claims_vs_low,amber,12,7,1989-10,early signal,4,4.0,current-vintage
+claims_vs_low,amber,12,8,1990-10,recession,2,2.0,current-vintage
+claims_vs_low,amber,12,9,2000-11,recession,3,3.0,current-vintage
+claims_vs_low,amber,12,10,2003-07,scare,none,,current-vintage
+claims_vs_low,amber,12,11,2005-10,scare,1,1.0,current-vintage
+claims_vs_low,amber,12,12,2008-02,recession,late +1,,current-vintage
+claims_vs_low,amber,12,13,2020-03,2020,3,3.0,current-vintage
+claims_vs_low,amber,12,14,2023-06,scare,3,3.0,current-vintage
+claims_vs_low,amber,12,15,2024-07,scare,1,1.0,current-vintage
+claims_vs_low,red,12,1,1970-01,recession,0,0.0,current-vintage
+claims_vs_low,red,12,2,1973-12,recession,0,0.0,current-vintage
+claims_vs_low,red,12,3,1977-02,scare,0,0.0,current-vintage
+claims_vs_low,red,12,4,1979-10,recession,0,0.0,current-vintage
+claims_vs_low,red,12,5,1981-11,recession,late +1,,current-vintage
+claims_vs_low,red,12,6,1984-11,scare,none,,current-vintage
+claims_vs_low,red,12,7,1989-10,early signal,0,0.0,current-vintage
+claims_vs_low,red,12,8,1990-10,recession,late +1,,current-vintage
+claims_vs_low,red,12,9,2000-11,recession,0,0.0,current-vintage
+claims_vs_low,red,12,10,2003-07,scare,none,,current-vintage
+claims_vs_low,red,12,11,2005-10,scare,none,,current-vintage
+claims_vs_low,red,12,12,2008-02,recession,late +5,,current-vintage
+claims_vs_low,red,12,13,2020-03,2020,0,0.0,current-vintage
+claims_vs_low,red,12,14,2023-06,scare,0,0.0,current-vintage
+claims_vs_low,red,12,15,2024-07,scare,none,,current-vintage
+claims_yoy,amber,12,1,1970-01,recession,1,1.0,current-vintage
+claims_yoy,amber,12,2,1973-12,recession,0,0.0,current-vintage
+claims_yoy,amber,12,3,1977-02,scare,0,0.0,current-vintage
+claims_yoy,amber,12,4,1979-10,recession,6,6.0,current-vintage
+claims_yoy,amber,12,5,1981-11,recession,1,1.0,current-vintage
+claims_yoy,amber,12,6,1984-11,scare,late +3,,current-vintage
+claims_yoy,amber,12,7,1989-10,early signal,0,0.0,current-vintage
+claims_yoy,amber,12,8,1990-10,recession,2,2.0,current-vintage
+claims_yoy,amber,12,9,2000-11,recession,0,0.0,current-vintage
+claims_yoy,amber,12,10,2003-07,scare,none,,current-vintage
+claims_yoy,amber,12,11,2005-10,scare,1,1.0,current-vintage
+claims_yoy,amber,12,12,2008-02,recession,late +1,,current-vintage
+claims_yoy,amber,12,13,2020-03,2020,0,0.0,current-vintage
+claims_yoy,amber,12,14,2023-06,scare,0,0.0,current-vintage
+claims_yoy,amber,12,15,2024-07,scare,late +3,,current-vintage
+claims_yoy,red,12,1,1970-01,recession,0,0.0,current-vintage
+claims_yoy,red,12,2,1973-12,recession,late +1,,current-vintage
+claims_yoy,red,12,3,1977-02,scare,0,0.0,current-vintage
+claims_yoy,red,12,4,1979-10,recession,0,0.0,current-vintage
+claims_yoy,red,12,5,1981-11,recession,0,0.0,current-vintage
+claims_yoy,red,12,6,1984-11,scare,none,,current-vintage
+claims_yoy,red,12,7,1989-10,early signal,0,0.0,current-vintage
+claims_yoy,red,12,8,1990-10,recession,late +1,,current-vintage
+claims_yoy,red,12,9,2000-11,recession,late +1,,current-vintage
+claims_yoy,red,12,10,2003-07,scare,none,,current-vintage
+claims_yoy,red,12,11,2005-10,scare,none,,current-vintage
+claims_yoy,red,12,12,2008-02,recession,late +3,,current-vintage
+claims_yoy,red,12,13,2020-03,2020,0,0.0,current-vintage
+claims_yoy,red,12,14,2023-06,scare,none,,current-vintage
+claims_yoy,red,12,15,2024-07,scare,none,,current-vintage
+cont_claims_yoy,amber,12,1,1970-01,recession,2,2.0,current-vintage
+cont_claims_yoy,amber,12,2,1973-12,recession,late +1,,current-vintage
+cont_claims_yoy,amber,12,3,1977-02,scare,none,,current-vintage
+cont_claims_yoy,amber,12,4,1979-10,recession,late +1,,current-vintage
+cont_claims_yoy,amber,12,5,1981-11,recession,late +1,,current-vintage
+cont_claims_yoy,amber,12,6,1984-11,scare,none,,current-vintage
+cont_claims_yoy,amber,12,7,1989-10,early signal,0,0.0,current-vintage
+cont_claims_yoy,amber,12,8,1990-10,recession,12,12.0,current-vintage
+cont_claims_yoy,amber,12,9,2000-11,recession,late +2,,current-vintage
+cont_claims_yoy,amber,12,10,2003-07,scare,none,,current-vintage
+cont_claims_yoy,amber,12,11,2005-10,scare,none,,current-vintage
+cont_claims_yoy,amber,12,12,2008-02,recession,1,1.0,current-vintage
+cont_claims_yoy,amber,12,13,2020-03,2020,late +1,,current-vintage
+cont_claims_yoy,amber,12,14,2023-06,scare,2,2.0,current-vintage
+cont_claims_yoy,amber,12,15,2024-07,scare,none,,current-vintage
+cont_claims_yoy,red,12,1,1970-01,recession,0,0.0,current-vintage
+cont_claims_yoy,red,12,2,1973-12,recession,late +2,,current-vintage
+cont_claims_yoy,red,12,3,1977-02,scare,none,,current-vintage
+cont_claims_yoy,red,12,4,1979-10,recession,late +6,,current-vintage
+cont_claims_yoy,red,12,5,1981-11,recession,late +4,,current-vintage
+cont_claims_yoy,red,12,6,1984-11,scare,none,,current-vintage
+cont_claims_yoy,red,12,7,1989-10,early signal,none,,current-vintage
+cont_claims_yoy,red,12,8,1990-10,recession,late +1,,current-vintage
+cont_claims_yoy,red,12,9,2000-11,recession,late +4,,current-vintage
+cont_claims_yoy,red,12,10,2003-07,scare,none,,current-vintage
+cont_claims_yoy,red,12,11,2005-10,scare,none,,current-vintage
+cont_claims_yoy,red,12,12,2008-02,recession,late +3,,current-vintage
+cont_claims_yoy,red,12,13,2020-03,2020,late +1,,current-vintage
+cont_claims_yoy,red,12,14,2023-06,scare,1,1.0,current-vintage
+cont_claims_yoy,red,12,15,2024-07,scare,none,,current-vintage
+temp_help,amber,12,1,1970-01,recession,n/a,,
+temp_help,amber,12,2,1973-12,recession,n/a,,
+temp_help,amber,12,3,1977-02,scare,n/a,,
+temp_help,amber,12,4,1979-10,recession,n/a,,
+temp_help,amber,12,5,1981-11,recession,n/a,,
+temp_help,amber,12,6,1984-11,scare,n/a,,
+temp_help,amber,12,7,1989-10,early signal,n/a,,
+temp_help,amber,12,8,1990-10,recession,1,1.0,revised
+temp_help,amber,12,9,2000-11,recession,0,0.0,revised
+temp_help,amber,12,10,2003-07,scare,8,8.0,revised
+temp_help,amber,12,11,2005-10,scare,none,,revised
+temp_help,amber,12,12,2008-02,recession,on since 2006-12,,revised
+temp_help,amber,12,13,2020-03,2020,late +1,,real-time
+temp_help,amber,12,14,2023-06,scare,6,6.0,real-time
+temp_help,amber,12,15,2024-07,scare,on since 2022-12,,real-time
+temp_help,red,12,1,1970-01,recession,n/a,,
+temp_help,red,12,2,1973-12,recession,n/a,,
+temp_help,red,12,3,1977-02,scare,n/a,,
+temp_help,red,12,4,1979-10,recession,n/a,,
+temp_help,red,12,5,1981-11,recession,n/a,,
+temp_help,red,12,6,1984-11,scare,n/a,,
+temp_help,red,12,7,1989-10,early signal,n/a,,
+temp_help,red,12,8,1990-10,recession,late +6,,revised
+temp_help,red,12,9,2000-11,recession,late +3,,revised
+temp_help,red,12,10,2003-07,scare,none,,revised
+temp_help,red,12,11,2005-10,scare,none,,revised
+temp_help,red,12,12,2008-02,recession,late +3,,revised
+temp_help,red,12,13,2020-03,2020,late +2,,real-time
+temp_help,red,12,14,2023-06,scare,1,1.0,real-time
+temp_help,red,12,15,2024-07,scare,0,0.0,real-time
+yield_curve,amber,12,1,1970-01,recession,0,0.0,real-time
+yield_curve,amber,12,2,1973-12,recession,4,4.0,real-time
+yield_curve,amber,12,3,1977-02,scare,none,,real-time
+yield_curve,amber,12,4,1979-10,recession,8,8.0,real-time
+yield_curve,amber,12,5,1981-11,recession,on since 1979-02,,real-time
+yield_curve,amber,12,6,1984-11,scare,none,,real-time
+yield_curve,amber,12,7,1989-10,early signal,2,2.0,real-time
+yield_curve,amber,12,8,1990-10,recession,on since 1989-08,,real-time
+yield_curve,amber,12,9,2000-11,recession,2,2.0,real-time
+yield_curve,amber,12,10,2003-07,scare,none,,real-time
+yield_curve,amber,12,11,2005-10,scare,late +12,,real-time
+yield_curve,amber,12,12,2008-02,recession,on since 2006-10,,real-time
+yield_curve,amber,12,13,2020-03,2020,7,7.0,real-time
+yield_curve,amber,12,14,2023-06,scare,5,5.0,real-time
+yield_curve,amber,12,15,2024-07,scare,on since 2023-01,,real-time
+yield_curve,amber,24,1,1970-01,recession,0,0.0,real-time
+yield_curve,amber,24,2,1973-12,recession,4,4.0,real-time
+yield_curve,amber,24,3,1977-02,scare,none,,real-time
+yield_curve,amber,24,4,1979-10,recession,8,8.0,real-time
+yield_curve,amber,24,5,1981-11,recession,on since 1979-02,,real-time
+yield_curve,amber,24,6,1984-11,scare,none,,real-time
+yield_curve,amber,24,7,1989-10,early signal,2,2.0,real-time
+yield_curve,amber,24,8,1990-10,recession,14,14.0,real-time
+yield_curve,amber,24,9,2000-11,recession,2,2.0,real-time
+yield_curve,amber,24,10,2003-07,scare,none,,real-time
+yield_curve,amber,24,11,2005-10,scare,late +12,,real-time
+yield_curve,amber,24,12,2008-02,recession,16,16.0,real-time
+yield_curve,amber,24,13,2020-03,2020,7,7.0,real-time
+yield_curve,amber,24,14,2023-06,scare,5,5.0,real-time
+yield_curve,amber,24,15,2024-07,scare,18,18.0,real-time
+yield_curve,red,12,1,1970-01,recession,late +1,,real-time
+yield_curve,red,12,2,1973-12,recession,late +7,,real-time
+yield_curve,red,12,3,1977-02,scare,none,,real-time
+yield_curve,red,12,4,1979-10,recession,late +7,,real-time
+yield_curve,red,12,5,1981-11,recession,2,2.0,real-time
+yield_curve,red,12,6,1984-11,scare,none,,real-time
+yield_curve,red,12,7,1989-10,early signal,1,1.0,real-time
+yield_curve,red,12,8,1990-10,recession,on since 1989-09,,real-time
+yield_curve,red,12,9,2000-11,recession,late +3,,real-time
+yield_curve,red,12,10,2003-07,scare,none,,real-time
+yield_curve,red,12,11,2005-10,scare,none,,real-time
+yield_curve,red,12,12,2008-02,recession,8,8.0,real-time
+yield_curve,red,12,13,2020-03,2020,5,5.0,real-time
+yield_curve,red,12,14,2023-06,scare,none,,real-time
+yield_curve,red,12,15,2024-07,scare,late +5,,real-time
+yield_curve,red,24,1,1970-01,recession,late +1,,real-time
+yield_curve,red,24,2,1973-12,recession,late +7,,real-time
+yield_curve,red,24,3,1977-02,scare,none,,real-time
+yield_curve,red,24,4,1979-10,recession,late +7,,real-time
+yield_curve,red,24,5,1981-11,recession,2,2.0,real-time
+yield_curve,red,24,6,1984-11,scare,none,,real-time
+yield_curve,red,24,7,1989-10,early signal,1,1.0,real-time
+yield_curve,red,24,8,1990-10,recession,13,13.0,real-time
+yield_curve,red,24,9,2000-11,recession,late +3,,real-time
+yield_curve,red,24,10,2003-07,scare,none,,real-time
+yield_curve,red,24,11,2005-10,scare,none,,real-time
+yield_curve,red,24,12,2008-02,recession,8,8.0,real-time
+yield_curve,red,24,13,2020-03,2020,5,5.0,real-time
+yield_curve,red,24,14,2023-06,scare,none,,real-time
+yield_curve,red,24,15,2024-07,scare,late +5,,real-time
+mfg_surveys,amber,12,1,1970-01,recession,0,0.0,revised
+mfg_surveys,amber,12,2,1973-12,recession,late +3,,revised
+mfg_surveys,amber,12,3,1977-02,scare,none,,revised
+mfg_surveys,amber,12,4,1979-10,recession,4,4.0,revised
+mfg_surveys,amber,12,5,1981-11,recession,late +1,,revised
+mfg_surveys,amber,12,6,1984-11,scare,none,,revised
+mfg_surveys,amber,12,7,1989-10,early signal,3,3.0,revised
+mfg_surveys,amber,12,8,1990-10,recession,on since 1989-07,,revised
+mfg_surveys,amber,12,9,2000-11,recession,late +3,,revised
+mfg_surveys,amber,12,10,2003-07,scare,none,,revised
+mfg_surveys,amber,12,11,2005-10,scare,none,,revised
+mfg_surveys,amber,12,12,2008-02,recession,late +1,,revised
+mfg_surveys,amber,12,13,2020-03,2020,late +1,,real-time
+mfg_surveys,amber,12,14,2023-06,scare,11,11.0,real-time
+mfg_surveys,amber,12,15,2024-07,scare,late +10,,real-time
+mfg_surveys,red,12,1,1970-01,recession,late +2,,revised
+mfg_surveys,red,12,2,1973-12,recession,late +10,,revised
+mfg_surveys,red,12,3,1977-02,scare,none,,revised
+mfg_surveys,red,12,4,1979-10,recession,1,1.0,revised
+mfg_surveys,red,12,5,1981-11,recession,late +1,,revised
+mfg_surveys,red,12,6,1984-11,scare,none,,revised
+mfg_surveys,red,12,7,1989-10,early signal,late +5,,revised
+mfg_surveys,red,12,8,1990-10,recession,1,1.0,revised
+mfg_surveys,red,12,9,2000-11,recession,late +3,,revised
+mfg_surveys,red,12,10,2003-07,scare,none,,revised
+mfg_surveys,red,12,11,2005-10,scare,none,,revised
+mfg_surveys,red,12,12,2008-02,recession,late +9,,revised
+mfg_surveys,red,12,13,2020-03,2020,late +1,,real-time
+mfg_surveys,red,12,14,2023-06,scare,4,4.0,real-time
+mfg_surveys,red,12,15,2024-07,scare,none,,real-time
+nfci,amber,12,1,1970-01,recession,n/a,,
+nfci,amber,12,2,1973-12,recession,10,10.0,revised
+nfci,amber,12,3,1977-02,scare,none,,revised
+nfci,amber,12,4,1979-10,recession,on since 1978-04,,revised
+nfci,amber,12,5,1981-11,recession,on since 1978-04,,revised
+nfci,amber,12,6,1984-11,scare,7,7.0,revised
+nfci,amber,12,7,1989-10,early signal,on since 1987-04,,revised
+nfci,amber,12,8,1990-10,recession,1,1.0,revised
+nfci,amber,12,9,2000-11,recession,late +1,,revised
+nfci,amber,12,10,2003-07,scare,none,,revised
+nfci,amber,12,11,2005-10,scare,none,,revised
+nfci,amber,12,12,2008-02,recession,6,6.0,revised
+nfci,amber,12,13,2020-03,2020,none,,real-time
+nfci,amber,12,14,2023-06,scare,none,,real-time
+nfci,amber,12,15,2024-07,scare,none,,real-time
+nfci,red,12,1,1970-01,recession,n/a,,
+nfci,red,12,2,1973-12,recession,9,9.0,revised
+nfci,red,12,3,1977-02,scare,none,,revised
+nfci,red,12,4,1979-10,recession,4,4.0,revised
+nfci,red,12,5,1981-11,recession,on since 1979-06,,revised
+nfci,red,12,6,1984-11,scare,none,,revised
+nfci,red,12,7,1989-10,early signal,none,,revised
+nfci,red,12,8,1990-10,recession,none,,revised
+nfci,red,12,9,2000-11,recession,none,,revised
+nfci,red,12,10,2003-07,scare,none,,revised
+nfci,red,12,11,2005-10,scare,none,,revised
+nfci,red,12,12,2008-02,recession,late +1,,revised
+nfci,red,12,13,2020-03,2020,none,,real-time
+nfci,red,12,14,2023-06,scare,none,,real-time
+nfci,red,12,15,2024-07,scare,none,,real-time
+overall,amber,12,1,1970-01,recession,2,2.0,mixed
+overall,amber,12,2,1973-12,recession,4,4.0,mixed
+overall,amber,12,3,1977-02,scare,5,5.0,mixed
+overall,amber,12,4,1979-10,recession,8,8.0,mixed
+overall,amber,12,5,1981-11,recession,on since 1979-02,,mixed
+overall,amber,12,6,1984-11,scare,2,2.0,mixed
+overall,amber,12,7,1989-10,early signal,4,4.0,mixed
+overall,amber,12,8,1990-10,recession,on since 1989-06,,mixed
+overall,amber,12,9,2000-11,recession,0,0.0,mixed
+overall,amber,12,10,2003-07,scare,none,,mixed
+overall,amber,12,11,2005-10,scare,1,1.0,mixed
+overall,amber,12,12,2008-02,recession,on since 2006-12,,mixed
+overall,amber,12,13,2020-03,2020,6,6.0,mixed
+overall,amber,12,14,2023-06,scare,6,6.0,mixed
+overall,amber,12,15,2024-07,scare,on since 2022-12,,mixed
+overall,red,12,1,1970-01,recession,2,2.0,mixed
+overall,red,12,2,1973-12,recession,0,0.0,mixed
+overall,red,12,3,1977-02,scare,2,2.0,mixed
+overall,red,12,4,1979-10,recession,0,0.0,mixed
+overall,red,12,5,1981-11,recession,0,0.0,mixed
+overall,red,12,6,1984-11,scare,none,,mixed
+overall,red,12,7,1989-10,early signal,0,0.0,mixed
+overall,red,12,8,1990-10,recession,late +1,,mixed
+overall,red,12,9,2000-11,recession,0,0.0,mixed
+overall,red,12,10,2003-07,scare,none,,mixed
+overall,red,12,11,2005-10,scare,none,,mixed
+overall,red,12,12,2008-02,recession,late +3,,mixed
+overall,red,12,13,2020-03,2020,0,0.0,mixed
+overall,red,12,14,2023-06,scare,1,1.0,mixed
+overall,red,12,15,2024-07,scare,late +1,,mixed

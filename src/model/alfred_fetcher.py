@@ -2,11 +2,13 @@
 Step 2 of the modeling data: past vintages from ALFRED (FRED's archive of what each series said on
 each past date).
 
-What it does, for every row of config/model_series.csv with vintage_source = alfred:
+What it does, for every row of config/model_series.csv with vintage_source = alfred (or alfred_first,
+which keeps only each observation's first published value; used for NFCI, see step 1b):
   1. Asks the FRED API for the series' full real-time history (realtime_start=1776-07-04,
      realtime_end=9999-12-31). FRED answers with one row per (observation date, value) and the period
      during which that value was the published one: realtime_start to realtime_end. A value revised in a
      later release gets a new row from the revision date on.
+  1b. alfred_first: asks for each observation's first release only (output_type=4), a year at a time.
   2. Saves it to data/model/alfred/<SERIES_ID>.csv  (columns: date, value, realtime_start, realtime_end).
   3. Writes data/model/alfred/vintage_coverage.csv: number of vintages, first and last vintage date, and
      the observed first-release lag (days from an observation's date to its first publication), which is
@@ -35,9 +37,9 @@ PAGE = 100_000          # FRED returns at most 100,000 rows per request; longer 
 
 
 def alfred_series() -> pd.DataFrame:
-    """Rows of config/model_series.csv that use ALFRED."""
+    """Rows of config/model_series.csv that use ALFRED (full vintages, or first releases only)."""
     cfg = pd.read_csv(CONFIG, comment="#")     # lines starting with # are notes
-    return cfg[cfg.vintage_source == "alfred"]
+    return cfg[cfg.vintage_source.isin(["alfred", "alfred_first"])]
 
 
 def fetch_realtime(series_id: str, key: str) -> pd.DataFrame:
@@ -59,6 +61,37 @@ def fetch_realtime(series_id: str, key: str) -> pd.DataFrame:
     # FRED writes "." for a missing value (e.g. October 2025, when no unemployment rate was collected).
     df["value"] = pd.to_numeric(df["value"].replace(".", pd.NA), errors="coerce")
     return df.sort_values(["date", "realtime_start"]).reset_index(drop=True)
+
+
+def fetch_first_releases(series_id: str, key: str) -> pd.DataFrame:
+    """Download only each observation's FIRST published value (FRED output_type=4), one year of
+    observations per request (FRED times out on the whole history of a weekly, re-estimated series such
+    as NFCI). realtime_start = the date the value was first published."""
+    meta = fred_get("series", {"series_id": series_id}, key)["seriess"][0]
+    first_year = int(meta["observation_start"][:4])
+    last_year = int(meta["observation_end"][:4])
+    rows = []
+    for year in range(first_year, last_year + 1):
+        answer = fred_get("series/observations", {
+            "series_id": series_id, "output_type": 4,
+            "realtime_start": "1776-07-04", "realtime_end": "9999-12-31",
+            "observation_start": f"{year}-01-01", "observation_end": f"{year}-12-31",
+        }, key)
+        rows += answer["observations"]
+        time.sleep(0.6)
+    df = pd.DataFrame(rows)[["date", "value", "realtime_start", "realtime_end"]]
+
+    # Weeks before the archive began have no "first release" in ALFRED. Add them as they appeared in the
+    # earliest archived vintage (realtime_start = that vintage date), so realtime.py treats them as
+    # "earliest vintage, not real-time", like the other series.
+    first_vintage = fred_get("series/vintagedates", {"series_id": series_id, "limit": 1}, key)["vintage_dates"][0]
+    early = fred_get("series/observations", {"series_id": series_id, "realtime_start": first_vintage,
+                                             "realtime_end": first_vintage}, key)["observations"]
+    early = pd.DataFrame(early)[["date", "value", "realtime_start", "realtime_end"]]
+    early = early[early.date < df.date.min()]
+    df = pd.concat([early, df])
+    df["value"] = pd.to_numeric(df["value"].replace(".", pd.NA), errors="coerce")
+    return df.sort_values("date").reset_index(drop=True)
 
 
 def coverage(series_id: str, df: pd.DataFrame, lag_config: int) -> dict:
@@ -93,7 +126,10 @@ def main(only: list[str]) -> None:
         cfg = cfg[cfg.series_id.isin(only)]
     summary = []
     for row in cfg.itertuples():
-        df = fetch_realtime(row.series_id, key)
+        if row.vintage_source == "alfred_first":
+            df = fetch_first_releases(row.series_id, key)
+        else:
+            df = fetch_realtime(row.series_id, key)
         df.to_csv(OUT_DIR / f"{row.series_id}.csv", index=False)
         info = coverage(row.series_id, df, row.release_lag_days)
         summary.append(info)

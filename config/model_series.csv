@@ -12,3 +12,9 @@ IC4WSA,current,5,Same release as ICSA
 CCSA,current,12,Continuing claims run one week behind initial claims in the same Thursday release
 ic_rate_sa,current,5,SA initial claims rate (data/model/claims_weekly.csv); from 1971
 cc_rate_sa,current,12,SA continuing claims rate (data/model/claims_weekly.csv); from 1971
+GACDFSA066MSFRBPHI,alfred,22,Philadelphia Fed manufacturing general activity (diffusion index); released on the third Thursday of the same month; revised for seasonal factors; ALFRED vintages start 2015-04
+GACDISA066MSFRBNY,alfred,17,Empire State manufacturing general activity; released mid-month of the same month; from 2001-07; ALFRED vintages start 2014-03
+NFCI,alfred_first,6,"Chicago Fed National Financial Conditions Index (weekly; week ends Friday; released the next Wednesday). Re-estimated every week, so only each week's FIRST release is kept (full vintages would be ~2 million rows); first release = what was known at the time. Real-time from 2011-05"
+GS10,current,27,10-year Treasury yield (monthly average). Market rates are never revised; the month's average is complete by its last day. Used for the yield curve before 1982
+TB3MS,current,27,3-month Treasury bill (secondary market; monthly average). Used for the yield curve before 1982
+T10Y3MM,current,27,10-year minus 3-month Treasury (constant maturity; monthly average). Yield curve from 1982
