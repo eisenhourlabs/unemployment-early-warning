@@ -207,7 +207,8 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 
 ## Next steps, in order
 Setup (steps 1-4), Phase 1, Phase 2 and the Phase 2 review fixes are done and live.
-1. Troy approves docs/phase3e_design.md (4 decisions at its end), then build 3e-1 / 3e-2 / 3e-3 as proposed there.
+1. docs/phase3e_design.md is APPROVED (decisions at its end). Build 3e-1, then 3e-2, then 3e-3 as proposed there,
+   each reviewed locally before merging to main and publishing. Switch on the Actions pull-request setting in 3e-3.
    Push phase3a / merge to main only when he says so.
 2. Stage 3e per docs/phase3_plan.md. Stage 3e must also: show trigger signal colors for the panel (yield curve
    labeled "long lead, often 12+ months"; NFCI caveat "real-time only since 2011"); move temp help and manufacturing

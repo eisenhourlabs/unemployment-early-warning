@@ -1,6 +1,6 @@
 # Phase 3e Design Brief: Early Warning on the Site
 
-Draft for Troy's approval, 2026-11-08. No site changes until approved.
+Approved by Troy, 2026-11-08 (decisions at the end).
 
 ## Summary
 
@@ -106,8 +106,8 @@ Everything follows the approved model (docs/model.md sections 5.10 and 6) and th
   | NFCI | "Financial conditions are tighter than average" | "Financial conditions are looser than average" |
   | Yield curve | "The yield curve was inverted within the past 18 months" | "The yield curve has not been inverted recently" |
 
-- **History line:** 2 years of weekly live scores where they exist. Before launch, the out-of-sample monthly scores,
-  drawn dotted and labeled "backtest".
+- **History line:** 2 years of weekly scores. Before launch, the weekly out-of-sample backtest scores
+  (`data/model/score_weekly.csv`), dotted and labeled "backtest"; from launch, the live weekly runs, solid (decision 4).
 - **Unemployment-rate chart:** the Phase 2 chart, plus the fan, the nowcast marker (diamond with a ±0.2 bar) and the FOMC
   marker (triangle at mid-Q4).
   - The what-if toggle adds the 2001-type and 2008-type paths, dashed, labeled "What-if: a 2001-type downturn starting now
@@ -294,19 +294,11 @@ Sent on any colour change under the hysteresis rule, and on a failed refresh. Me
 | **3e-2 Claims pages, Leading, Downloads** | Job Losses note + what-ifs; Duration fan + what-ifs; Leading colours and context labels; Data & Downloads model section; About line | Pages link |
 | **3e-3 Automation, archive, alerts** | Refresh-workflow model step, `data/archive/` (create-only), `live_history.csv`, `refit-model.yml` (PR), alerts wired off, stale-output handling; one dry run of each workflow | Pages link + a test pull request from the re-fit workflow |
 
-## Decisions for Troy
+## Decisions (settled 2026-11-08)
 
-1. **How to review each stage on GitHub Pages.** The site publishes from `main`, so a Pages link means merging the stage
-   into `main`, which makes it live.
-   - Recommended: (a) review locally as before, then merge and publish each stage. The model panels are clearly marked
-     "new".
-   - Alternative: (b) a separate preview workflow that publishes the branch under `/preview/` on the same site (more
-     moving parts; the preview is publicly reachable too).
-2. **Repository setting for the re-fit pull request.** The workflow needs "Allow GitHub Actions to create and approve
-   pull requests" (Settings → Actions → General). May I change it in 3e-3?
-   - Alternative: the workflow pushes branch `refit-<year>` and you open the pull request by hand from the link it
-     prints.
-3. **Methodology wording on the 2022–26 lean.** Proposed footer: "Since 2022 the middle line has run 0.1–0.3 pt below
-   what happened." OK?
-4. **History line on the Overview:** 2 years of weekly live points plus dotted monthly backtest before launch, as drawn?
-   Alternatively, monthly only, which is simpler.
+| # | Question | Decision | By |
+| --- | --- | --- | --- |
+| 1 | Reviewing each stage | Review locally first (preview server + browser check), then merge the stage into `main` and publish; the Pages link follows the merge | Troy (recommended option) |
+| 2 | Repository setting for the re-fit pull request | Switch on "Allow GitHub Actions to create and approve pull requests" in stage 3e-3, when the re-fit workflow is built | Troy |
+| 3 | Wording for the fans' recent lean | "Since 2022 the middle line has run 0.1–0.3 pt below what happened." | Troy |
+| 4 | Overview history line | **Weekly throughout:** the weekly out-of-sample scores (re-scored every Thursday since 2000 with that year's model, from stage 3d's colour-stability test) drawn **dotted and labeled "backtest"**, then the live weekly runs **solid** from launch. 2 years shown; the colour band uses the same weekly history with hysteresis | Claude (delegated): the score updates weekly and the panel shows "change vs. last week", so the line should have the same frequency; no mixing of monthly and weekly points |
