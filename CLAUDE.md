@@ -252,22 +252,20 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 
 - 2026-11-08: Phase 4 started (brief docs/phase4_design.md, approved; Troy's instructions: stages 4a-4e on branches
   phase4a, phase4b, ...; stop at each gate with its evidence; no merge into main without his approval).
-  Stage 4a IN PROGRESS on branch phase4a (local only, work-in-progress commit, not pushed). Done so far: Chicago Fed
-  CFLMI files untracked + git-ignored + removed from the cloud workflow, catalog CHI_LMI = local-only / restricted;
-  config/states.csv (53 areas) drives the FRED state fetch (51 x 3 = 153 state series, 184 FRED series in total; the 21
-  new ones fetched locally); src/transforms/make_state_weights.py writes the 6-decimal weight column (sums to 1);
-  src/transforms/state_measures.py -> data/processed/states/ (5 tables) + workflow step; quality rules (RPLS age,
-  min_areas 50, seasonal factors < 8 future weeks); STATE_DIFFUSION catalog row (future until 4b); CHALLENGER note.
-  Decision to log: state claims = regular state UI + work-share equivalents (matches DOL's state report, FRED and the
-  national totals). Spot-check vs DOL's state report (TX, OH, MA, 2025-26): claims exact, IUR within 0.005 pt.
-  STILL TO DO in 4a: tests/test_state_measures.py; decisions.md (P1-P7, O1-O7, 4a choices); CLAUDE.md rule updates
-  (weights committed; "footprint" never on site pages; Chicago Fed local-only; Challenger dropped) + Layout rows; push
-  phase4a and run "Refresh data" on it with publish unticked; then the 4a gate.
+  Stage 4a BUILT on branch phase4a (pushed; NOT merged; main and the site unchanged). Chicago Fed CFLMI files untracked
+  + git-ignored + out of the cloud workflow (catalog CHI_LMI = local-only / restricted); config/states.csv (53 areas)
+  drives the FRED state fetch (153 state series, 184 FRED series); weight column in config/state_weights.csv
+  (src/transforms/make_state_weights.py); src/transforms/state_measures.py -> data/processed/states/ (5 tables) + workflow
+  step; quality rules (RPLS age, min_areas 50, seasonal factors < 8 future weeks); STATE_DIFFUSION row (future until 4b);
+  tests/test_state_measures.py (8 tests); decisions.md and CLAUDE.md rules updated. State claims = state UI + work-share
+  equivalents (Troy to confirm). Gate evidence: Refresh data on phase4a, publish off, run 42556738486 green (184 FRED ok,
+  12 tests OK, 199 series health 0 FAIL); git ls-files shows 0 CFLMI files; TX / OH / MA vs. DOL's state report exact
+  (IUR within 0.005 pt). WAITING AT THE 4a GATE for Troy's approval to merge into main and start 4b.
 - Watch: on 2026-11-08 the Claude Code process crashed once (exit 0xC0000409, likely low memory on this 6 GB PC). Keep
   sessions short, commit work in progress often.
 
 ## Next steps, in order
-Phase 4 stage 4a is in progress (see the Status lines above). Earlier phases are done and live.
+Phase 4 stage 4a is at its gate, waiting for Troy (see the Status lines above). Next: 4b States page on branch phase4b. Earlier phases are done and live.
 1. Watch the first automated runs (no build work):
    - Thu 2026-11-12, 7:35 am CT "Refresh data": the model step should archive a second run and the panel should switch
      from "First live run" to "vs. last week". Check the run log and the site.
