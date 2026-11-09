@@ -227,27 +227,27 @@ Record every change to thresholds, model weights, data sources or hosting, with 
 ## Phase 4: decisions taken under Troy's delegation, for ratification (Gate 4, 2026-11-09)
 
 Every decision in Phase 4 that Claude took because Troy delegated it (stages 4c, 4d, 4e on 2026-11-09, and the review
-Gates 2-4). Troy: mark each row Yes, or No with a note; a "No" is undone or reworked. Details are in the dated rows above.
+Gates 2-4). Troy ratified all rows on 2026-11-09. Details are in the dated rows above.
 
 | # | Stage | Decision | Reason | Ratified |
 | --- | --- | --- | --- | --- |
-| 1 | 4c | Validation accepted; "scaled" fill-in for missing states (chosen by the pre-registered rule) | All tests within 2% / 5% (initial claims 0.84% / 3.52%, continuing 0.27% / 1.30%) | |
-| 2 | 4c | Estimate a week only once its release is overdue: Thursday 9:30 am ET after the week ends | Conservative; holiday-early releases only arrive sooner | |
-| 3 | 4c | Estimates shown rounded to 1,000, in the preliminary-week style (dashed, hollow), labelled "estimate (release delayed)" | As DOL publishes; one style for not-yet-official weeks | |
-| 4 | 4c | Live runs on estimates are "provisional", archived as *_provisional.json; official figures trigger a new run | Archive stays create-only | |
-| 5 | 4c | Refresh run allowed to turn red after 14 days without claims (ICSA stale) during a delay | Visibility of a missing release | |
-| 6 | 4d | Revelio RPLS not used (Terms of Service forbid reposting and automated download) | O5 gate | |
-| 7 | 4d | WARN deferred; preferred later route: Cleveland Fed researchers' CC BY data (openICPSR login) | Both routes need an account in Troy's name (now on the "later" list) | |
-| 8 | 4d | ADP vs. BLS private payrolls chart on Job Losses replaces RPLS's role; USPRIV added; no Duration hiring chart | Public, already fetched; no free substitute for RPLS hiring | |
-| 9 | 4d | About "Considered but not used" list | Transparency about excluded sources | |
-| 10 | 4e | Pre-registration approved: state lag 12 days; primary test on the same window (fit from 1996), full history as a check; episode bootstrap; exact adoption rule (A >= +0.02 with interval above 0; no loss > 0.02 as first published or full history) | Brief 4e; rule fixed before results | |
-| 11 | 4e | Result applied: neither state input adopted; model unchanged; diffusion stays a context row | Pre-registered rule | |
-| 12 | Review G2 | National = sum of the 50 states + DC (not DOL's national table) on the one rate basis | Same universe as the map, diffusion and weighted figures | |
-| 13 | Review G2 | Late values shown with their own date (up to 8 weeks / 3 months back), else "not reported"; ETA 218 never looks back; "Data through" column removed | "Each value carries its own week" | |
-| 14 | Review G2 | Shutdown note tied to the data: year-ago weeks within Sep 27 - Nov 22, 2025 (ends after the week ending Dec 12, 2026) | "Until mid-December" | |
-| 15 | Review G3 | "vs. normal" on the claims-rate basis | Consistency with Gate 2 | |
-| 16 | Review G3 | Weighted % change redefined as the sum of the contributions; top 5 up / down shown | Exact additivity | |
-| 17 | Review G3 | Drill-down: starts on California, 5-year window, exhaustion and weeks paid as separate charts | No dual axis | |
-| 18 | Review G3 | Weighted contributions file NOT downloadable (weighted series are) | It would publish the count of weighted states (O1) | |
-| 19 | Review G3 | Weighted chart values rounded to 3 decimals; states.json at 4.2 MB accepted | Browser-check rule; size on the watch list | |
-| 20 | Review G4 | Repo-size watch: check monthly; act at 500 MB (stop committing derived state tables and rebuild them in the workflow) | GitHub recommends staying under 1 GB; 22 MB on 2026-11-09 | |
+| 1 | 4c | Validation accepted; "scaled" fill-in for missing states (chosen by the pre-registered rule) | All tests within 2% / 5% (initial claims 0.84% / 3.52%, continuing 0.27% / 1.30%) | Yes (Troy, 2026-11-09) |
+| 2 | 4c | Estimate a week only once its release is overdue: Thursday 9:30 am ET after the week ends | Conservative; holiday-early releases only arrive sooner | Yes (Troy, 2026-11-09) |
+| 3 | 4c | Estimates shown rounded to 1,000, in the preliminary-week style (dashed, hollow), labelled "estimate (release delayed)" | As DOL publishes; one style for not-yet-official weeks | Yes (Troy, 2026-11-09) |
+| 4 | 4c | Live runs on estimates are "provisional", archived as *_provisional.json; official figures trigger a new run | Archive stays create-only | Yes (Troy, 2026-11-09) |
+| 5 | 4c | Refresh run allowed to turn red after 14 days without claims (ICSA stale) during a delay | Visibility of a missing release | Yes (Troy, 2026-11-09) |
+| 6 | 4d | Revelio RPLS not used (Terms of Service forbid reposting and automated download) | O5 gate | Yes (Troy, 2026-11-09) |
+| 7 | 4d | WARN deferred; preferred later route: Cleveland Fed researchers' CC BY data (openICPSR login) | Both routes need an account in Troy's name (now on the "later" list) | Yes (Troy, 2026-11-09) |
+| 8 | 4d | ADP vs. BLS private payrolls chart on Job Losses replaces RPLS's role; USPRIV added; no Duration hiring chart | Public, already fetched; no free substitute for RPLS hiring | Yes (Troy, 2026-11-09) |
+| 9 | 4d | About "Considered but not used" list | Transparency about excluded sources | Yes (Troy, 2026-11-09) |
+| 10 | 4e | Pre-registration approved: state lag 12 days; primary test on the same window (fit from 1996), full history as a check; episode bootstrap; exact adoption rule (A >= +0.02 with interval above 0; no loss > 0.02 as first published or full history) | Brief 4e; rule fixed before results | Yes (Troy, 2026-11-09) |
+| 11 | 4e | Result applied: neither state input adopted; model unchanged; diffusion stays a context row | Pre-registered rule | Yes (Troy, 2026-11-09) |
+| 12 | Review G2 | National = sum of the 50 states + DC (not DOL's national table) on the one rate basis | Same universe as the map, diffusion and weighted figures | Yes (Troy, 2026-11-09) |
+| 13 | Review G2 | Late values shown with their own date (up to 8 weeks / 3 months back), else "not reported"; ETA 218 never looks back; "Data through" column removed | "Each value carries its own week" | Yes (Troy, 2026-11-09) |
+| 14 | Review G2 | Shutdown note tied to the data: year-ago weeks within Sep 27 - Nov 22, 2025 (ends after the week ending Dec 12, 2026) | "Until mid-December" | Yes (Troy, 2026-11-09) |
+| 15 | Review G3 | "vs. normal" on the claims-rate basis | Consistency with Gate 2 | Yes (Troy, 2026-11-09) |
+| 16 | Review G3 | Weighted % change redefined as the sum of the contributions; top 5 up / down shown | Exact additivity | Yes (Troy, 2026-11-09) |
+| 17 | Review G3 | Drill-down: starts on California, 5-year window, exhaustion and weeks paid as separate charts | No dual axis | Yes (Troy, 2026-11-09) |
+| 18 | Review G3 | Weighted contributions file NOT downloadable (weighted series are) | It would publish the count of weighted states (O1) | Yes (Troy, 2026-11-09) |
+| 19 | Review G3 | Weighted chart values rounded to 3 decimals; states.json at 4.2 MB accepted | Browser-check rule; size on the watch list | Yes (Troy, 2026-11-09) |
+| 20 | Review G4 | Repo-size watch: check monthly; act at 500 MB (stop committing derived state tables and rebuild them in the workflow) | GitHub recommends staying under 1 GB; 22 MB on 2026-11-09 | Yes (Troy, 2026-11-09) |

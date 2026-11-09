@@ -297,13 +297,13 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   (claims rate; National = state sums), state Sahm-style flag, own-date / "not reported" cells, shutdown note, vs.
   normal, rising states, contributors, weighted unemployment charts, drill-down, severity context, weighted downloads,
   sparklines; ratification table in docs/decisions.md; Next steps rewritten. Browser check 947 pass; unit tests OK.
+  Troy approved the merge and ratified all delegated decisions (2026-11-09); merged into main.
 - Watch: on 2026-11-08 the Claude Code process crashed once (exit 0xC0000409, likely low memory on this 6 GB PC). Keep
   sessions short, commit work in progress often.
 
 ## Next steps, in order
-Phase 4 is complete (4a-4e) and the Phase 4 review (branch phase4-review) is built: Gate 1 merged and live; Gates 2-4
-built and checked on the branch, waiting for Troy's approval to merge (then confirm "Publish site" is green). Troy also
-needs to ratify the delegated decisions (table at the end of docs/decisions.md).
+Phase 4 and its review (Gates 1-4) are complete, merged and live; Troy ratified all delegated Phase 4 decisions on
+2026-11-09 (table at the end of docs/decisions.md). No new phase is designed yet.
 Note: Claude Code's auto mode can block Claude from pushing to main (it publishes the site); when it does, Troy runs the
 merge + push himself or approves it, then Claude verifies the Publish run.
 1. Watch (no build work):
@@ -326,9 +326,7 @@ merge + push himself or approves it, then Claude verifies the Publish run.
 3. LATER (Troy, 2026-11-09: not worth the effort now; revisit later): WARN notices (openICPSR sign-up for the Cleveland
    Fed CC BY data, or a WARN Firehose key); asking Revelio for written permission to chart RPLS.
 4. Deferred to a later phase (do not build): consumer credit stress (Tier 5) and any company data.
-5. Branches to delete ONLY when Troy says so (all contained in main except phase4-review until it is merged):
-   phase2-review-fixes, phase3a (local and GitHub), phase4c, phase4d, phase4e (local and GitHub; phase4a / phase4b
-   already deleted), and phase4-review after its merge.
+5. Old branches deleted on 2026-11-09 with Troy's permission (phase2-review-fixes, phase3a, phase4a-e, phase4-review).
 Open items to watch: ETA 539 allowed age (42 days); DOL certificate glitch seen once on 2026-11-08; GitHub moving
 ubuntu-latest to Ubuntu 26.
 
