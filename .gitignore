@@ -15,3 +15,6 @@ internal/
 # The fetcher still runs on this PC for Troy's own comparison; the files never go to the public repository.
 data/processed/CFLMI*
 data/vintages/CFLMI*/
+
+# Shutdown-fallback preview (PC only, dol_state_fallback.py --simulate-delay)
+data/processed/dol/claims_estimates_preview.csv
