@@ -1,6 +1,6 @@
 {
- "last_attempt": "2026-11-08",
+ "last_attempt": "2026-11-09",
  "ok": true,
- "result": "new live run",
+ "result": "skipped: no new inputs",
  "last_run": "2026-11-08_ic2026-10-31_ur2026-10.json"
 }
