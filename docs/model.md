@@ -1248,3 +1248,45 @@ green. Nowcast for November waits for the reference-week claims (after 26 Novemb
 - **Reproducibility check (test re-fit, 8 November 2026):** re-fitting the 2026 model in the cloud gave identical weights,
   intercepts and penalties and the same score skill (+0.180). Fan coverage moved by at most 1 point (simulation noise:
   the earlier local run also simulated the live origin, which shifts the random-number sequence).
+
+## 8. Stage 4e: state inputs tested (pre-registered)
+
+Pre-registration: `docs/phase4_model_tests.md`, committed before the test code (`src/model/state_candidates.py`, itself
+committed before it was run). Results: `data/model/state_candidates_results.csv`.
+
+**Candidates.** C1 = covered-employment-weighted share of states with 4-week average initial claims up 20%+ on a year
+earlier; C2 = log of the weighted 4-week initial claims rate vs. a year earlier (today's weights held fixed). Both
+real-time with a 12-day state release lag, from 1996. Baseline = the final Phase 3 model (eight trigger measures,
+weights >= 0).
+
+**Results** (skill = 1 - Brier / Brier of the base rate; difference on identical months; 90% interval = block bootstrap
+by episode):
+
+| Comparison | Months scored | Baseline skill | + C1 | + C2 |
+| --- | --- | --- | --- | --- |
+| **A. Same window (fit from 1996), scored Dec 2002 on** | 226 (5 episodes) | +0.146 | −0.006 (−0.017 to +0.003) | +0.001 (−0.061 to +0.040) |
+| S1. National claims as first published, scored 2010 on | 167 (3) | +0.179 | −0.026 (−0.038 to −0.014) | −0.023 (−0.131 to +0.103) |
+| S2. Shock scares not events | 229 (3) | −0.511 | +0.005 (−0.002 to +0.011) | +0.068 (+0.022 to +0.111) |
+| B. Full history (fit from 1968), scored 2000 on | 236 (6) | +0.180 | −0.002 (−0.006 to +0.001) | −0.011 (−0.035 to +0.018) |
+| C1 at 10% / 30% (A; sensitivity only) | 226 | +0.146 | −0.023 / −0.000 | |
+
+**Adoption rule** (A difference >= +0.02 with its interval above 0; S1 and B differences >= −0.02): **neither candidate
+is adopted; the model is unchanged.** C1 fails A and S1; C2 fails A and S1.
+
+What this says:
+- **Breadth adds nothing the national claims measures don't already carry.** With weights constrained >= 0, the fitted
+  weight on C1 is zero in the latest re-fit of comparisons A, S1 and B (0.07 in S2): once national claims are in, the share of states with
+  rising claims gets no weight. The 10% and 30% versions are no better.
+- **Weighted claims (C2) is close to the national claims input**, as expected before testing (its prior was "low"). It
+  gets weight but changes skill by +0.001 in the primary test, with an interval of roughly ±0.05: indistinguishable
+  from noise.
+- The one positive result, C2 when the four one-off shock scares are not events (S2, +0.068), comes from a run whose
+  baseline skill is strongly negative (only three event cycles in the window). It is not part of the rule and is
+  noted, not acted on.
+- Scoring starts in December 2002, not 2001 as the pre-registration expected: months while the 2000-02 event was in
+  progress are not scored (the pre-registered definition of a usable month). No rule changed.
+- Limitations: state data are today's figures (no state vintages), the weights are today's back to 1996, and the
+  state-era window holds only five or six event cycles, so the intervals are wide.
+
+**Consequences:** the diffusion row on the Leading page stays "context" with no colour; the States page keeps the
+neutral "why it matters" line on the breadth chart (no lead was found); nothing goes into the January 2027 re-fit.

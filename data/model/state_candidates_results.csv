@@ -1,0 +1,11 @@
+run,candidate,input,months,first_month,event_months,episodes,skill_baseline,skill_candidate,difference,ci90_low,ci90_high,latest_weight,years_weight_positive,fit_years
+A,C1,diffusion_20,226,2002-12,30,5,0.1455,0.1395,-0.0060,-0.0165,0.0028,0.0000,17,26
+A,C2,weighted_claims,226,2002-12,30,5,0.1455,0.1469,0.0014,-0.0607,0.0404,0.6227,26,26
+S1 claims as first published,C1,diffusion_20,167,2010-06,12,3,0.1791,0.1526,-0.0264,-0.0382,-0.0143,0.0000,19,26
+S1 claims as first published,C2,weighted_claims,167,2010-06,12,3,0.1791,0.1562,-0.0229,-0.1309,0.1032,1.0193,26,26
+S2 shock scares not events,C1,diffusion_20,229,2002-12,18,3,-0.5106,-0.5060,0.0045,-0.0018,0.0114,0.0708,14,26
+S2 shock scares not events,C2,weighted_claims,229,2002-12,18,3,-0.5106,-0.4426,0.0680,0.0225,0.1105,0.1066,25,26
+B full history,C1,diffusion_20,236,2000-01,36,6,0.1800,0.1785,-0.0016,-0.0055,0.0014,0.0000,6,27
+B full history,C2,weighted_claims,236,2000-01,36,6,0.1800,0.1690,-0.0110,-0.0354,0.0178,0.2384,25,27
+A,C1 at 10% (sensitivity),diffusion_10,226,2002-12,30,5,0.1455,0.1222,-0.0233,-0.0501,0.0062,0.0395,24,26
+A,C1 at 30% (sensitivity),diffusion_30,226,2002-12,30,5,0.1455,0.1450,-0.0005,-0.0071,0.0051,0.0000,17,26

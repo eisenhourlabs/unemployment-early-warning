@@ -284,13 +284,16 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   Cleveland Fed researchers' CC BY 4.0 WARN data on openICPSR); new Job Losses chart "Private payrolls: ADP vs. BLS"
   (ADPMNUSNERSA vs. new catalog row USPRIV); About "Considered but not used" list; UNRATEMD skipped in quality checks.
   Browser check 897 pass; merged into main; "Publish site" run 42636785514 green; verified live. Branches phase4c and
-  phase4d equal main (delete when Troy agrees). 
+  phase4d equal main (delete when Troy agrees).
+- 2026-11-09: Stage 4e done (decisions delegated by Troy): pre-registration docs/phase4_model_tests.md and the test script
+  committed before the run; src/model/state_candidates.py; NEITHER state input adopted (same-window skill change: C1
+  diffusion -0.006, C2 weighted claims +0.001; both lose > 0.02 with claims as first published). Model unchanged; nothing
+  for the January 2027 re-fit. docs/model.md section 8. PHASE 4 IS COMPLETE (WARN / RPLS on the later list). 
 - Watch: on 2026-11-08 the Claude Code process crashed once (exit 0xC0000409, likely low memory on this 6 GB PC). Keep
   sessions short, commit work in progress often.
 
 ## Next steps, in order
-Phase 4 stages 4a-4d are done and live (see Status). Next: 4e model tests (pre-registration doc first, for Troy's
-approval).
+Phase 4 is complete (4a-4e; see Status). No new phase is designed yet; next design questions go to Troy's Claude project.
 LATER (Troy, 2026-11-09: not worth the effort now; revisit later): WARN notices (openICPSR sign-up for the Cleveland Fed CC BY
 data, or a WARN Firehose key); asking Revelio for written permission to chart RPLS. Note: Claude
 Code's auto mode blocks Claude from pushing to main (it publishes the site); Troy runs the merge + push himself, or
