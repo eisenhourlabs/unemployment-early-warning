@@ -12,7 +12,7 @@ import plotly.graph_objects as go
 
 from common import (ACCENT, GREYS, WHATIF_FOOTER, add_colour_band, add_fan, add_whatif, asof_line, with_outlook, base_layout, card, claims_weekly, dates, model_csv,
                     model_output, pre_recession_averages, fmt_change, fmt_claims, fmt_date, fmt_month, fred,
-                    fred_metadata, is_preliminary, last_time_as_extreme, line_chart, ordinal, percentile_text, plain,
+                    fred_metadata, is_estimate, is_preliminary, last_time_as_extreme, line_chart, ordinal, percentile_text, plain,
                     prelim_label, signal, streak, value_on_or_before, vs_month, weekly_claims_chart)
 
 # How far back a value must last have been matched before a sentence says "the highest since ..."
@@ -114,7 +114,9 @@ def score_panel(m: dict) -> dict:
     change = (f"unchanged {label}" if abs(ch) < 0.05 else f"{'▲' if ch > 0 else '▼'} {abs(ch):.1f} pt {label}")
     if s.get("first_live_run"):
         change = "First live run · " + change      # 3e-1 review: never present live vs. backtest as a plain change
-    if m.get("claims_delayed"):
+    if m.get("claims_delayed") and live.get("provisional"):
+        change += " · provisional (estimated claims)"     # stage 4c: run on claims estimated from state filings
+    elif m.get("claims_delayed"):
         change = "no new claims data"              # the claims report is past due: the score keeps its last value
     return {"available": True, "signal": signal(s["colour"]), "value": d6["text"], "words": d6["words"],
             "tooltip": d6["tooltip"], "change": change, "asof": asof_line(live), "definition": SCORE_DEFINITION,
@@ -311,7 +313,8 @@ def what_changed(claims: pd.DataFrame, built: datetime, live: dict | None = None
     ic = fred("ICSA")
     d = ic.iloc[-1] - ic.iloc[-2]
     src = nw["source_initial"].get(ic.index[-1], "")
-    tag = " (advance figure)" if is_preliminary(src) and "advance" in src else ""
+    tag = (" (estimated from state filings: DOL's release is delayed)" if is_estimate(src)
+           else " (advance figure)" if is_preliminary(src) and "advance" in src else "")
     if d == 0:
         sentences.append(f"SA initial claims were unchanged at {fmt_claims(ic.iloc[-1])} in the week ending "
                          f"{fmt_date(ic.index[-1])}{tag}.")
@@ -343,7 +346,8 @@ def what_changed(claims: pd.DataFrame, built: datetime, live: dict | None = None
     cc = fred("CCSA")
     dc = cc.iloc[-1] - cc.iloc[-2]
     csrc = nw["source_continued"].get(cc.index[-1], "")
-    ctag = " (advance figure)" if is_preliminary(csrc) and "advance" in csrc else ""
+    ctag = (" (estimated from state filings: DOL's release is delayed)" if is_estimate(csrc)
+            else " (advance figure)" if is_preliminary(csrc) and "advance" in csrc else "")
     if dc == 0:
         sentences.append(f"SA continuing claims were unchanged at {fmt_claims(cc.iloc[-1])} in the week ending "
                          f"{fmt_date(cc.index[-1])}{ctag}.")

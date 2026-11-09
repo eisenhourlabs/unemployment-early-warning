@@ -67,6 +67,10 @@ jobs:
         id: state_measures
         if: ${{ !cancelled() }}
         run: python src/transforms/state_measures.py
+      - name: Shutdown fallback (estimates claims from state filings only if DOL's weekly release is overdue)
+        id: fallback
+        if: ${{ !cancelled() }}
+        run: python src/fetchers/dol_state_fallback.py
       - name: Check DOL data (fails if DOL and FRED claims differ by more than 1%)
         id: dol_checks
         if: ${{ !cancelled() }}

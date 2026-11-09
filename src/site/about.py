@@ -5,6 +5,7 @@ method notes and the disclaimer. Called by build_site.py.
 
 import csv
 import re
+import sys
 
 import pandas as pd
 
@@ -51,8 +52,24 @@ def iur_check() -> tuple[float, int]:
     return (c.cc_rate_sa - c.iur_sa_published).abs().max(), int(c.week_ended.dt.year.min())
 
 
+def fallback_accuracy() -> dict | None:
+    """Tested error of the shutdown fallback (stage 4c Monte Carlo, the method in use), for the method note."""
+    path = ROOT / "data" / "model" / "fallback_validation_mc.csv"
+    if not path.exists():
+        return None
+    sys.path.insert(0, str(ROOT / "src" / "fetchers"))
+    import dol_state_fallback as fb
+    mc = pd.read_csv(path)
+    col = f"err_{fb.FILL_METHOD}"
+    out = {"first_year": int(str(mc.week.min())[:4])}
+    for m in ("ic", "cc"):
+        e = mc[mc.measure == m][col].abs()
+        out[m] = {"median": f"{e.median():.1f}", "p90": f"{e.quantile(0.9):.1f}"}
+    return out
+
+
 def build() -> dict:
     max_diff, since = iur_check()
     return {"sources": source_rows(), "iur_max_diff": f"{max_diff:.2f}", "iur_since": since,
-            "weighted_sentence": WEIGHTED_SENTENCE,
+            "weighted_sentence": WEIGHTED_SENTENCE, "fallback": fallback_accuracy(),
             "issues_url": "https://github.com/eisenhourlabs/unemployment-early-warning/issues/new"}

@@ -56,6 +56,7 @@ sys.path.insert(0, str(ROOT / "src" / "model"))
 import triggers as TR                               # noqa: E402  (Layer 1 trigger rules)
 from features import features_at, YIELD_LAG         # noqa: E402
 from nowcast import reference_saturday              # noqa: E402
+import realtime                                     # noqa: E402  (claims_table, estimates switch: stage 4c)
 from realtime import as_known_on                    # noqa: E402
 
 MODEL = ROOT / "data" / "model"
@@ -280,7 +281,7 @@ def target_level(name: str, asof: pd.Timestamp, lag_days) -> tuple[pd.Timestamp,
     if name == "ur":
         s = as_known_on("UNRATE", asof).dropna()
     else:
-        w = pd.read_csv(MODEL / "claims_weekly.csv", parse_dates=["week_ended"]).set_index("week_ended")
+        w = realtime.claims_table()
         col = "ic_rate_sa" if name == "ic" else "cc_rate_sa"
         s = w[col].rolling(4).mean().dropna()
         s = s[s.index + pd.Timedelta(days=lag_days) <= asof]
@@ -407,7 +408,7 @@ def nowcast(fz: dict, asof: pd.Timestamp) -> dict:
     month, release = next_release_month(p_month)
     months_since = (month.year - p_month.year) * 12 + month.month - p_month.month
     sat_m, sat_p = reference_saturday(month), reference_saturday(p_month)
-    w = pd.read_csv(MODEL / "claims_weekly.csv", parse_dates=["week_ended"]).set_index("week_ended")
+    w = realtime.claims_table()
     have_ic = sat_m in w.index and pd.notna(w.ICSA.get(sat_m)) and sat_m + pd.Timedelta(days=nc["initial_claims_lag_days"]) <= asof
     have_cc = sat_m in w.index and pd.notna(w.CCSA.get(sat_m)) and sat_m + pd.Timedelta(days=nc["continuing_claims_lag_days"]) <= asof
     out = {"month": f"{month:%Y-%m-%d}", "release_date": release, "prior_month": f"{p_month:%Y-%m-%d}",
@@ -456,9 +457,12 @@ def fomc(asof: pd.Timestamp, ur_fan: dict) -> dict | None:
 # ===================================================================================================
 # Archive (stage 3e-3): one permanent file per live run, never overwritten
 # ===================================================================================================
-def archive_name(asof: pd.Timestamp, inputs: dict) -> str:
-    """data/archive/YYYY/YYYY-MM-DD_ic<claims week>_ur<YYYY-MM>.json: run date plus the inputs it used."""
-    return f"{asof:%Y}/{asof:%Y-%m-%d}_ic{inputs['initial_claims_week']}_ur{inputs['unemployment_month'][:7]}.json"
+def archive_name(asof: pd.Timestamp, inputs: dict, provisional: bool = False) -> str:
+    """data/archive/YYYY/YYYY-MM-DD_ic<claims week>_ur<YYYY-MM>.json: run date plus the inputs it used.
+    A run on estimated claims (stage 4c) ends in _provisional.json, so the official run of the same day and week
+    gets its own file (the archive is create-only)."""
+    return (f"{asof:%Y}/{asof:%Y-%m-%d}_ic{inputs['initial_claims_week']}_ur{inputs['unemployment_month'][:7]}"
+            + ("_provisional" if provisional else "") + ".json")
 
 
 def write_archive(archive_dir: Path, name: str, payload: dict) -> Path:
@@ -489,10 +493,13 @@ def current_inputs(asof: pd.Timestamp) -> dict:
             "unemployment_month": f"{ur.index[-1]:%Y-%m-%d}", "unemployment_rate": float(ur.iloc[-1])}
 
 
-def has_new_inputs(now: dict, archived: tuple) -> bool:
+def has_new_inputs(now: dict, archived: tuple, provisional_now: bool = False) -> bool:
     """A live run is made only when there is a new claims week or a new unemployment month since the last archived
-    run (design brief, step 1): in practice once each Thursday and once after each jobs report."""
-    _, week, month = archived
+    run (design brief, step 1): in practice once each Thursday and once after each jobs report.
+    Stage 4c: also when the last archived run was provisional (estimated claims) and official figures are now in."""
+    name, week, month = archived
+    if name and "_provisional" in name and not provisional_now:
+        return True
     return week is None or now["initial_claims_week"] > week or now["unemployment_month"] > month
 
 
@@ -532,10 +539,17 @@ def run(asof: pd.Timestamp, archive: bool) -> dict | None:
     print(f"Live run as of {asof:%Y-%m-%d} with the {fz['model_year']} frozen model"
           + (" (archive mode)" if archive else " (preview: no archive, run record unchanged)"))
     disp = fz["display"]
+    # Stage 4c: while DOL's weekly release is delayed, run on claims estimated from the state filings ("provisional")
+    est = realtime._fallback().active_estimates()
+    provisional = not est.empty
+    if provisional:
+        realtime.use_claims_estimates(True)
+        print(f"  PROVISIONAL: claims estimated from state filings for weeks "
+              f"{', '.join(sorted({f'{w:%Y-%m-%d}' for w in est.week_ended}))} (DOL release delayed)")
     now = current_inputs(asof)
     if archive:
         last = latest_archived_inputs(ARCHIVE)
-        if not has_new_inputs(now, last):
+        if not has_new_inputs(now, last, provisional):
             print(f"  No new claims week or unemployment month since the archived run {last[0]} "
                   f"(claims week {now['initial_claims_week']}, unemployment {now['unemployment_month'][:7]}): "
                   "nothing to do; the site keeps the last run.")
@@ -576,6 +590,9 @@ def run(asof: pd.Timestamp, archive: bool) -> dict | None:
         "asof": f"{asof:%Y-%m-%d}",
         "run_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
         "model_year": fz["model_year"],
+        "provisional": provisional,
+        "estimated_claims": [{"week": f"{r.week_ended:%Y-%m-%d}", "measure": r.measure, "estimate_sa": float(r.estimate_sa),
+                              "areas_reported": int(r.areas_reported)} for r in est.itertuples()],
         "inputs": inputs,
         "score": {
             **probs, "colour": colour,
@@ -599,7 +616,7 @@ def run(asof: pd.Timestamp, archive: bool) -> dict | None:
     }
     if archive:
         # Archive FIRST: if this run's file already exists, stop here before touching anything else.
-        path = write_archive(ARCHIVE, archive_name(asof, inputs), result)
+        path = write_archive(ARCHIVE, archive_name(asof, inputs, provisional), result)
         print(f"  archived {path.relative_to(ROOT)}")
     OUT.write_text(json.dumps(result, indent=1, allow_nan=False, default=float), encoding="utf-8")
 

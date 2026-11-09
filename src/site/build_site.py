@@ -47,7 +47,7 @@ import leading
 import outlook
 import overview
 import states
-from common import PROCESSED, ROOT, claims_weekly, fmt_date, fmt_month, fred, is_preliminary
+from common import PROCESSED, ROOT, claims_weekly, fmt_date, fmt_month, fred, is_estimate, is_preliminary
 
 HERE = Path(__file__).resolve().parent
 OUT = ROOT / "site"
@@ -76,10 +76,17 @@ def freshness(built: datetime) -> dict:
     claims = claims_weekly()
 
     def latest_week(rate_col, source_col, label):
-        """'initial claims week ending Oct 31, 2026 (advance)'"""
-        last = claims.dropna(subset=[rate_col]).iloc[-1]
+        """'initial claims week ending Oct 31, 2026 (advance)'. While DOL's release is delayed (stage 4c):
+        'initial claims week ending Oct 24, 2026 (official) · Oct 31 – Nov 7 estimated from state filings'."""
+        have = claims.dropna(subset=[rate_col])
+        est = have[have[source_col].map(is_estimate)]
+        last = have[~have[source_col].map(is_estimate)].iloc[-1]
         text = f"{label} week ending {fmt_date(last.week_ended)}"
-        if is_preliminary(last[source_col]):
+        if len(est):
+            first, end = est.week_ended.min(), est.week_ended.max()
+            span = fmt_date(first) if first == end else f"{first:%b} {first.day} – {fmt_date(end)}"
+            text += f" (last published) · {span} estimated from state filings"
+        elif is_preliminary(last[source_col]):
             text += " (" + last[source_col].split(",")[1].strip() + ")"
         return text
 

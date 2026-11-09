@@ -30,6 +30,7 @@ Run this file to check it against FRED's own real-time Sahm indicator (SAHMREALT
     python src/model/realtime.py
 """
 
+import sys
 from functools import lru_cache
 from pathlib import Path
 
@@ -56,6 +57,52 @@ def _alfred(series_id: str) -> pd.DataFrame:
                                                                  "realtime_end": str})
 
 
+# ---------------------------------------------------------------------------------------------------
+# Phase 4 stage 4c: while DOL's weekly release is delayed, LIVE runs use claims estimated from the state filings
+# (src/fetchers/dol_state_fallback.py) for the weeks after the latest official week. Off by default: only live.py
+# switches it on (the result is then flagged "provisional"); backtests and model inputs never see estimates.
+# With UW_PREVIEW_DELAY=N (PC preview) the last N official weeks are dropped and the preview estimates used.
+# ---------------------------------------------------------------------------------------------------
+USE_CLAIMS_ESTIMATES = False
+
+
+def use_claims_estimates(on: bool) -> None:
+    global USE_CLAIMS_ESTIMATES
+    USE_CLAIMS_ESTIMATES = on
+    _current.cache_clear()
+
+
+def _fallback():
+    sys.path.insert(0, str(ROOT / "src" / "fetchers"))
+    import dol_state_fallback
+    return dol_state_fallback
+
+
+def claims_table() -> pd.DataFrame:
+    """data/model/claims_weekly.csv indexed by week; with estimates switched on, ICSA / CCSA / IC4WSA run on through
+    the estimated weeks (SA estimates; IC4WSA = average of the last 4 SA weeks, official and estimated)."""
+    t = pd.read_csv(CLAIMS, parse_dates=["week_ended"]).set_index("week_ended")
+    fb = _fallback()
+    n = fb.preview_delay()
+    if not (USE_CLAIMS_ESTIMATES or n):
+        return t
+    est = fb.active_estimates()
+    for col, measure in (("ICSA", "ic"), ("CCSA", "cc")):
+        official = t[col].dropna()
+        cut = official.index.difference(fb.cut_official(official, n).index)
+        t.loc[cut, col] = float("nan")
+        if col == "ICSA":
+            t.loc[cut, "IC4WSA"] = float("nan")
+        for r in est[est.measure == measure].itertuples():
+            t.loc[r.week_ended, col] = float(r.estimate_sa)
+    t = t.sort_index()
+    for w in est[est.measure == "ic"].week_ended:
+        last4 = t.ICSA.loc[:w].dropna().tail(4)
+        if len(last4) == 4:
+            t.loc[w, "IC4WSA"] = last4.mean()
+    return t
+
+
 @lru_cache(maxsize=None)
 def _current(series_id: str) -> pd.Series:
     """Today's figures: data/model/current/<ID>.csv if it exists (full history), then the claims table,
@@ -63,7 +110,7 @@ def _current(series_id: str) -> pd.Series:
     if (CURRENT_DIR / f"{series_id}.csv").exists():
         df = pd.read_csv(CURRENT_DIR / f"{series_id}.csv", parse_dates=["date"])
         return df.set_index("date")["value"]
-    claims = pd.read_csv(CLAIMS, parse_dates=["week_ended"]).set_index("week_ended")
+    claims = claims_table()
     if series_id in claims.columns:
         return claims[series_id].dropna()
     df = pd.read_csv(PROCESSED / f"{series_id}.csv", parse_dates=["date"])

@@ -65,7 +65,7 @@ STATE_JS = """() => [...document.querySelectorAll('.chart')].map(gd => {
     if (tr.visible === 'legendonly' || tr.visible === false || !tr.y || m.noscale) return;
     tr.x.forEach((x, i) => {
       x = String(x).slice(0, 10); const y = tr.y[i];
-      if (y !== null && x > last && !m.forecast) last = x;
+      if (y !== null && x > last && !m.forecast && !m.ref) last = x;   // reference lines are not data
       const always = tr.meta && tr.meta.ref;
       if (y === null || (!always && (x < r[0] || x > r[1]))) return;
       n++; lo = Math.min(lo, y); hi = Math.max(hi, y);
@@ -765,6 +765,40 @@ def check_states(browser, base) -> None:
     page.context.close(); pp.context.close()
 
 
+# ===========================================================================
+# Shutdown fallback labels (Phase 4 stage 4c)
+# ===========================================================================
+def check_estimates(browser, base) -> None:
+    """Normal build: no estimate wording anywhere. Build with estimated weeks (a real delay, or the PC preview
+    UW_PREVIEW_DELAY=N): the freshness line, chart legends and hollow markers, the 'provisional' score note, the
+    'What changed' sentences and the About method note all say so."""
+    import re
+
+    print("\n=== Shutdown fallback labels ===")
+    pages = {p.name: p.read_text(encoding="utf-8") for p in SITE.glob("*.html")}
+    active = "estimate (release delayed)" in pages["index.html"]
+    check(bool(re.search(r"estimates\s+national claims from the state filings", pages["about.html"])),
+          "About explains the fallback and its tested error")
+    if not active:
+        hits = [n for n, h in pages.items() if re.search(r"estimated from state filings ·|Estimate \(release delayed\)|"
+                                                         r"Provisional: the score", h)]
+        check(not hits, f"normal build: no estimate labels on any page {hits}")
+        return
+    page = browser.new_context(viewport={"width": 1280, "height": 900}).new_page()
+    page.goto(base + "index.html")
+    page.wait_for_selector("body[data-ready=true]")
+    fresh = page.locator(".freshness").inner_text()
+    check("(last published)" in fresh and "estimated from state filings" in fresh, f"freshness line: {fresh[:160]}")
+    note = page.locator(".score-panel .model-note").inner_text() if page.locator(".score-panel .model-note").count() else ""
+    check("Provisional" in note, f"score panel says provisional: {note[:120]}")
+    changes = page.locator(".changes").inner_text()
+    check("estimated from state filings" in changes, "'What changed' marks estimated weeks")
+    legends = page.evaluate("""() => [...document.querySelectorAll('.chart')].flatMap(gd => gd.data
+        .filter(t => t.marker && t.marker.symbol === 'circle-open').map(t => t.name))""")
+    check(any("estimate" in n.lower() for n in legends), f"hollow-marker traces labelled as estimates {legends[:3]}")
+    page.context.close()
+
+
 def TODAY_OF(page) -> str:
     return json.loads(page.locator("#page-data").text_content())["today"]
 
@@ -783,6 +817,7 @@ def main() -> int:
         nav.close()
         check(len(links) >= 1, f"top bar links: {links}")
         check_wording()
+        check_estimates(browser, base)
         if "outlook.html" in links:
             check_phase3(browser, base)
         for i, href in enumerate(links):

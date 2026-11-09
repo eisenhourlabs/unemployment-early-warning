@@ -163,6 +163,19 @@
     <li><strong>Weighted view (States page).</strong> {{ weighted_sentence }} The weighted figures are each state's
       value times its weight, summed; when a state has no figure for a period, the remaining weights are scaled to
       sum to one. They are charted on the States page and are not offered for download.</li>
+    {%- if fallback %}
+    <li><strong>When DOL's weekly claims release is delayed</strong> (for example during a federal government
+      shutdown, when states keep filing to DOL's database but no national release comes out), the site estimates
+      national claims from the state filings: the reporting states' claims, plus each missing state's last reported
+      figure scaled by the reporting states' change since that week, divided by DOL's published seasonal factor.
+      Estimated weeks are drawn with hollow markers and a dashed line, labelled "estimate (release delayed)", and the
+      early-warning score and forecasts run on them marked "provisional"; official figures replace them as soon as
+      DOL publishes. Tested on every week since {{ fallback.first_year }} with one to five states left out at random,
+      the typical error against the official seasonally adjusted figure was {{ fallback.ic.median }}% for initial
+      claims ({{ fallback.ic.p90 }}% or less in 9 of 10 tests) and {{ fallback.cc.median }}% for continuing claims
+      ({{ fallback.cc.p90 }}% or less in 9 of 10); a replay of the October–November 2025 shutdown was within 2%
+      every week. The test uses today's revised state data, so a live estimate can be somewhat less accurate.</li>
+    {%- endif %}
     <li><strong>Reference lines.</strong> The dotted lines on the two claims-rate charts are the average SA weekly rate
       over the 12 months up to each of the last three NBER business-cycle peaks (April 2000 to March 2001, January to
       December 2007, March 2019 to February 2020), and over 2019.</li>

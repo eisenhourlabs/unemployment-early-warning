@@ -12,6 +12,7 @@ the Plotly figure, and the table offered by its Download CSV button.
 """
 
 import json
+import sys
 from datetime import timedelta
 from pathlib import Path
 
@@ -48,9 +49,82 @@ MODEL_MAX_AGE_DAYS = 9          # a weekly run older than this shows a "not upda
 # Reading data
 # ===========================================================================
 def fred(series_id: str) -> pd.Series:
-    """A FRED series as a pandas Series indexed by date, with blank values dropped."""
+    """A FRED series as a pandas Series indexed by date, with blank values dropped.
+    SA claims series run on through any weeks estimated from state filings while DOL's release is delayed."""
     df = pd.read_csv(PROCESSED / f"{series_id}.csv", parse_dates=["date"])
-    return df.set_index("date")["value"].dropna()
+    s = df.set_index("date")["value"].dropna()
+    return with_estimates(series_id, s) if series_id in ESTIMATED_FRED else s
+
+
+# ---------------------------------------------------------------------------
+# Shutdown fallback (Phase 4 stage 4c): while DOL's weekly release is delayed, the claims charts and tiles show the
+# weeks after the latest official week as estimates from the state filings (src/fetchers/dol_state_fallback.py),
+# labelled ESTIMATE_SOURCE and drawn like preliminary weeks (dashed, hollow markers). Nothing changes in normal times.
+# ---------------------------------------------------------------------------
+sys.path.insert(0, str(ROOT / "src" / "fetchers"))
+import dol_state_fallback as fallback  # noqa: E402
+
+ESTIMATE_SOURCE = "estimate (release delayed)"
+ESTIMATED_FRED = {"ICSA": ("ic", None), "IC4WSA": ("ic", 4), "CCSA": ("cc", None), "CC4WSA": ("cc", 4)}
+_EST = None
+
+
+def estimates() -> pd.DataFrame:
+    """Open estimates (weeks after the latest official week), read once per build."""
+    global _EST
+    if _EST is None:
+        _EST = fallback.active_estimates()
+    return _EST
+
+
+def with_estimates(series_id: str, s: pd.Series) -> pd.Series:
+    est = estimates()
+    n = fallback.preview_delay()
+    if est.empty and not n:
+        return s
+    measure, window = ESTIMATED_FRED[series_id]
+    s = fallback.cut_official(s, n)
+    e = est[est.measure == measure].set_index("week_ended").estimate_sa.astype(float).round(-3)   # as DOL publishes
+    if window is None:
+        return pd.concat([s, e]).sort_index()
+    base = fred("ICSA" if measure == "ic" else "CCSA")            # weekly SA, official + estimates
+    avg = base.rolling(window).mean()
+    return pd.concat([s, avg.reindex(e.index)]).sort_index()
+
+
+def overlay_claims_table(df: pd.DataFrame) -> pd.DataFrame:
+    """claims_weekly() with estimated weeks added: SA levels and rates (on the latest covered employment), 4-week
+    averages, and the source label 'estimate (release delayed), N of 53 areas'."""
+    est = estimates()
+    n = fallback.preview_delay()
+    if est.empty and not n:
+        return df
+    df = df.set_index("week_ended")
+    groups = {"ic": (["ic_nsa", "ic_sa", "ic_sa_4wk", "ic_rate_sa", "ic_rate_nsa", "ic_rate_sa_4wk", "ic_rate_nsa_4wk"],
+                     "source_initial", "ic_sa"),
+              "cc": (["cc_sa", "cc_sa_4wk", "cc_rate_sa", "cc_rate_nsa", "cc_rate_sa_4wk", "cc_rate_nsa_4wk",
+                      "iur_sa_published"], "source_continued", "cc_sa")}
+    ce = df.covered_employment.dropna().iloc[-1]
+    for measure, (cols, src, level) in groups.items():
+        official = df[level].dropna()
+        cut = official.index.difference(fallback.cut_official(official, n).index)
+        df.loc[cut, [c for c in cols if c in df] + [src]] = None           # preview: pretend these are not out yet
+        for r in est[est.measure == measure].itertuples():
+            df.loc[r.week_ended, level] = round(float(r.estimate_sa), -3)        # as DOL publishes
+            df.loc[r.week_ended, f"{measure}_rate_sa"] = r.estimate_sa / ce * 100
+            if measure == "ic":
+                df.loc[r.week_ended, "ic_nsa"] = round(float(r.estimate_nsa), -3)
+            df.loc[r.week_ended, src] = f"{ESTIMATE_SOURCE}, {int(r.areas_reported)} of 53 areas"
+        df = df.sort_index()
+        for r in est[est.measure == measure].itertuples():
+            for col in (level, f"{measure}_rate_sa"):
+                last4 = df[col].loc[:r.week_ended].dropna().tail(4)
+                if len(last4) == 4:
+                    df.loc[r.week_ended, col.replace("_sa", "_sa_4wk") if col == level else col + "_4wk"] = last4.mean()
+    df["covered_employment"] = df.covered_employment.ffill()
+    for col in ["ic_rate_sa", "ic_rate_sa_4wk"]:
+        df[col + "_per10k"] = df[col] * 100
+    return df.reset_index()
 
 
 def fred_metadata() -> pd.DataFrame:
@@ -67,7 +141,7 @@ def claims_weekly() -> pd.DataFrame:
     # per 10,000 covered workers (percent x 100), e.g. 0.123% -> 12.3 per 10,000 (decision 2026-11-07).
     for col in ["ic_rate_sa", "ic_rate_sa_4wk"]:
         df[col + "_per10k"] = df[col] * 100
-    return df
+    return overlay_claims_table(df)
 
 
 def model_output(built) -> dict:
@@ -102,14 +176,21 @@ def model_output(built) -> dict:
     if thursday == today and (now_ct.hour, now_ct.minute) < (7, 30):        # released 8:30 am ET = 7:30 am CT
         thursday -= pd.Timedelta(days=7)
     expected_week = thursday - pd.Timedelta(days=5)                           # its report covers the week to Saturday
-    try:
-        latest_week = fred("ICSA").index[-1]
+    try:   # official weeks only (fred() would include weeks estimated from state filings)
+        raw = pd.read_csv(PROCESSED / "ICSA.csv", parse_dates=["date"]).set_index("date")["value"].dropna()
+        latest_week = fallback.cut_official(raw).index[-1]
     except OSError:
         latest_week = expected_week
     if latest_week < expected_week:
         claims_delayed = True
-        notes.append(f"Release delayed: the weekly claims report due {fmt_date(thursday)} has not been published; "
-                     "the score keeps its last value.")
+        if live.get("provisional"):
+            areas = min((e["areas_reported"] for e in live.get("estimated_claims", [])), default=53)
+            notes.append(f"Release delayed: the weekly claims report due {fmt_date(thursday)} has not been published. "
+                         f"Provisional: the score and forecasts use claims estimated from state filings ({areas} of 53 "
+                         "areas reported); official figures will replace them.")
+        else:
+            notes.append(f"Release delayed: the weekly claims report due {fmt_date(thursday)} has not been published; "
+                         "the score keeps its last value.")
     n = live.get("nowcast") or {}
     if n.get("release_date") and today > pd.Timestamp(n["release_date"]):
         try:
@@ -118,7 +199,8 @@ def model_output(built) -> dict:
             latest_month = pd.Timestamp(n["month"])
         if latest_month < pd.Timestamp(n["month"]):
             notes.append(f"Release delayed: the {pd.Timestamp(n['month']):%B} jobs report (scheduled "
-                         f"{fmt_date(n['release_date'])}) has not been published.")
+                         f"{fmt_date(n['release_date'])}) has not been published. Estimate: the unemployment-rate "
+                         "nowcast is our estimate, not a published value.")
     return {"live": live, "note": " ".join(notes), "claims_delayed": claims_delayed}
 
 
@@ -234,13 +316,37 @@ WHATIF_FOOTER = (" What-if paths repeat the 2001 and 2008 recessions from today'
 
 
 def is_preliminary(source) -> bool:
-    """True for weeks still coming from the news release (not yet in DOL's official ETA 539 report)."""
-    return isinstance(source, str) and source.startswith("news release")
+    """True for weeks still coming from the news release (not yet in DOL's official ETA 539 report), and for weeks
+    estimated from state filings while the release is delayed (both are drawn dashed with hollow markers)."""
+    return isinstance(source, str) and (source.startswith("news release") or is_estimate(source))
+
+
+def is_estimate(source) -> bool:
+    return isinstance(source, str) and source.startswith(ESTIMATE_SOURCE)
 
 
 def prelim_label(source) -> str:
-    """'news release, advance' -> 'preliminary (advance)'."""
+    """'news release, advance' -> 'preliminary (advance)'; an estimate keeps its own label (with the area count)."""
+    if is_estimate(source):
+        return source
     return "preliminary (" + source.split(",")[1].strip() + ")" if is_preliminary(source) else "official"
+
+
+def hollow_note(sources) -> str:
+    """Footer sentence for the hollow markers; says so when some weeks are estimates."""
+    if any(is_estimate(s) for s in sources):
+        return (" Hollow markers: preliminary, or estimated from state filings while DOL's weekly release is delayed "
+                "(official figures will replace them).")
+    return " Hollow markers: preliminary."
+
+
+def tail_name(sources) -> str:
+    """Legend name for the dashed tail: preliminary weeks, estimated weeks, or both."""
+    sources = [s for s in sources if is_preliminary(s)]
+    est = any(is_estimate(s) for s in sources)
+    news = any(not is_estimate(s) for s in sources)
+    return ("Preliminary / estimate (release delayed)" if est and news
+            else "Estimate (release delayed)" if est else "Preliminary (news release)")
 
 
 # ===========================================================================
@@ -499,7 +605,7 @@ def line_chart(id, title, why, footer, s: pd.Series, name, y_title, hover, csv_c
                              hovertemplate=f"{hover}<extra></extra>"))
     if len(tail):
         fig.add_trace(go.Scatter(
-            x=dates(tail.date), y=plain(tail.value), name="Preliminary (news release)", mode="lines+markers",
+            x=dates(tail.date), y=plain(tail.value), name=tail_name(tail.source), mode="lines+markers",
             customdata=labels, line=dict(color=ACCENT, width=2, dash="dash"),
             marker=dict(size=8, symbol="circle-open", color=ACCENT, line=dict(width=2)),
             meta={"role": "main-prelim"}, hovertemplate=f"{hover} · %{{customdata}}<extra></extra>"))
@@ -508,7 +614,7 @@ def line_chart(id, title, why, footer, s: pd.Series, name, y_title, hover, csv_c
     add_recession_shading(fig, d.date.iloc[0])
     base_layout(fig, y_title, x_hover or ("%b %Y" if monthly else "Week ending %b %-d, %Y"), legend=len(tail) > 0)
 
-    footer += (" Hollow markers: preliminary." if len(tail) else "") + " Grey bands: NBER recessions." + last_data_note(
+    footer += (hollow_note(tail.source) if len(tail) else "") + " Grey bands: NBER recessions." + last_data_note(
         d.dropna(subset=["value"]), "date", "source" if prelim is not None else None, monthly)
     columns = ["date", csv_col] + (["source"] if prelim is not None else [])
     rows = [[x, v] + ([src] if prelim is not None else [])
@@ -573,14 +679,14 @@ def weekly_claims_chart(id, title, why, footer, d: pd.DataFrame, weekly_col, avg
                              hovertemplate=f"{hover}<extra>4-week average</extra>"))
     if len(tail):
         fig.add_trace(go.Scatter(
-            x=plain(tail.x), y=plain(tail[weekly_col]), name="Weekly, preliminary", mode="lines+markers",
+            x=plain(tail.x), y=plain(tail[weekly_col]), name="Weekly, " + tail_name(tail[source_col]).split(" (")[0].lower(), mode="lines+markers",
             legendgroup="prelim", showlegend=False, customdata=labels,
             line=dict(color=FAINT, width=1, dash="dot"),
             marker=dict(size=8, symbol="circle-open", color=FAINT, line=dict(width=1.5)),
             meta={"role": "faint-prelim"},
             hovertemplate=f"{hover} · %{{customdata}}<extra>Weekly</extra>"))
         fig.add_trace(go.Scatter(
-            x=plain(tail.x), y=plain(tail[avg_col]), name="Preliminary (news release)",
+            x=plain(tail.x), y=plain(tail[avg_col]), name=tail_name(tail[source_col]),
             mode="lines+markers", legendgroup="prelim", customdata=labels,
             line=dict(color=ACCENT, width=2.5, dash="dash"),
             marker=dict(size=8, symbol="circle-open", color=ACCENT, line=dict(width=2)),
@@ -594,7 +700,7 @@ def weekly_claims_chart(id, title, why, footer, d: pd.DataFrame, weekly_col, avg
     base_layout(fig, y_title, "Week ending %b %-d, %Y")
 
     footer = ("Plotted: 4-week average (bold), weekly (faint). " + footer
-              + " Hollow markers: preliminary. Grey bands: NBER recessions."
+              + hollow_note(d[source_col]) + " Grey bands: NBER recessions."
               + (" Dotted lines: average SA weekly rate over the 12 months up to each NBER peak (Apr 2000–Mar 2001, "
                  "Jan–Dec 2007, Mar 2019–Feb 2020) and over 2019."
                  if refs else "")
@@ -760,7 +866,7 @@ def seasonal_chart(id, title, why, footer, d: pd.DataFrame, value_col, source_co
     fig.update_xaxes(tickformat="%b", dtick="M1", range=["2000-01-01", "2000-12-31"])
     fig.update_layout(margin=dict(l=60, r=40, t=8, b=36))
 
-    footer += f" Hollow markers: preliminary.{last_data_note(d, 'week_ended', source_col)}"
+    footer += hollow_note(d[source_col]) + last_data_note(d, 'week_ended', source_col)
     rows = [[w.strftime("%Y-%m-%d"), int(w.year), v, s]
             for w, v, s in zip(d.week_ended, plain(d[value_col]), d[source_col])]
     return card(id, title, why, footer, fig, csv_names, rows, fixed=["2000-01-01", "2000-12-31"])

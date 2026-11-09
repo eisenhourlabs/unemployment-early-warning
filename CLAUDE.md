@@ -67,6 +67,7 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 | `src/fetchers/fred_fetcher.py` | Downloads all active FRED series (incl. per-state series) to `data/processed/` |
 | `src/fetchers/dol_*.py` | DOL pipeline: `dol_national.py` (ETA 539), `dol_state.py` (ar539/ar5159/ar218), `dol_recent_weeks.py` (merged table + preliminary weeks), `dol_common.py` (shared) |
 | `src/fetchers/wait_for_claims.py` | Thursday run: waits up to 60 min for the claims release on FRED; never fails |
+| `src/fetchers/dol_state_fallback.py` | Shutdown fallback (4c): estimates national claims from ar539 state filings only when DOL's weekly release is overdue -> `data/processed/dol/claims_estimates.csv`; `--simulate-delay N` = PC preview (with `UW_PREVIEW_DELAY=N`) |
 | `src/fetchers/release_calendar.py` | Next release dates (FRED schedules + Chicago Fed schedule page) -> `data/processed/release_calendar.csv`; never fails |
 | `src/fetchers/chicagofed_fetcher.py` | Chicago Fed Labor Market Indicators, LOCAL-ONLY: 36 series to `data/processed/CFLMI*.csv` (with vintages; git-ignored) |
 | `src/checks/data_quality.py` | Stale / gaps / outlier / fetch checks for every series -> `data/processed/series_health.csv`; fails only on a stale or missing Tier 1 series |
@@ -78,7 +79,7 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 | `docs/data_revisions.md` | Automatic log of DOL revisions |
 | `docs/dashboard_requirements.md` | What the Phase 2 dashboard must show |
 | `src/alerts/alerts.py` | Alerts (off; repository variable ALERTS_ENABLED): colour change (called by live.py) and failed refresh (`--refresh-failed`); while off they print the text in the log |
-| `src/model/` | Phase 3 modeling: `build_claims_history.py` (claims table from 1967), `alfred_fetcher.py` (past vintages), `realtime.py` (`as_known_on(series, date)` + Sahm check), `events.py` (event definition and list), `plot_events.py` (review chart), `current_fetcher.py` (long histories of never-revised series), `triggers.py` (8 Layer 1 triggers monthly, real-time), `backtest_triggers.py` (leads, false alarms, adds-warning), `plot_triggers.py` (status chart), `features.py` (score inputs), `score.py` (early-warning score: fit, out-of-sample test, sensitivity runs), `plot_score.py` (score charts), `score_followups.py` (3d Part A: drivers, NSA claims test, calibration, colour stability, 3/12-month scores), `forecast.py` (fans: baseline + event-path mixture, backtest, stress paths), `nowcast.py` (next UR release), `benchmarks.py` (FOMC SEP / SPF comparison), `plot_forecast.py` (forecast charts), `part0.py` (3e Part 0: coherence, live as-of inputs, bias report), `freeze_model.py` (writes the frozen model each January), `live.py` (one "as of" result set from the frozen model) |
+| `src/model/` | Phase 3 modeling: `build_claims_history.py` (claims table from 1967), `alfred_fetcher.py` (past vintages), `realtime.py` (`as_known_on(series, date)` + Sahm check), `events.py` (event definition and list), `plot_events.py` (review chart), `current_fetcher.py` (long histories of never-revised series), `triggers.py` (8 Layer 1 triggers monthly, real-time), `backtest_triggers.py` (leads, false alarms, adds-warning), `plot_triggers.py` (status chart), `features.py` (score inputs), `score.py` (early-warning score: fit, out-of-sample test, sensitivity runs), `plot_score.py` (score charts), `score_followups.py` (3d Part A: drivers, NSA claims test, calibration, colour stability, 3/12-month scores), `forecast.py` (fans: baseline + event-path mixture, backtest, stress paths), `nowcast.py` (next UR release), `benchmarks.py` (FOMC SEP / SPF comparison), `plot_forecast.py` (forecast charts), `part0.py` (3e Part 0: coherence, live as-of inputs, bias report), `freeze_model.py` (writes the frozen model each January), `fallback_validation.py` (4c: replay + Monte Carlo -> `reports/fallback_validation.md`), `live.py` (one "as of" result set from the frozen model) |
 | `config/model_series.csv`, `config/event_notes.csv`, `config/triggers.csv` | Modeling series: ALFRED / first-release / current vintage, release lag; Troy's event rulings and notes; Layer 1 trigger thresholds |
 | `data/model/` | Modeling data: `claims_weekly.csv`, `alfred/` (vintages + coverage), `current/` (GS10, TB3MS, T10Y3MM full history), `events.csv`, `event_flags_monthly.csv`, `claims_leg_weekly.csv`, `triggers_monthly.csv`, `trigger_episodes.csv`, `trigger_leads.csv`, `trigger_summary.csv`, `status_comparison.csv`, `features_monthly.csv`, `score_*.csv`, `forecast_*.csv`, `stress_paths.csv`, `nowcast.csv`, `benchmark_summary.csv`, `frozen/model_<year>.json` (frozen model), `live_latest.json` + `score_display_weekly.csv` / `score_display_monthly.csv` (what the site reads), `live_history.csv` (one row per live run) + `live_fans_history.csv` (each run's fans) |
 | `docs/model.md`, `reports/` | Phase 3 method and results (grows each stage); review charts (not on the site) |
@@ -269,12 +270,18 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   of areas reporting). Downloads data/states/ (3 files x CSV + XLSX), Leading row (context), About notes, catalog
   STATE_DIFFUSION active. Browser check 876 pass (States section added); 17 unit tests OK. Troy approved; phase4b
   fast-forwarded into main and pushed by Troy (auto mode blocks Claude from pushing main); "Publish site" run
-  42562377636 green; live States page verified (51 map shapes, no browser errors). Next: 4c on branch phase4c.
+  42562377636 green; live States page verified (51 map shapes, no browser errors).
+- 2026-11-09: Stage 4c BUILT on branch phase4c (Troy delegated the 4c / 4d decisions while away): pre-registration
+  committed before any run; validation reports/fallback_validation.md: Monte Carlo 1996-2026 median / 90th pct abs. error
+  initial claims 0.84% / 3.52%, continuing 0.27% / 1.30% (scaled fill-in, chosen by the pre-registered rule); 2025 replay
+  within 1.8% every week; all pass 2% / 5%. Fallback step in the refresh workflow; estimates labelled on Overview / Job
+  Losses / Duration; provisional live runs; About note. 26 unit tests OK; browser check passes (fallback section added;
+  preview with UW_PREVIEW_DELAY=2 also passes the label checks). 
 - Watch: on 2026-11-08 the Claude Code process crashed once (exit 0xC0000409, likely low memory on this 6 GB PC). Keep
   sessions short, commit work in progress often.
 
 ## Next steps, in order
-Phase 4 stages 4a and 4b are approved, merged and live. Next: 4c (shutdown fallback) on branch phase4c. Note: Claude
+Phase 4 stages 4a and 4b are approved, merged and live. Stage 4c done (see Status). Next: 4d (alternative signals). Note: Claude
 Code's auto mode blocks Claude from pushing to main (it publishes the site); Troy runs the merge + push himself, or
 approves it, then Claude verifies the Publish run. Branches phase4a / phase4b equal main and can be deleted when Troy agrees. Earlier phases are done and live.
 1. Watch the first automated runs (no build work):
