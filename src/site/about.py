@@ -32,7 +32,7 @@ def source_rows() -> list[dict]:
             example = re.search(r"e\.g\. ([A-Z0-9]+)", r["name"])     # state rows: "(e.g. TXICLAIMS)"
             link = f"https://fred.stlouisfed.org/series/{example.group(1) if example else sid}"
             via = "" if "FRED" in r["source"] else " via FRED"
-        elif r["fetcher"] == "chicagofed_json":
+        elif r["fetcher"] == "local-only":   # Chicago Fed LMI: listed, never shown (licence)
             link, via = CHICAGO_LMI_LINK, ""
         else:
             link, via = DOL_LINK, ""

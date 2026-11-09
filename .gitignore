@@ -10,3 +10,8 @@ internal/
 
 # Built website (rebuilt by src/site/build_site.py on every run; published by GitHub Actions)
 /site/
+
+# Chicago Fed Labor Market Indicators: local-only (licence: republication needs written permission; Phase 4 P3).
+# The fetcher still runs on this PC for Troy's own comparison; the files never go to the public repository.
+data/processed/CFLMI*
+data/vintages/CFLMI*/

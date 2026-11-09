@@ -10,7 +10,8 @@ config/quality_dol_columns.csv) it checks:
            z = (latest change - median) / (1.4826 x MAD); flagged when |z| > 6 (report only)
   fetch    the latest result for the series in data/fetch_log.csv
 For DOL state files it also reports how many areas reported in the latest period; staleness there uses
-the latest period in which every area reported.
+the latest period in which every area reported, and a min_areas rule flags a latest period with too few areas.
+It also warns when DOL's published seasonal factors are running out (min_future_weeks rule).
 
 Status per series: FAIL = a Tier 1 series is stale or missing (the only thing that fails the run);
 WARN = any other flag; OK = no flags. Output: data/processed/series_health.csv (plus a printed summary).
@@ -54,6 +55,12 @@ def max_age(rules, series_id: str, freq: str) -> int:
         if r["rule"] == "max_age_days" and not r["target"].startswith("default:") and fnmatch(series_id, r["target"]):
             return int(r["value"])
     return int(next(r["value"] for r in rules if r["rule"] == "max_age_days" and r["target"] == f"default:{freq}"))
+
+
+def rule_value(rules, name: str, series_id: str) -> float | None:
+    """Value of the first rule `name` whose target matches the series (None if no rule applies)."""
+    r = next((r for r in rules if r["rule"] == name and fnmatch(series_id, r["target"])), None)
+    return float(r["value"]) if r else None
 
 
 def setting(rules, name: str) -> float:
@@ -192,6 +199,10 @@ def check(item: dict, rules, log) -> dict:
             counts = raw.groupby(item["date_col"]).state.count()
             full = counts.max()
             out["areas_latest"] = f"{counts.iloc[-1]}/{full} ({counts.index[-1]})"
+            min_areas = rule_value(rules, "min_areas", sid)
+            if min_areas is not None and counts.iloc[-1] < min_areas:
+                flags.append(f"incomplete: {counts.iloc[-1]} of {full} areas in {counts.index[-1]} "
+                             f"(limit {min_areas:.0f})")
             complete = counts[counts >= full]
             df = pd.DataFrame({"date": complete.index, "value": 1.0})
             gaps = find_gaps(pd.DataFrame({"date": counts.index, "value": 1.0}), freq, set())
@@ -227,10 +238,30 @@ def check(item: dict, rules, log) -> dict:
     return out
 
 
+def seasonal_factor_check(rules) -> dict:
+    """Warn when fewer than min_future_weeks of DOL's published seasonal factors lie after today."""
+    sid = "DOL:seasonal_factors.csv"
+    limit = rule_value(rules, "min_future_weeks", sid)
+    out = {"series_id": sid, "source": "DOL", "tier": "1", "frequency": "weekly", "first_date": "", "last_date": "",
+           "age_days": "", "max_age_days": "", "gaps": "", "gap_examples": "", "latest_change_z": "",
+           "areas_latest": "", "last_fetch": "n/a", "flags": "", "status": "OK"}
+    path = DOL_DIR / "seasonal_factors.csv"
+    if not path.exists():
+        out.update(status="WARN", flags="no data file")
+        return out
+    sf = pd.read_csv(path).dropna(subset=["ic_sf", "cc_sf"])
+    out["first_date"], out["last_date"] = sf.week_ended.min(), sf.week_ended.max()
+    future = int((pd.to_datetime(sf.week_ended) > TODAY).sum())
+    out["areas_latest"] = f"{future} future weeks"
+    if limit is not None and future < limit:
+        out.update(status="WARN", flags=f"seasonal factors running out: {future} future weeks left (limit {limit:.0f})")
+    return out
+
+
 def main() -> int:
     rules = load_rules()
     log = pd.read_csv(FETCH_LOG) if FETCH_LOG.exists() else pd.DataFrame(columns=["series_id", "status"])
-    results = pd.DataFrame([check(item, rules, log) for item in inventory()])
+    results = pd.DataFrame([check(item, rules, log) for item in inventory()] + [seasonal_factor_check(rules)])
     results.to_csv(OUTPUT, index=False)
 
     counts = results.status.value_counts().to_dict()

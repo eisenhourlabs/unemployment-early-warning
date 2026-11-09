@@ -13,7 +13,7 @@ Each XLSX has an "About" sheet (source, units, link, citation); DOL files also g
 with the description of every column (config/dol_columns.csv and config/derived_columns.csv).
 
 What it never writes: series whose catalog licence is not "public" (e.g. U. Michigan sentiment:
-citation-required; Chicago Fed Labor Market Indicators: terms not yet confirmed) and the private state weights.
+citation-required; Chicago Fed Labor Market Indicators: restricted, local-only) and the state weights.
 Called by build_site.py.
 """
 

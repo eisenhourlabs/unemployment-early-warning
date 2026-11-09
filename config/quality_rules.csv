@@ -14,7 +14,8 @@ max_age_days,??UR,85,State unemployment rates (LAUS) come out about 3 weeks afte
 max_age_days,JTS*,100,JOLTS is published about 5-6 weeks after the month and dated the 1st
 max_age_days,UMCSENT,100,FRED posts U. Michigan sentiment with about a one-month delay
 max_age_days,PERMIT,85,Census building permits come out mid-month for the prior month (about 78 days old just before the next release)
-max_age_days,CFLMI*,45,Chicago Fed LMI: monthly dated by BLS reference week; twice-monthly releases
+max_age_days,CFLMI*,45,Chicago Fed LMI (local-only since Phase 4): monthly dated by BLS reference week; twice-monthly releases
+max_age_days,RPLS*,45,Revelio RPLS (Phase 4 stage 4d): monthly; brief allows 45 days
 max_age_days,DOL:national_weekly_eta539.csv:*,42,ETA 539 national report ran 4 weeks behind on 2026-11-07 (latest 2026-10-10); revisit after a few weeks of observation
 max_age_days,DOL:national_weekly.csv:cc_*,21,As CCSA
 max_age_days,DOL:claims_rates_weekly.csv:cc_*,21,As CCSA
@@ -38,6 +39,8 @@ known_gap,DOL:benefit_duration_quarterly.csv:*,2000-12-31,As above
 known_gap,DOL:benefit_duration_quarterly.csv:*,2003-06-30,As above
 known_gap,DOL:benefit_duration_quarterly.csv:*,2003-09-30,As above
 known_gap,DOL:benefit_duration_quarterly.csv:*,2025-12-31,As above
+min_areas,DOL:ar539.csv:*,50,State completeness: flag a latest week with fewer than 50 of the 53 areas reported (Phase 4 brief)
+min_future_weeks,DOL:seasonal_factors.csv,8,Warn when fewer than 8 future weeks of DOL's published seasonal factors remain (next year's appear each spring)
 skip,CFLMIFORECASTREV*,,One-off revised forecast published only for October 2025 (shutdown); not an ongoing series
 outlier_window_years,*,3,Trailing window of period-to-period changes (decision 2026-11-07)
 outlier_z,*,6,Flag when |robust z| of the latest change exceeds this (median / 1.4826 x MAD)

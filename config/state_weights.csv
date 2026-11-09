@@ -1,46 +1,46 @@
-# Footprint ranking: 1 = largest exposure, 44 states. Ties share a rank. Updated 2026-11-07.
-state,state_name,footprint_rank
-TX,Texas,1
-CA,California,2
-NC,North Carolina,3
-PA,Pennsylvania,4
-FL,Florida,5
-OH,Ohio,6
-IL,Illinois,7
-GA,Georgia,8
-VA,Virginia,9
-IN,Indiana,10
-TN,Tennessee,11
-SC,South Carolina,12
-NY,New York,13
-KY,Kentucky,14
-AL,Alabama,15
-WA,Washington,15
-WI,Wisconsin,17
-MD,Maryland,18
-MI,Michigan,19
-MO,Missouri,19
-NJ,New Jersey,19
-LA,Louisiana,22
-MS,Mississippi,23
-AZ,Arizona,24
-OK,Oklahoma,25
-CO,Colorado,26
-MN,Minnesota,26
-WV,West Virginia,26
-OR,Oregon,29
-IA,Iowa,30
-KS,Kansas,31
-NM,New Mexico,32
-HI,Hawaii,33
-NV,Nevada,33
-ID,Idaho,35
-NE,Nebraska,36
-DE,Delaware,37
-MT,Montana,38
-NH,New Hampshire,38
-ME,Maine,40
-ND,North Dakota,40
-UT,Utah,40
-WY,Wyoming,40
-SD,South Dakota,44
+# Footprint weights: 1 = largest exposure; ties share a rank. weight = share of the total (6 decimals, sums to 1; 0 for states not listed). 44 states. Generated 2026-11-08 by src/transforms/make_state_weights.py.
+state,state_name,footprint_rank,weight
+TX,Texas,1,0.083832
+CA,California,2,0.079341
+NC,North Carolina,3,0.060629
+PA,Pennsylvania,4,0.056886
+FL,Florida,5,0.055389
+OH,Ohio,6,0.052395
+IL,Illinois,7,0.047904
+GA,Georgia,8,0.043413
+VA,Virginia,9,0.041916
+IN,Indiana,10,0.035928
+TN,Tennessee,11,0.032186
+SC,South Carolina,12,0.029192
+NY,New York,13,0.025449
+KY,Kentucky,14,0.023952
+AL,Alabama,15,0.023204
+WA,Washington,15,0.023204
+WI,Wisconsin,17,0.020210
+MD,Maryland,18,0.019461
+MI,Michigan,19,0.018713
+MO,Missouri,19,0.018713
+NJ,New Jersey,19,0.018713
+LA,Louisiana,22,0.017964
+MS,Mississippi,23,0.017216
+AZ,Arizona,24,0.015719
+OK,Oklahoma,25,0.014222
+CO,Colorado,26,0.011976
+MN,Minnesota,26,0.011976
+WV,West Virginia,26,0.011976
+OR,Oregon,29,0.010479
+IA,Iowa,30,0.009731
+KS,Kansas,31,0.008982
+NM,New Mexico,32,0.008234
+HI,Hawaii,33,0.006736
+NV,Nevada,33,0.006736
+ID,Idaho,35,0.005988
+NE,Nebraska,36,0.005239
+DE,Delaware,37,0.004491
+MT,Montana,38,0.003742
+NH,New Hampshire,38,0.003742
+ME,Maine,40,0.002994
+ND,North Dakota,40,0.002994
+UT,Utah,40,0.002994
+WY,Wyoming,40,0.002994
+SD,South Dakota,44,0.002245

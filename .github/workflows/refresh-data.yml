@@ -45,10 +45,7 @@ jobs:
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
         run: python src/fetchers/fred_fetcher.py
-      - name: Fetch Chicago Fed Labor Market Indicators (Tier 3; logs failures, never fails the run)
-        id: fetch_chicagofed
-        if: ${{ !cancelled() }}
-        run: python src/fetchers/chicagofed_fetcher.py
+      # The Chicago Fed Labor Market Indicators are fetched on Troy's PC only (licence; Phase 4 decision P3).
       # DOL steps run even if an earlier step failed (!cancelled), so one outage doesn't block the rest.
       - name: Fetch DOL national weekly claims (ETA 539)
         id: dol_national
@@ -66,6 +63,10 @@ jobs:
         id: dol_rates
         if: ${{ !cancelled() }}
         run: python src/transforms/dol_rates.py
+      - name: State measures (state rates, year-on-year changes, diffusion index, weighted figures)
+        id: state_measures
+        if: ${{ !cancelled() }}
+        run: python src/transforms/state_measures.py
       - name: Check DOL data (fails if DOL and FRED claims differ by more than 1%)
         id: dol_checks
         if: ${{ !cancelled() }}

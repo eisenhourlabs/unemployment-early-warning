@@ -1,0 +1,56 @@
+# The 53 DOL unemployment-insurance reporting areas. area_type: state / dc = fetched from FRED ({ST}ICLAIMS, {ST}CCLAIMS,
+# {ST}UR) and used in the diffusion index and weighted figures; territory = shown in state tables only (DOL ar539 data).
+state,state_name,fips,area_type
+AL,Alabama,01,state
+AK,Alaska,02,state
+AZ,Arizona,04,state
+AR,Arkansas,05,state
+CA,California,06,state
+CO,Colorado,08,state
+CT,Connecticut,09,state
+DE,Delaware,10,state
+DC,District of Columbia,11,dc
+FL,Florida,12,state
+GA,Georgia,13,state
+HI,Hawaii,15,state
+ID,Idaho,16,state
+IL,Illinois,17,state
+IN,Indiana,18,state
+IA,Iowa,19,state
+KS,Kansas,20,state
+KY,Kentucky,21,state
+LA,Louisiana,22,state
+ME,Maine,23,state
+MD,Maryland,24,state
+MA,Massachusetts,25,state
+MI,Michigan,26,state
+MN,Minnesota,27,state
+MS,Mississippi,28,state
+MO,Missouri,29,state
+MT,Montana,30,state
+NE,Nebraska,31,state
+NV,Nevada,32,state
+NH,New Hampshire,33,state
+NJ,New Jersey,34,state
+NM,New Mexico,35,state
+NY,New York,36,state
+NC,North Carolina,37,state
+ND,North Dakota,38,state
+OH,Ohio,39,state
+OK,Oklahoma,40,state
+OR,Oregon,41,state
+PA,Pennsylvania,42,state
+RI,Rhode Island,44,state
+SC,South Carolina,45,state
+SD,South Dakota,46,state
+TN,Tennessee,47,state
+TX,Texas,48,state
+UT,Utah,49,state
+VT,Vermont,50,state
+VA,Virginia,51,state
+WA,Washington,53,state
+WV,West Virginia,54,state
+WI,Wisconsin,55,state
+WY,Wyoming,56,state
+PR,Puerto Rico,72,territory
+VI,U.S. Virgin Islands,78,territory

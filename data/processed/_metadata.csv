@@ -1,8 +1,14 @@
 series_id,title,units,frequency,seasonal_adjustment,last_updated,first_date,last_date,last_value
 ADPMNUSNERSA,Total Nonfarm Private Payroll Employment,Persons,Monthly,Seasonally Adjusted,2026-11-04 07:28:30-06,2010-01-01,2026-10-01,132971000.0
+AKCCLAIMS,Continued Claims (Insured Unemployment) in Alaska,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:39:05-06,1990-01-06,2026-10-24,3964.0
+AKICLAIMS,Initial Claims in Alaska,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:39:03-06,1990-01-06,2026-10-31,587.0
+AKUR,Unemployment Rate in Alaska,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:42:14-05,1990-01-01,2026-09-01,4.3
 ALCCLAIMS,Continued Claims (Insured Unemployment) in Alabama,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:39:02-06,1990-01-06,2026-10-24,6866.0
 ALICLAIMS,Initial Claims in Alabama,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:39:05-06,1990-01-06,2026-10-31,1515.0
 ALUR,Unemployment Rate in Alabama,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:41:08-05,1990-01-01,2026-09-01,3.5
+ARCCLAIMS,Continued Claims (Insured Unemployment) in Arkansas,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:39:04-06,1990-01-06,2026-10-24,4747.0
+ARICLAIMS,Initial Claims in Arkansas,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:39:05-06,1990-01-06,2026-10-31,1095.0
+ARUR,Unemployment Rate in Arkansas,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:38:35-05,1990-01-01,2026-09-01,3.9
 AWHMAN,"Average Weekly Hours of Production and Nonsupervisory Employees, Manufacturing",Hours,Monthly,Seasonally Adjusted,2026-11-06 09:42:35-06,1990-01-01,2026-10-01,41.8
 AZCCLAIMS,Continued Claims (Insured Unemployment) in Arizona,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:39:02-06,1990-01-06,2026-10-24,19038.0
 AZICLAIMS,Initial Claims in Arizona,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:39:05-06,1990-01-06,2026-10-31,2242.0
@@ -52,6 +58,12 @@ CFLMIPROBPLUS02PPFINAL,CFLMI Real-Time Unemployment Rate 1-Month Forecast Probab
 COCCLAIMS,Continued Claims (Insured Unemployment) in Colorado,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:39:03-06,1990-01-06,2026-10-24,30486.0
 COICLAIMS,Initial Claims in Colorado,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:39:00-06,1990-01-06,2026-10-31,3104.0
 COUR,Unemployment Rate in Colorado,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:38:02-05,1990-01-01,2026-09-01,4.1
+CTCCLAIMS,Continued Claims (Insured Unemployment) in Connecticut,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:39:04-06,1990-01-06,2026-10-24,20473.0
+CTICLAIMS,Initial Claims in Connecticut,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:39:03-06,1990-01-06,2026-10-31,2098.0
+CTUR,Unemployment Rate in Connecticut,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:38:59-05,1990-01-01,2026-09-01,5.1
+DCCCLAIMS,Continued Claims (Insured Unemployment) in the District of Columbia,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:59-06,1990-01-06,2026-10-24,6495.0
+DCICLAIMS,Initial Claims in the District of Columbia,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:57-06,1990-01-06,2026-10-31,562.0
+DCUR,Unemployment Rate in the District of Columbia,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:43:08-05,1990-01-01,2026-09-01,5.6
 DECCLAIMS,Continued Claims (Insured Unemployment) in Delaware,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:54-06,1990-01-06,2026-10-24,4404.0
 DEICLAIMS,Initial Claims in Delaware,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:39:01-06,1990-01-06,2026-10-31,540.0
 DEUR,Unemployment Rate in Delaware,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:44:57-05,1990-01-01,2026-09-01,4.6
@@ -97,6 +109,9 @@ LACCLAIMS,Continued Claims (Insured Unemployment) in Louisiana,Number,"Weekly, E
 LAICLAIMS,Initial Claims in Louisiana,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:53-06,1990-01-06,2026-10-31,1099.0
 LAUR,Unemployment Rate in Louisiana,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:46:49-05,1990-01-01,2026-09-01,4.0
 LNS13025703,"Of Total Unemployed, Percent Unemployed 27 Weeks & over",Percent,Monthly,Seasonally Adjusted,2026-11-06 09:42:45-06,1948-01-01,2026-10-01,27.6
+MACCLAIMS,Continued Claims (Insured Unemployment) in Massachusetts,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:58-06,1990-01-06,2026-10-24,62990.0
+MAICLAIMS,Initial Claims in Massachusetts,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:58-06,1990-01-06,2026-10-31,4561.0
+MAUR,Unemployment Rate in Massachusetts,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:41:13-05,1990-01-01,2026-09-01,4.3
 MDCCLAIMS,Continued Claims (Insured Unemployment) in Maryland,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:51-06,1990-01-06,2026-10-24,20686.0
 MDICLAIMS,Initial Claims in Maryland,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:49-06,1990-01-06,2026-10-31,2181.0
 MDUR,Unemployment Rate in Maryland,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:48:34-05,1990-01-01,2026-09-01,3.9
@@ -158,6 +173,9 @@ PAICLAIMS,Initial Claims in Pennsylvania,Number,"Weekly, Ending Saturday",Not Se
 PAUR,Unemployment Rate in Pennsylvania,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:42:02-05,1990-01-01,2026-09-01,3.6
 PAYEMS,"All Employees, Total Nonfarm",Thousands of Persons,Monthly,Seasonally Adjusted,2026-11-06 09:43:20-06,1948-01-01,2026-10-01,159293.0
 PERMIT,New Privately-Owned Housing Units Authorized in Permit-Issuing Places: Total Units,Thousands of Units,Monthly,Seasonally Adjusted Annual Rate,2026-10-27 09:04:15-05,1990-01-01,2026-09-01,1398.0
+RICCLAIMS,Continued Claims (Insured Unemployment) in Rhode Island,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:40-06,1990-01-06,2026-10-24,7230.0
+RIICLAIMS,Initial Claims in Rhode Island,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:41-06,1990-01-06,2026-10-31,647.0
+RIUR,Unemployment Rate in Rhode Island,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:52:09-05,1990-01-01,2026-09-01,3.6
 SAHMREALTIME,Real-time Sahm Rule Recession Indicator,Percentage Points,Monthly,Seasonally Adjusted,2026-11-06 09:47:24-06,1959-12-01,2026-10-01,0.0
 SCCCLAIMS,Continued Claims (Insured Unemployment) in South Carolina,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:40-06,1990-01-06,2026-10-24,13760.0
 SCICLAIMS,Initial Claims in South Carolina,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:41-06,1990-01-06,2026-10-31,1704.0
@@ -186,6 +204,9 @@ UTUR,Unemployment Rate in Utah,Percent,Monthly,Seasonally Adjusted,2026-10-20 09
 VACCLAIMS,Continued Claims (Insured Unemployment) in Virginia,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:33-06,1990-01-06,2026-10-24,18644.0
 VAICLAIMS,Initial Claims in Virginia,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:37-06,1990-01-06,2026-10-31,1934.0
 VAUR,Unemployment Rate in Virginia,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:55:36-05,1990-01-01,2026-09-01,3.6
+VTCCLAIMS,Continued Claims (Insured Unemployment) in Vermont,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:32-06,1990-01-06,2026-10-24,2124.0
+VTICLAIMS,Initial Claims in Vermont,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:35-06,1990-01-06,2026-10-31,487.0
+VTUR,Unemployment Rate in Vermont,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:54:42-05,1990-01-01,2026-09-01,2.6
 WACCLAIMS,Continued Claims (Insured Unemployment) in Washington,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:35-06,1990-01-06,2026-10-24,65663.0
 WAICLAIMS,Initial Claims in Washington,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:34-06,1990-01-06,2026-10-31,5907.0
 WAUR,Unemployment Rate in Washington,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:54:48-05,1990-01-01,2026-09-01,4.8

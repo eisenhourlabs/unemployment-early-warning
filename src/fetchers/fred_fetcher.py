@@ -4,7 +4,8 @@ FRED fetcher: downloads every active FRED series listed in config/series_catalog
 What it does, step by step:
   1. Reads your FRED API key (from config/.env on your PC, or from a GitHub secret in the cloud).
   2. Reads the series catalog and picks rows where fetcher == "fred" and status == "active".
-     Rows whose ID starts with STATE_ are expanded to one series per state in config/state_weights.csv.
+     Rows whose ID starts with STATE_ (fetcher fred) are expanded to one series per state in config/states.csv:
+     the 50 states and DC, 51 x 3 = 153 series (Phase 4; until then only the 44 weighted states).
   3. Downloads each series' history from the FRED API, from 1990 or from the catalog's history_start
      date when one is set (e.g. UNRATE from 1948, for long-run percentiles on the dashboard).
   4. Saves it to data/processed/<SERIES_ID>.csv  (columns: date, value).
@@ -34,7 +35,7 @@ import requests
 # ---------------------------------------------------------------------------
 ROOT = Path(__file__).resolve().parents[2]
 CATALOG = ROOT / "config" / "series_catalog.csv"
-STATE_WEIGHTS = ROOT / "config" / "state_weights.csv"
+STATES = ROOT / "config" / "states.csv"   # all 53 DOL areas; FRED has the 50 states + DC
 PROCESSED = ROOT / "data" / "processed"
 VINTAGES = ROOT / "data" / "vintages"
 LOG_FILE = ROOT / "data" / "fetch_log.csv"
@@ -67,10 +68,9 @@ def series_to_fetch(only=None) -> dict[str, str]:
 
     Per-state series inherit the tier of their STATE_ template row.
     """
-    states = []
-    with open(STATE_WEIGHTS) as f:
+    with open(STATES) as f:
         lines = [l for l in f if not l.startswith("#")]
-        states = [row["state"] for row in csv.DictReader(lines)]
+        states = [row["state"] for row in csv.DictReader(lines) if row["area_type"] in ("state", "dc")]
 
     tiers = {}   # dicts keep insertion order, so series are fetched in catalog order
     with open(CATALOG) as f:
