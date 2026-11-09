@@ -99,8 +99,8 @@ JTSHIR,Hires: Total Nonfarm,Rate,Monthly,Seasonally Adjusted,2026-11-03 09:10:53
 JTSJOL,Job Openings: Total Nonfarm,Level in Thousands,Monthly,Seasonally Adjusted,2026-11-03 09:10:46-06,2000-12-01,2026-09-01,7523.0
 JTSLDR,Layoffs and Discharges: Total Nonfarm,Rate,Monthly,Seasonally Adjusted,2026-11-03 09:11:07-06,2000-12-01,2026-09-01,1.0
 JTSQUR,Quits: Total Nonfarm,Rate,Monthly,Seasonally Adjusted,2026-11-03 09:11:01-06,2000-12-01,2026-09-01,2.1
-KSCCLAIMS,Continued Claims (Insured Unemployment) in Kansas,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-10-30 07:39:58-05,1990-01-06,2026-10-17,6098.0
-KSICLAIMS,Initial Claims in Kansas,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-10-30 07:39:49-05,1990-01-06,2026-10-24,935.0
+KSCCLAIMS,Continued Claims (Insured Unemployment) in Kansas,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-09 07:39:28-06,1990-01-06,2026-10-24,6084.0
+KSICLAIMS,Initial Claims in Kansas,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-09 07:39:28-06,1990-01-06,2026-10-31,881.0
 KSUR,Unemployment Rate in Kansas,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:46:27-05,1990-01-01,2026-09-01,3.8
 KYCCLAIMS,Continued Claims (Insured Unemployment) in Kentucky,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:51-06,1990-01-06,2026-10-24,8705.0
 KYICLAIMS,Initial Claims in Kentucky,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:53-06,1990-01-06,2026-10-31,1215.0
@@ -216,6 +216,6 @@ WIUR,Unemployment Rate in Wisconsin,Percent,Monthly,Seasonally Adjusted,2026-10-
 WVCCLAIMS,Continued Claims (Insured Unemployment) in West Virginia,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:32-06,1990-01-06,2026-10-24,4596.0
 WVICLAIMS,Initial Claims in West Virginia,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:30-06,1990-01-06,2026-10-31,652.0
 WVUR,Unemployment Rate in West Virginia,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:54:34-05,1990-01-01,2026-09-01,4.0
-WYCCLAIMS,Continued Claims (Insured Unemployment) in Wyoming,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-10-30 07:39:28-05,1990-01-06,2026-10-17,1409.0
-WYICLAIMS,Initial Claims in Wyoming,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-10-30 07:39:26-05,1990-01-06,2026-10-24,451.0
+WYCCLAIMS,Continued Claims (Insured Unemployment) in Wyoming,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-09 07:39:28-06,1990-01-06,2026-10-24,1531.0
+WYICLAIMS,Initial Claims in Wyoming,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-09 07:39:28-06,1990-01-06,2026-10-31,479.0
 WYUR,Unemployment Rate in Wyoming,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:45:03-05,1990-01-01,2026-09-01,3.0
