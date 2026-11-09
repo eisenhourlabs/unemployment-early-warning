@@ -282,7 +282,9 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 - 2026-11-09: Stage 4d built on branch phase4d (decisions delegated by Troy): RPLS NOT used (Revelio Terms of Service
   forbid reposting and automated download; O5 gate); WARN deferred (needs an account in Troy's name; preferred source:
   Cleveland Fed researchers' CC BY 4.0 WARN data on openICPSR); new Job Losses chart "Private payrolls: ADP vs. BLS"
-  (ADPMNUSNERSA vs. new catalog row USPRIV); About "Considered but not used" list; UNRATEMD skipped in quality checks. 
+  (ADPMNUSNERSA vs. new catalog row USPRIV); About "Considered but not used" list; UNRATEMD skipped in quality checks.
+  Browser check 897 pass; merged into main; "Publish site" run 42636785514 green; verified live. Branches phase4c and
+  phase4d equal main (delete when Troy agrees). 
 - Watch: on 2026-11-08 the Claude Code process crashed once (exit 0xC0000409, likely low memory on this 6 GB PC). Keep
   sessions short, commit work in progress often.
 
