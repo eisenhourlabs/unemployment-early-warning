@@ -257,15 +257,16 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   drives the FRED state fetch (153 state series, 184 FRED series); weight column in config/state_weights.csv
   (src/transforms/make_state_weights.py); src/transforms/state_measures.py -> data/processed/states/ (5 tables) + workflow
   step; quality rules (RPLS age, min_areas 50, seasonal factors < 8 future weeks); STATE_DIFFUSION row (future until 4b);
-  tests/test_state_measures.py (8 tests); decisions.md and CLAUDE.md rules updated. State claims = state UI + work-share
-  equivalents (Troy to confirm). Gate evidence: Refresh data on phase4a, publish off, run 42556738486 green (184 FRED ok,
+  tests/test_state_measures.py (8 tests); decisions.md and CLAUDE.md rules updated. State claims = regular state UI
+  only (Troy, at the gate; DOL / FRED state figures also add work-share equivalents, so ours run 0.05-0.3% lower). Gate evidence: Refresh data on phase4a, publish off, run 42556738486 green (184 FRED ok,
   12 tests OK, 199 series health 0 FAIL); git ls-files shows 0 CFLMI files; TX / OH / MA vs. DOL's state report exact
-  (IUR within 0.005 pt). WAITING AT THE 4a GATE for Troy's approval to merge into main and start 4b.
+  (IUR within 0.005 pt; with state UI only the gap is exactly the work-share columns). Troy approved 4a on
+  2026-11-08; merged into main and pushed. Next: 4b States page on branch phase4b.
 - Watch: on 2026-11-08 the Claude Code process crashed once (exit 0xC0000409, likely low memory on this 6 GB PC). Keep
   sessions short, commit work in progress often.
 
 ## Next steps, in order
-Phase 4 stage 4a is at its gate, waiting for Troy (see the Status lines above). Next: 4b States page on branch phase4b. Earlier phases are done and live.
+Phase 4 stage 4a is approved and merged (see the Status lines above). Next: 4b States page on branch phase4b. Earlier phases are done and live.
 1. Watch the first automated runs (no build work):
    - Thu 2026-11-12, 7:35 am CT "Refresh data": the model step should archive a second run and the panel should switch
      from "First live run" to "vs. last week". Check the run log and the site.

@@ -3,7 +3,7 @@ Tests for the state measures (Phase 4 stage 4a). Run them with:
     python -m unittest discover -s tests -v
 
 What they check:
-  1. weekly_measures: claims = state UI + work-share equivalents; 4-week averages; the year-on-year change compares
+  1. weekly_measures: claims = regular state UI only (work-share equivalents left out); 4-week averages; the year-on-year change compares
      the same weeks 52 weeks earlier; continued weeks are dated by the week they reflect.
   2. diffusion: unweighted, covered-employment weighted and weights-weighted shares on a small made-up example,
      including a state with no value (the shares then use the states that have one).
@@ -49,14 +49,14 @@ class WeeklyMeasureTests(unittest.TestCase):
         self.assertAlmostEqual(w.ic_rate.iloc[0], 0.1)             # 1,000 / 1,000,000 x 100
         self.assertTrue(np.isnan(w.ic_rate_4wk.iloc[2]))           # needs 4 weeks
 
-    def test_work_share_added_and_continued_weeks_dated_by_reflected_week(self):
+    def test_work_share_excluded_and_continued_weeks_dated_by_reflected_week(self):
         w = sm.weekly_measures(fake_ar539("OH", 6, 100, 900, ws_ic=5, ws_cw=10))
-        self.assertTrue((w.initial_claims.dropna() == 105).all())
-        self.assertTrue((w.continued_weeks.dropna() == 910).all())
+        self.assertTrue((w.initial_claims.dropna() == 100).all())     # regular state UI only
+        self.assertTrue((w.continued_weeks.dropna() == 900).all())
         # The first continued-weeks row belongs to the week BEFORE the first filing week.
         first_cc = w.dropna(subset=["continued_weeks"]).week_ended.min()
         self.assertEqual(first_cc, pd.Timestamp("2019-12-28"))
-        self.assertAlmostEqual(w.cc_rate.dropna().iloc[0], 0.091)
+        self.assertAlmostEqual(w.cc_rate.dropna().iloc[0], 0.09)
 
 
 class DiffusionTests(unittest.TestCase):

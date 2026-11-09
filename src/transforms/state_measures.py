@@ -10,7 +10,7 @@ Inputs (all already on file after the DOL and FRED steps):
   config/state_weights.csv                           the committed weights (decision O2)
 
 Definitions (s = area, t = week ending Saturday; every rate is per 100 covered jobs):
-  claims                  NSA regular state UI plus work-sharing equivalents, as DOL publishes state claims
+  claims                  NSA regular state UI only (excludes work-sharing equivalents; decision at the 4a gate)
   initial claims rate     IC_s,t / CE_s,t, shown as its 4-week average
   frequency change        4-week average IC_s,t / 4-week average IC_s,t-52 - 1, in % (year-on-year on unadjusted
                           data: states' seasonal patterns differ and DOL publishes no state seasonal factors)
@@ -87,15 +87,15 @@ def year_earlier(df: pd.DataFrame, col: str) -> pd.Series:
 
 def weekly_measures(ar539: pd.DataFrame) -> pd.DataFrame:
     """One row per area and week: claims, rates, 4-week averages and year-on-year changes."""
-    # Claims = regular state UI + work-sharing (short-time compensation) equivalents. That is how DOL publishes
-    # state claims (its weekly state report and FRED's {ST}ICLAIMS / {ST}CCLAIMS), and the national ETA 539 totals
-    # are the sum of the states on this basis (decision 2026-11-08, stage 4a).
+    # Claims = regular state UI only (Troy's decision at the 4a gate, 2026-11-08). DOL's weekly state report, FRED's
+    # {ST}ICLAIMS / {ST}CCLAIMS and the national totals also add work-sharing (short-time compensation) equivalents,
+    # so our state figures run slightly below those (by the ar539 work-share columns).
     ic = ar539[["state", "week_ended", "covered_employment"]].copy()
-    ic["initial_claims"] = ar539.ic_state_ui + ar539.ic_stc_workshare_equiv
+    ic["initial_claims"] = ar539.ic_state_ui
     # Continued weeks claimed are dated by the week of unemployment they reflect.
     cc = ar539[["state", "reflected_week_ended", "covered_employment"]].rename(
         columns={"reflected_week_ended": "week_ended", "covered_employment": "ce_cc"})
-    cc["continued_weeks"] = ar539.cw_state_ui + ar539.cw_stc_workshare_equiv
+    cc["continued_weeks"] = ar539.cw_state_ui
     df = ic.merge(cc, on=["state", "week_ended"], how="outer")
     df["week_ended"] = pd.to_datetime(df.week_ended)
     df["covered_employment"] = df.covered_employment.fillna(df.ce_cc)
