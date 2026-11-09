@@ -48,7 +48,7 @@ PREVIEW = DOL / "claims_estimates_preview.csv"
 REVISIONS = ROOT / "docs" / "data_revisions.md"
 EASTERN = ZoneInfo("America/New_York")
 
-FILL_METHOD = "carry"           # set at the 4c gate by the pre-registered rule (see the docstring)
+FILL_METHOD = "scaled"          # chosen by the pre-registered rule (reports/fallback_validation.md, 2026-11-09)
 METHOD_VERSION = "v1"
 RELEASE_DELAY = timedelta(days=5, hours=9, minutes=30)   # week ends Saturday 0:00 -> Thursday 9:30 am ET
 COLUMNS = ["week_ended", "measure", "estimate_nsa", "seasonal_factor", "estimate_sa", "areas_reported",
