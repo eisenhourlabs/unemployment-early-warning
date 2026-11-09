@@ -290,8 +290,9 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 
 ## Next steps, in order
 Phase 4 stages 4a-4d are done and live (see Status). Next: 4e model tests (pre-registration doc first, for Troy's
-approval). Open for Troy: WARN notices (sign up for openICPSR to use the Cleveland Fed CC BY data, or a WARN Firehose key);
-whether to ask Revelio for written permission to chart RPLS. Note: Claude
+approval).
+LATER (Troy, 2026-11-09: not worth the effort now; revisit later): WARN notices (openICPSR sign-up for the Cleveland Fed CC BY
+data, or a WARN Firehose key); asking Revelio for written permission to chart RPLS. Note: Claude
 Code's auto mode blocks Claude from pushing to main (it publishes the site); Troy runs the merge + push himself, or
 approves it, then Claude verifies the Publish run. Branches phase4a / phase4b equal main and can be deleted when Troy agrees. Earlier phases are done and live.
 1. Watch the first automated runs (no build work):
