@@ -19,7 +19,7 @@
     <tbody>
       {%- for r in summary %}
       <tr>
-        <td>{% if r.link %}<a href="#card-{{ r.link }}">{{ r.name }}</a>{% else %}{{ r.name }}{% endif %}
+        <td>{% if r.link %}<a href="{% if ".html" in r.link %}{{ r.link }}{% else %}#card-{{ r.link }}{% endif %}">{{ r.name }}</a>{% else %}{{ r.name }}{% endif %}
           <span class="muted units">{{ r.units }}</span></td>
         <td class="num">{{ r.latest }}</td>
         <td>{{ r.as_of }}</td>

@@ -21,3 +21,27 @@ exhaustion_duration_monthly,final_payments,"Final payments (claimants who exhaus
 exhaustion_duration_monthly,weeks_compensated,"Weeks compensated, all weeks, state UI (ar5159 c38), for the month",From ar5159; US = sum of all areas
 exhaustion_duration_monthly,exhaustion_rate_12m,"12-month exhaustion rate (percent): share of claimants who use up their state benefits","12-month average final payments / 12-month average first payments lagged 6 months x 100 (DOL definition)"
 exhaustion_duration_monthly,avg_duration_12m,"Average benefit duration (weeks), all claimants",12-month weeks compensated / 12-month first payments (DOL definition)
+state_weekly,state,"Area code: every state, DC, PR (Puerto Rico) and VI (U.S. Virgin Islands)",config/states.csv
+state_weekly,week_ended,"Week ending (Saturday). Initial claims are dated by the week filed; continued weeks claimed by the week of unemployment they reflect (ar539 reflected week), as FRED and DOL's national table do",src/transforms/state_measures.py
+state_weekly,initial_claims,"State UI initial claims, regular state programs only (excludes work-sharing equivalents), not seasonally adjusted",DOL ar539 ic_state_ui
+state_weekly,initial_claims_4wk,"4-week average of initial_claims (blank unless all 4 weeks are present)",src/transforms/state_measures.py
+state_weekly,covered_employment,"Covered employment: jobs covered by state UI (the claims-rate denominator)",DOL ar539
+state_weekly,ic_rate,"Initial claims rate: initial_claims / covered_employment x 100",src/transforms/state_measures.py
+state_weekly,ic_rate_4wk,"4-week average of ic_rate",src/transforms/state_measures.py
+state_weekly,ic_yoy_pct,"Frequency change: initial_claims_4wk / the same 4 weeks 52 weeks earlier - 1, in % (year-on-year on unadjusted data: no state seasonal factors are published)",src/transforms/state_measures.py
+state_weekly,continued_weeks,"Continued weeks claimed, regular state programs only, not seasonally adjusted",DOL ar539 cw_state_ui
+state_weekly,cc_rate,"Continuing claims rate: continued_weeks / covered employment x 100",src/transforms/state_measures.py
+state_weekly,cc_rate_4wk,"4-week average of cc_rate",src/transforms/state_measures.py
+state_weekly,cc_rate_yoy_pp,"cc_rate_4wk minus its value 52 weeks earlier, in percentage points",src/transforms/state_measures.py
+state_monthly,state,"Area code (the unemployment rate exists for the states and DC only)",config/states.csv
+state_monthly,month,"Month (YYYY-MM)",src/transforms/state_measures.py
+state_monthly,unemployment_rate,"State unemployment rate, seasonally adjusted (BLS Local Area Unemployment Statistics via FRED, {ST}UR)",BLS LAUS via FRED
+state_monthly,ur_12m_low,"Lowest unemployment_rate over the last 12 months, this month included",src/transforms/state_measures.py
+state_monthly,ur_above_12m_low_pp,"unemployment_rate minus ur_12m_low, in percentage points (a state Sahm-style gap; no trigger attached)",src/transforms/state_measures.py
+state_monthly,exhaustion_rate_12m,"12-month exhaustion rate: 12-month average final payments / 12-month average first payments 6 months earlier, in %",DOL ETA 5159 (exhaustion_duration_monthly.csv)
+state_monthly,avg_duration_12m,"Average weeks paid: 12-month weeks compensated / 12-month first payments, all claimants",DOL ETA 5159 (exhaustion_duration_monthly.csv)
+diffusion_weekly,week_ended,"Week ending (Saturday)",src/transforms/state_measures.py
+diffusion_weekly,areas_reported,"Number of areas (states and DC) with a year-on-year change this week",src/transforms/state_measures.py
+diffusion_weekly,areas_up,"Number of those areas whose initial claims (4-week average) are up 20% or more on a year earlier",src/transforms/state_measures.py
+diffusion_weekly,diffusion_unweighted_pct,"areas_up / areas_reported x 100",src/transforms/state_measures.py
+diffusion_weekly,diffusion_ce_weighted_pct,"Share of covered employment in the areas counted in areas_up, in % (the headline diffusion index)",src/transforms/state_measures.py

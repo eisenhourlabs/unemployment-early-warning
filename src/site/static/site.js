@@ -33,6 +33,9 @@
              events: { recession: "rgba(90,160,240,0.18)", scare: "rgba(240,160,90,0.18)" } }
   };
   function themeName() { return document.documentElement.dataset.theme === "dark" ? "dark" : "light"; }
+  // States page: the National / Weighted view (kept in the address as ?view=weighted). A line with meta.view is
+  // shown only while the page is in that view (states.js switches the view and asks for a redraw).
+  function viewName() { return document.documentElement.dataset.view === "weighted" ? "weighted" : "national"; }
 
   // Return a copy of a chart's figure with the current theme's colors applied.
   function themed(fig) {
@@ -40,6 +43,7 @@
     var f = JSON.parse(JSON.stringify(fig));
     f.data.forEach(function (tr) {
       var role = (tr.meta && tr.meta.role) || "";
+      if (tr.meta && tr.meta.view) tr.visible = viewName() === tr.meta.view;
       var color = role.indexOf("faint") === 0 ? t.faint
                 : role.indexOf("grey") === 0 ? t.greys[+role.slice(4)] : t.accent;
       if (tr.line && role !== "fan-edge" && role !== "fan") tr.line.color = color;
@@ -176,7 +180,14 @@
     var done = function () { busy = false; };
     return (vis ? Plotly.update(gd, { visible: vis }, update) : Plotly.relayout(gd, update)).then(done, done);
   }
+  // The end of the page's time setting: the date the States page's map, tiles and table show.
+  function pageEnd() {
+    if (current.key === "custom") return current.to;
+    var view = data.recessionViews.filter(function (v) { return v.key === current.key; })[0];
+    return view ? view.end : data.today;
+  }
   function applyPageRange() {
+    document.dispatchEvent(new CustomEvent("uw:range", { detail: { end: pageEnd() } }));
     return Promise.all(charts.map(function (c) { var w = windowFor(c); return setView(c, w[0], w[1]); }));
   }
 
@@ -188,6 +199,7 @@
     var r = p.get("range"), from = p.get("from"), to = p.get("to");
     if (isDate(from) && isDate(to) && from < to) { current = { key: "custom", from: from, to: to }; }
     else if (VALID.indexOf(r) >= 0) { current = { key: r, from: null, to: null }; }
+    if (p.get("view") === "weighted") document.documentElement.dataset.view = "weighted";
   }
   function writeUrl() {
     var p = new URLSearchParams(window.location.search);
@@ -288,6 +300,7 @@
     document.documentElement.dataset.theme = next;
     try { localStorage.setItem("uw-theme", next); } catch (e) { /* private browsing: just don't remember */ }
     markToggle(); redrawAll();
+    document.dispatchEvent(new CustomEvent("uw:theme"));
   });
   phone.addEventListener("change", redrawAll);
 
@@ -362,6 +375,9 @@
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape") document.querySelectorAll(".menu-list").forEach(function (m) { m.hidden = true; });
   });
+
+  // What states.js uses: the end of the time setting, a redraw (after a view switch) and the theme colours.
+  window.UW = { pageEnd: pageEnd, redraw: redrawAll, themeName: themeName, themes: THEMES };
 
   // ---------------------------------------------------------------- start
   readUrl();

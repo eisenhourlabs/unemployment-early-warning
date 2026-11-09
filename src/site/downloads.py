@@ -85,6 +85,17 @@ DOL_FILES = [
 ]
 # Files we calculate from DOL data (the rest are DOL's figures with plain column names)
 DOL_DERIVED = {"national_weekly", "claims_rates_weekly", "exhaustion_duration_monthly", "benefit_duration_quarterly"}
+# State files (Phase 4, States page): (file stem, frequency, plain name). Built by src/transforms/state_measures.py.
+# The weighted files (weighted_weekly / weighted_monthly) are charted only and NEVER listed here (Phase 4 brief).
+STATE_FILES = [
+    ("state_weekly", "weekly", "State claims: rates and year-on-year changes, by state and week, from 1995"),
+    ("state_monthly", "monthly", "State unemployment rate, gap to its 12-month low, exhaustion and duration, by month"),
+    ("diffusion_weekly", "weekly", "State claims diffusion index (share of states / covered jobs with claims up 20%+)"),
+]
+STATE_CITATION = ("U.S. Department of Labor, Employment and Training Administration, unemployment insurance data "
+                  "(ar539, ETA 5159), https://oui.doleta.gov/unemploy/DataDownloads.asp; state unemployment rates: "
+                  "U.S. Bureau of Labor Statistics (LAUS) via FRED, Federal Reserve Bank of St. Louis. Calculated by "
+                  "Unemployment Watch: see the Columns sheet.")
 DOL_PAGE = "https://oui.doleta.gov/unemploy/DataDownloads.asp"
 SITE_URL = "https://eisenhourlabs.github.io/unemployment-early-warning/"   # where GitHub Pages publishes the site
 DOL_CLAIMS_PAGE = "https://oui.doleta.gov/unemploy/claims.asp"
@@ -159,6 +170,17 @@ def dol_entries() -> list[dict]:
             "page": cat[cat_id]["dashboard_page"], "state": "",
             "updated": str(m["last_checked_utc"])[:10] if m is not None else last_check,
             "csv": f"data/dol/{stem}.csv", "xlsx": f"data/dol/{stem}.xlsx", "path": DOL / f"{stem}.csv", "report": report,
+        })
+    # State files (States page): calculated from DOL state data (and BLS state unemployment rates)
+    for stem, freq, name in STATE_FILES:
+        entries.append({
+            "kind": "DOL", "id": stem, "name": name, "title": name,
+            "source": "DOL (derived)" if stem != "state_monthly" else "DOL and BLS (derived)",
+            "source_url": DOL_PAGE, "frequency": freq, "units": "Various (see data dictionary)",
+            "sa": "NSA" if stem != "state_monthly" else "SA (unemployment rate) and NSA",
+            "page": "states", "state": "", "updated": last_check,
+            "csv": f"data/states/{stem}.csv", "xlsx": f"data/states/{stem}.xlsx",
+            "path": PROCESSED / "states" / f"{stem}.csv", "report": "", "citation": STATE_CITATION,
         })
     return entries
 
@@ -348,7 +370,9 @@ def about_sheet(e: dict, built: datetime) -> list[list]:
             ["Frequency", e["frequency"]], ["Units", e["units"]], ["Seasonal adjustment", e["sa"]],
             ["Source last updated", e["updated"]], ["File built (UTC)", built.strftime("%Y-%m-%d %H:%M")],
             ["Permanent link (CSV)", SITE_URL + e["csv"]], ["", ""]]
-    if e["kind"] == "FRED":
+    if e.get("citation"):
+        rows.append(["Citation", e["citation"]])
+    elif e["kind"] == "FRED":
         rows.append(["Citation", f"{e['source']}, {e['title']} [{e['id']}], retrieved from FRED, Federal Reserve "
                                  f"Bank of St. Louis; {e['source_url']}"])
     else:

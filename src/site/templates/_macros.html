@@ -31,7 +31,7 @@
     <button type="button" class="btn" data-png="{{ c.id }}">Download image</button>
   </div>
   {%- else %}
-  <p class="chart-footer">Not available for download (licensed data).</p>
+  <p class="chart-footer">{{ c.no_download_note or "Not available for download (licensed data)." }}</p>
   {%- endif %}
 </section>
 {%- endmacro %}

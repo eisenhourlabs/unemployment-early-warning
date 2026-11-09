@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 
 import pandas as pd
 
-from common import (ROOT, fmt_date, fmt_month, fred, fred_metadata, line_chart, lines_chart, model_output,
+from common import (PROCESSED, ROOT, fmt_date, fmt_month, fred, fred_metadata, line_chart, lines_chart, model_output,
                     percentile_text, signal, value_on_or_before)
 
 INTRO = ("Indicators that have tended to move before layoffs: the yield curve, temporary help jobs, factory "
@@ -40,7 +40,19 @@ def signal_cell(sid: str, live: dict | None) -> dict | None:
             effect = "pushes the score up" if c["contribution"] > 0 else "pulls the score down"
             out["detail"] = f"{c['sentence']}; in the early-warning score this {effect}."
         return out
+    if sid in DERIVED:
+        return {"context": "Context: not part of the early-warning score"}
     return None
+
+
+# Derived series (not from FRED) that also get a summary-table row: catalog ID -> how to read it.
+# The state claims diffusion index lives on the States page; here it is context only, with no colour (Phase 4 4b).
+def state_diffusion() -> pd.Series:
+    d = pd.read_csv(PROCESSED / "states" / "diffusion_weekly.csv", parse_dates=["week_ended"])
+    return d.set_index("week_ended").diffusion_ce_weighted_pct.dropna().round(1)
+
+
+DERIVED = {"STATE_DIFFUSION": state_diffusion}
 
 # Series shown as a % change vs. a year ago instead of their level (the level just trends up over time).
 YEAR_AGO_CHANGE = {"TEMPHELPS"}
@@ -48,7 +60,8 @@ YEAR_AGO_CHANGE = {"TEMPHELPS"}
 # Which chart card each summary-table row links to (rows without a chart have no link).
 CHART_FOR = {"T10Y3M": "yield-curve", "TEMPHELPS": "temp-help", "AWHMAN": "factory-hours", "PERMIT": "permits",
              "GACDFSA066MSFRBPHI": "regional-surveys", "GACDISA066MSFRBNY": "regional-surveys",
-             "UMCSENT": "sentiment", "NFCICREDIT": "credit-conditions", "NFCI": "financial-conditions"}
+             "UMCSENT": "sentiment", "NFCICREDIT": "credit-conditions", "NFCI": "financial-conditions",
+             "STATE_DIFFUSION": "states.html#card-diffusion"}
 
 
 def page_series(s: pd.Series, series_id: str) -> pd.Series:
@@ -63,7 +76,8 @@ def page_series(s: pd.Series, series_id: str) -> pd.Series:
 UNITS = {"JTSQUR": "Percent of employment", "JTSJOL": "Thousands of openings", "AWHMAN": "Hours",
          "T10Y3M": "Percentage points", "PERMIT": "Thousands of units, annual rate",
          "GACDFSA066MSFRBPHI": "Diffusion index", "GACDISA066MSFRBNY": "Diffusion index",
-         "UMCSENT": "Index, 1966 Q1 = 100", "NFCICREDIT": "Index, 0 = average", "NFCI": "Index, 0 = average"}
+         "UMCSENT": "Index, 1966 Q1 = 100", "NFCICREDIT": "Index, 0 = average", "NFCI": "Index, 0 = average",
+         "STATE_DIFFUSION": "Percent of covered jobs"}
 
 
 def decimals_for(s: pd.Series, series_id: str) -> int:
@@ -98,11 +112,12 @@ def summary_table(live: dict | None = None) -> list[dict]:
     meta = fred_metadata()
     with open(ROOT / "config" / "series_catalog.csv", newline="") as f:
         rows = [r for r in csv.DictReader(f)
-                if r["dashboard_page"] == "leading" and r["status"] == "active" and r["fetcher"] == "fred"]
+                if r["status"] == "active" and ((r["dashboard_page"] == "leading" and r["fetcher"] == "fred")
+                                                or r["series_id"] in DERIVED)]
     table = []
     for r in rows:
         sid = r["series_id"]
-        s = page_series(fred(sid), sid)
+        s = DERIVED[sid]() if sid in DERIVED else page_series(fred(sid), sid)
         monthly = r["frequency"] == "monthly"
         latest_date, latest = s.index[-1], s.iloc[-1]
         # 3-month change: vs. 3 months earlier (monthly) or about 91 days earlier (daily / weekly)
@@ -110,7 +125,7 @@ def summary_table(live: dict | None = None) -> list[dict]:
         _, before = value_on_or_before(s, back)
         dec = decimals_for(s, sid)
         change = round(latest - before, dec)
-        units = "% change vs. a year ago" if sid in YEAR_AGO_CHANGE else UNITS.get(sid, meta.loc[sid, "units"])
+        units = "% change vs. a year ago" if sid in YEAR_AGO_CHANGE else (UNITS[sid] if sid in UNITS else meta.loc[sid, "units"])
         risky_way = r.get("risk_direction", "")
         z = standardized_change(s, latest - before)
         if change == 0 or not risky_way:

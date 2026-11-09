@@ -86,6 +86,7 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 | `src/site/build_site.py` | Builds the "Unemployment Watch" website (Plotly + Jinja2) into `site/`: shared frame, renders each page |
 | `src/site/common.py` | Shared site pieces: data reading, formats, statistics, recession shading, chart builders |
 | `src/site/overview.py`, `outlook.py`, `job_losses.py`, `duration.py`, `leading.py` | One module per page: its charts, tiles, tables and text (Outlook = early-warning score in full) |
+| `src/site/states.py` | States page (Phase 4b): diffusion chart, weighted-vs-national charts (Weighted view only, no download), and `site/assets/states.json` (per-state history for the map, tiles, table); browser side in `static/states.js`, map outline `static/usa_110m.json` |
 | `src/site/about.py` | About page: definitions, sources (from the catalog), updates, revisions, method notes, disclaimer |
 | `src/site/downloads.py` | Data & Downloads page: writes every CSV / XLSX and bundle under `site/data/` (public licences only) |
 | `config/derived_columns.csv` | Descriptions of the columns we calculate in DOL files (used in download Columns sheets) |
@@ -261,12 +262,19 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   only (Troy, at the gate; DOL / FRED state figures also add work-share equivalents, so ours run 0.05-0.3% lower). Gate evidence: Refresh data on phase4a, publish off, run 42556738486 green (184 FRED ok,
   12 tests OK, 199 series health 0 FAIL); git ls-files shows 0 CFLMI files; TX / OH / MA vs. DOL's state report exact
   (IUR within 0.005 pt; with state UI only the gap is exactly the work-share columns). Troy approved 4a on
-  2026-11-08; merged into main and pushed. Next: 4b States page on branch phase4b.
+  2026-11-08; merged into main and pushed.
+- 2026-11-08: Stage 4b BUILT and committed on branch phase4b (local only: not pushed, not merged; site unchanged). States page
+  (nav after Duration): National / Weighted switch, 4 tiles, map with 5 measures, breadth (diffusion) chart, weighted vs.
+  national charts, sortable 53-row table; map / tiles / table follow the END of the time setting (last period with 90%+
+  of areas reporting). Downloads data/states/ (3 files x CSV + XLSX), Leading row (context), About notes, catalog
+  STATE_DIFFUSION active. Browser check 876 pass (States section added); 17 unit tests OK. Waiting for Troy's review.
 - Watch: on 2026-11-08 the Claude Code process crashed once (exit 0xC0000409, likely low memory on this 6 GB PC). Keep
   sessions short, commit work in progress often.
 
 ## Next steps, in order
-Phase 4 stage 4a is approved and merged (see the Status lines above). Next: 4b States page on branch phase4b. Earlier phases are done and live.
+Phase 4 stage 4a is approved and merged. Stage 4b is built on branch phase4b and waits for Troy's review (preview:
+build the site, then `python -m http.server 8000 --directory site`, open http://localhost:8000/states.html). After his
+approval: commit, push phase4b, merge into main, confirm "Publish site" is green. Then 4c (shutdown fallback) on phase4c. Earlier phases are done and live.
 1. Watch the first automated runs (no build work):
    - Thu 2026-11-12, 7:35 am CT "Refresh data": the model step should archive a second run and the panel should switch
      from "First live run" to "vs. last week". Check the run log and the site.

@@ -71,7 +71,10 @@
       months after the fact, so a new downturn appears only once it is official.</dd>
     <dt>Diffusion index</dt>
     <dd>Regional Fed surveys report the share of firms seeing increases minus the share seeing decreases; below zero
-      means more firms report declines.</dd>
+      means more firms report declines. The <a href="states.html">States</a> page uses a different one, the state
+      claims diffusion index: the share of covered jobs in states (and DC) whose state UI initial claims, as a 4-week
+      average, are up 20% or more on the same weeks a year earlier. Each state counts by its covered employment; the
+      simple share of states is in the download. The 20% threshold was fixed before any testing.</dd>
     <dt>NFCI</dt>
     <dd>The Chicago Fed's National Financial Conditions Index: zero is the average since 1971, positive means tighter
       than average. The credit subindex covers credit conditions only.</dd>
@@ -149,6 +152,17 @@
       to most state and local government workers, so covered employment jumped and rates before and after 1978 are not
       strictly comparable; the rate charts mark it. DOL's state files (ETA 539 by state, 5159, 218) start in 1995 by
       choice of this project.</li>
+    <li><strong>State measures (States page).</strong> State claims are regular state UI programs only, not seasonally
+      adjusted: DOL publishes no state seasonal factors, and applying the national factors to states would be wrong
+      because states' seasonal patterns differ. So each week is compared with the same weeks a year earlier (new
+      claims as a % change of the 4-week average; the continuing claims rate as a change in points). DOL's weekly
+      state report and FRED's state claims series also add work-sharing claims, so our state figures can run slightly
+      below those. The state "vs. 12-month low" gap is the unemployment rate minus its lowest value over the last 12
+      months; no warning trigger is attached to it. The map, tiles and table show the last week or month at or before
+      the end of the time setting in which nearly all states (90% or more) had reported.</li>
+    <li><strong>Weighted view (States page).</strong> {{ weighted_sentence }} The weighted figures are each state's
+      value times its weight, summed; when a state has no figure for a period, the remaining weights are scaled to
+      sum to one. They are charted on the States page and are not offered for download.</li>
     <li><strong>Reference lines.</strong> The dotted lines on the two claims-rate charts are the average SA weekly rate
       over the 12 months up to each of the last three NBER business-cycle peaks (April 2000 to March 2001, January to
       December 2007, March 2019 to February 2020), and over 2019.</li>

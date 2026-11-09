@@ -237,3 +237,34 @@ table.model-table td.num, table.model-table th.num { text-align: right; padding-
 .method summary { cursor: pointer; font-weight: 600; }
 .method details p, .method details li { max-width: 85ch; color: var(--text-2); }
 .method details ul { padding-left: 1.1rem; }
+
+/* ---- States page (Phase 4) ---- */
+.states-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; margin-bottom: 8px; }
+.viewswitch { display: flex; align-items: center; gap: 6px; }
+.viewswitch button, .state-table th button {
+  font: inherit; font-size: 0.85rem; border: 1px solid var(--border); background: var(--surface);
+  color: var(--text); border-radius: 6px; padding: 4px 12px; cursor: pointer; min-height: 32px;
+}
+.viewswitch button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.states-asof { margin: 0; color: var(--text-2); font-size: 0.9rem; }
+.weighted-note { margin: 0 0 10px; color: var(--text-2); font-size: 0.88rem; max-width: 80ch; }
+.states-tiles { margin-bottom: 4px; }
+.tile-weighted { margin: 2px 0 0; font-size: 0.95rem; font-weight: 600; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.states-tiles .tile-value { font-size: 1.35rem; }
+.map-card { margin-bottom: 16px; }
+.measure-switch { display: flex; flex-wrap: wrap; gap: 4px 14px; border: 0; margin: 4px 0 8px; padding: 0; font-size: 0.88rem; }
+.measure-switch legend { float: left; margin-right: 4px; padding: 0; }
+.measure-switch label { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; min-height: 28px; }
+.map { width: 100%; height: 460px; }
+@media (max-width: 759px) { .map { height: 300px; } }
+.section-title { font-size: 1.15rem; margin: 4px 0 2px; }
+.weighted-section > .why { margin-bottom: 10px; }
+.state-table-card { margin-bottom: 16px; }
+table.state-table { min-width: 960px; font-size: 0.85rem; }
+.state-table th { padding-right: 6px; }
+.state-table th button { border: 0; background: none; padding: 2px 0; min-height: 0; font-weight: 600; font-size: 0.8rem;
+  color: var(--text-2); text-align: inherit; }
+.state-table th[aria-sort="ascending"] button::after { content: " ▲"; }
+.state-table th[aria-sort="descending"] button::after { content: " ▼"; }
+.state-table th.num, .state-table td.num { text-align: right; padding-right: 14px; white-space: nowrap; }
+.state-table tr.late td { color: var(--warn-text); }

@@ -10,7 +10,8 @@ Edge without a window (Playwright drives the browser), and checks on each page:
      page address; a shared link opens the same range;
   4. the CSV and image downloads work;
   5. at phone width (400 px) nothing is wider than the screen and charts sit in one column.
-Plus, on the first page: custom dates and dark mode. Phase 3 (Overview and Outlook): every colour has its text label
+Plus, on the first page: custom dates and dark mode. States page (Phase 4): map, tiles and table follow the end of
+the time setting, the National / Weighted switch, sorting, hand-checked numbers and the wording rule. Phase 3 (Overview and Outlook): every colour has its text label
 and icon; forecast elements (fans, nowcast, FOMC marker) show only when the time range includes today; the what-if
 toggle shows and hides the stress paths.
 Screenshots (desktop and phone, per page) are saved to the folder given (default: site_check/ in your
@@ -306,20 +307,27 @@ def check_data_page(browser, url, base):
 
     print("File contents")
     mismatched = []
-    for href in [l for l in links if l.endswith(".csv") and ("/series/" in l or "/dol/" in l)]:
+    for href in [l for l in links if l.endswith(".csv") and ("/series/" in l or "/dol/" in l or "/states/" in l)]:
         got = pd.read_csv(SITE / href, dtype=str)
         if "/series/" in href:
             sid = Path(href).stem
             src = pd.read_csv(ROOT / "data" / "processed" / f"{sid}.csv", dtype=str).rename(columns={"value": sid})
-        else:
-            src = pd.read_csv(ROOT / "data" / "processed" / "dol" / Path(href).name, dtype=str)
+        else:   # DOL files (data/processed/dol/) and the States page files (data/processed/states/)
+            folder = "states" if "/states/" in href else "dol"
+            src = pd.read_csv(ROOT / "data" / "processed" / folder / Path(href).name, dtype=str)
         if not got.fillna("").equals(src.fillna("")):
             mismatched.append(href)
-    check(not mismatched, f"every series / DOL CSV equals its source file row for row {mismatched[:3]}")
+    check(not mismatched, f"every series / DOL / state CSV equals its source file row for row {mismatched[:3]}")
+    state_files = sorted(Path(l).name for l in links if "/states/" in l)
+    check(state_files == sorted(f"{s}.{x}" for s in ("diffusion_weekly", "state_monthly", "state_weekly")
+                                for x in ("csv", "xlsx")), f"States downloads: {state_files}")
+    weighted_leaks = [str(q.relative_to(SITE)) for q in (SITE / "data").rglob("*weighted*")
+                      if "ce_weighted" not in q.name]
+    check(not weighted_leaks, f"no weighted figures offered for download {weighted_leaks[:3]}")
     bad_xlsx = []
     for href in [l for l in links if l.endswith(".xlsx")]:
         names = load_workbook(SITE / href, read_only=True).sheetnames
-        want = (["Data", "Columns", "About"] if ("/dol/" in href or "dol_weekly" in href)
+        want = (["Data", "Columns", "About"] if ("/dol/" in href or "/states/" in href or "dol_weekly" in href)
                 else ["Daily", "Weekly (Sat)", "Weekly (Fri)", "Monthly", "Dictionary"] if "everything" in href else ["Data", "About"])
         if names != want:
             bad_xlsx.append(f"{href}: {names}")
@@ -337,7 +345,7 @@ def check_data_page(browser, url, base):
     n_dol = dol_rows.count()
     linked = page.locator("table.files tbody tr[data-kind='DOL'] a[href='data/data_dictionary.csv']").count()
     check(n_dol > 0 and linked == n_dol, f"all {n_dol} DOL rows link to the data dictionary ({linked} linked)")
-    dol_files = {Path(l).name for l in links if "/dol/" in l and l.endswith(".csv")}
+    dol_files = {Path(l).name for l in links if ("/dol/" in l or "/states/" in l) and l.endswith(".csv")}
     missing = sorted(dol_files - set(dd["file"])) if len(dd) else sorted(dol_files)
     blank = int(dd["definition"].isna().sum() + dd["units"].isna().sum()) if len(dd) else -1
     check(not missing and blank == 0, f"dictionary covers every DOL file, no blank definitions or units {missing}")
@@ -396,7 +404,8 @@ def check_text_page(browser, url, name):
 
 def check_wording() -> None:
     """Words that must not appear on any public page (review 2026-11-07): the term "footprint" and any count
-    of states until Phase 4, and "IUI" except where it is spelled out as
+    of states in the page files (since Phase 4 the States page shows counts of states meeting a condition, filled in
+    by the browser in [data-count] elements only; check_states tests those), and "IUI" except where it is spelled out as
     "involuntary unemployment insurance (IUI)". Scans each page's full HTML, including the chart data."""
     import re
 
@@ -415,6 +424,11 @@ def check_wording() -> None:
         if n_iui != n_spelled:
             hits.append(f"{p.name}: {n_iui - n_spelled} 'IUI' without 'involuntary unemployment insurance (IUI)'")
     check(not hits, f"{len(pages)} pages free of 'footprint', state counts and unexplained 'IUI' {hits[:3]}")
+    # Phase 4 (brief): the States page also never says "employer" (other pages use "employers" in the ordinary
+    # sense, e.g. "employers usually cut hours before they cut jobs"); the live page is checked in check_states.
+    states_html = SITE / "states.html"
+    if states_html.exists():
+        check(not re.search(r"(?i)employer", states_html.read_text(encoding="utf-8")), "states.html never says 'employer'")
 
 
 # For each chart: visibility of its forecast elements (meta.today) and what-if paths (meta.whatif), and its x-range.
@@ -585,6 +599,172 @@ def check_phase3(browser, base) -> None:
     page.context.close()
 
 
+# ===========================================================================
+# States page (Phase 4 stage 4b)
+# ===========================================================================
+def expected_snapshot(end: str) -> dict:
+    """What the page should show for a time-setting end date, worked out here from site/assets/states.json the way
+    states.js does: the last week (month) at or before the end in which at least 90% of the areas report."""
+    import math
+    P = json.loads((SITE / "assets" / "states.json").read_text(encoding="utf-8"))
+
+    def last(arrays, keys, key):
+        carriers = sum(any(v is not None for v in a) for a in arrays)
+        need = math.ceil(0.9 * carriers)
+        i = max((k for k, x in enumerate(keys) if x <= key), default=-1)
+        while i >= 0 and sum(a[i] is not None for a in arrays) < need:
+            i -= 1
+        return i
+
+    return {"P": P, "ic": last(P["w"]["icy"], P["weeks"], end), "cc": last(P["w"]["cc"], P["weeks"], end),
+            "exh": last(P["m"]["exh"], P["months"], end[:7])}
+
+
+def fmt_long(d: str) -> str:
+    """2026-10-31 -> 'Oct 31, 2026' (the site's date format)."""
+    y, m, dd = d.split("-")
+    return f"{['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][int(m) - 1]} {int(dd)}, {y}"
+
+
+def signed(v: float, dec: int, unit: str) -> str:
+    r = round(v, dec)
+    return ("+" if r > 0 else "\u2212" if r < 0 else "") + f"{abs(r):,.{dec}f}{unit}"
+
+
+def table_column(page, i: int) -> list:
+    return page.evaluate(f"() => [...document.querySelectorAll('#state-table tbody tr')].map(r => r.cells[{i}].textContent)")
+
+
+def as_numbers(vals: list) -> list:
+    return [float(v.replace("\u2212", "-").replace("+", "").replace("%", "").replace(",", "")) for v in vals if v != "—"]
+
+
+def check_states(browser, base) -> None:
+    """Map, tiles and table follow the END of the time setting; the National / Weighted switch; sorting; the
+    wording rule (no 'footprint' or 'employer', no exact weights, state counts only in [data-count] elements)."""
+    import re
+    import pandas as pd
+
+    print("\n=== States page (map, tiles, table, views) ===")
+    url = base + "states.html"
+    page = browser.new_context(viewport={"width": 1280, "height": 900}).new_page()
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
+    page.goto(url)
+    page.wait_for_selector("body[data-ready=true][data-states-ready=true]", timeout=30000)
+    today = TODAY_OF(page)
+    snap = expected_snapshot(today)
+    P = snap["P"]
+    week = P["weeks"][snap["ic"]]
+
+    n_paths = page.locator("#states-map .choroplethlocation").count()
+    check(n_paths == 51, f"map draws the states and DC ({n_paths} shapes)")
+    asof = page.locator("#states-asof").text_content()
+    check(fmt_long(week) in asof, f"'as of' line shows the latest complete week {fmt_long(week)}: {asof}")
+
+    # Tile 1 by hand: the national year-on-year change in the data file for that week
+    ww = pd.read_csv(ROOT / "data" / "processed" / "states" / "weighted_weekly.csv").set_index("week_ended")
+    want = "National " + signed(ww.national_ic_yoy_pct[week], 1, "%")
+    got = page.locator("#tile-icy [data-fill=value]").text_content()
+    check(got == want, f"new-claims tile = data file ({got} vs {want})")
+    # Table by hand: Texas 4-week average new claims and its continuing claims rate
+    sw = pd.read_csv(ROOT / "data" / "processed" / "states" / "state_weekly.csv").set_index(["state", "week_ended"])
+    tx = page.evaluate("""() => [...document.querySelectorAll('#state-table tbody tr')]
+        .map(r => [...r.cells].map(c => c.textContent)).filter(c => c[0] === 'Texas')[0]""")
+    want_ic = f"{sw.initial_claims_4wk[('TX', week)]:,.0f}"
+    want_cc = f"{sw.cc_rate_4wk[('TX', P['weeks'][snap['cc']])]:.2f}%"
+    check(tx[1] == want_ic and tx[3] == want_cc, f"Texas row = data file ({tx[1]}, {tx[3]} vs {want_ic}, {want_cc})")
+    n_rows = page.locator("#state-table tbody tr").count()
+    check(n_rows == len(P["areas"]), f"table has every area ({n_rows} rows)")
+    texts = page.locator("main").inner_text()
+    check(not re.search(r"\b(nan|NaN|undefined|null|None)\b", texts), "no blank-value words on the page")
+
+    print("Sorting")
+    page.click("#state-table th button[data-sort=icy]")
+    nums = as_numbers(table_column(page, 2))
+    check(nums == sorted(nums, reverse=True), f"sort by 'vs. yr ago': highest first ({nums[:3]})")
+    page.click("#state-table th button[data-sort=icy]")
+    nums = as_numbers(table_column(page, 2))
+    check(nums == sorted(nums), "second click reverses it")
+    check(page.locator("#state-table th[aria-sort=ascending] button[data-sort=icy]").count() == 1, "aria-sort set")
+
+    print("Map measures")
+    for m in P["measures"]:
+        page.check(f"input[name=measure][value={m['key']}]")
+        page.wait_for_timeout(250)
+        footer = page.locator("#map-footer").text_content()
+        n = page.locator("#states-map .choroplethlocation").count()
+        check(footer.startswith(m["label"]) and n >= 51, f"measure '{m['label']}': map redrawn ({n} shapes)")
+    page.check("input[name=measure][value=icy]")
+
+    print("Time setting: the map, tiles and table follow its end")
+    page.click(".timecontrol > button[data-range='2008-09']")
+    page.wait_for_timeout(500)
+    s08 = expected_snapshot("2011-12-31")
+    w08 = fmt_long(P["weeks"][s08["ic"]])
+    check(w08 in page.locator("#states-asof").text_content(), f"2008-09 view: tiles and map as of {w08}")
+    through = table_column(page, 9)
+    n08 = sum(x == w08 for x in through)
+    check(n08 >= 50, f"2008-09 view: table data through {w08} ({n08} rows)")
+    page.click(".timecontrol > button[data-range='5y']")
+    page.wait_for_timeout(500)
+    check(fmt_long(week) in page.locator("#states-asof").text_content(), "back to 5Y: latest week again")
+
+    print("National / Weighted view")
+    view_traces = "document.getElementById('chart-diffusion').data.filter(t => t.meta && t.meta.view).map(t => t.visible)"
+    hidden = page.evaluate("[...document.querySelectorAll('[data-view-only=weighted]')].every(e => e.hidden)")
+    dashed = page.evaluate(view_traces)
+    check(hidden and dashed == [False], f"National view: weighted parts hidden, dashed line off ({dashed})")
+    map_z = page.evaluate("document.getElementById('states-map').data[0].z")
+    page.click("[data-view=weighted]")
+    page.wait_for_timeout(600)
+    shown = page.evaluate("[...document.querySelectorAll('[data-view-only=weighted]')].every(e => !e.hidden)")
+    dashed = page.evaluate(view_traces)
+    widths = page.evaluate("[...document.querySelectorAll('.weighted-section .chart')]"
+                           ".map(e => Math.round(e.getBoundingClientRect().width))")
+    check(shown and dashed == [True] and "view=weighted" in page.url,
+          "Weighted view: parts shown, dashed line on, address ?view=weighted")
+    check(all(w > 400 for w in widths), f"weighted charts drawn at full width ({widths})")
+    no_dl = page.locator(".weighted-section [data-csv-menu], .weighted-section [data-png]").count()
+    check(no_dl == 0, "weighted charts offer no download")
+    check(page.evaluate("document.getElementById('states-map').data[0].z") == map_z, "the map is the same in both views")
+    page.goto(url + "?view=weighted&range=2020")
+    page.wait_for_selector("body[data-ready=true][data-states-ready=true]")
+    check(page.evaluate("[...document.querySelectorAll('.weighted-section')].every(e => !e.hidden)"),
+          "shared link ?view=weighted opens the Weighted view")
+
+    print("Wording (O1)")
+    visible = page.evaluate("""() => { const c = document.querySelector('main').cloneNode(true);
+        c.querySelectorAll('[data-count]').forEach(e => e.remove()); return c.innerText; }""")
+    html = (SITE / "states.html").read_text(encoding="utf-8")
+    payload = (SITE / "assets" / "states.json").read_text(encoding="utf-8")
+    bad = [w for w in ("footprint", "employer", "branch") if re.search(w, visible + html, re.I)]
+    check(not bad, f"States page never says {bad or 'footprint / employer / branch'}")
+    counts = re.findall(r"\b\d+\s+states\b", visible, re.I)
+    check(not counts, f"state counts only in the marked tile elements {counts[:3]}")
+    weights = pd.read_csv(ROOT / "config" / "state_weights.csv", comment="#")
+    leaked = [f"{w:.6f}" for w in weights.weight if f"{w:.6f}" in html or f"{w:.6f}" in payload]
+    check(not leaked and '"weights"' not in payload and "rank" not in payload,
+          f"no exact weight, weight list or rank in the page or its data file ({leaked[:2]})")
+
+    print("Dark mode and phone")
+    page.click("#theme-toggle")
+    page.wait_for_timeout(500)
+    bg = page.evaluate("document.getElementById('states-map').layout.paper_bgcolor")
+    check(bg == "#1a1a19", f"dark mode: map redrawn dark ({bg})")
+    page.screenshot(path=str(SHOTS / "states_weighted_dark.png"), full_page=True)
+    page.click("#theme-toggle")
+    pp = browser.new_context(viewport={"width": 400, "height": 860}, device_scale_factor=2,
+                             is_mobile=True, has_touch=True).new_page()
+    pp.goto(url)
+    pp.wait_for_selector("body[data-states-ready=true]")
+    right = pp.evaluate("Math.round(document.getElementById('states-map').getBoundingClientRect().right)")
+    check(right <= 400, f"phone: map fits the screen (right edge {right} px)")
+    check(not errors, f"no browser errors {errors[:3] if errors else ''}")
+    page.context.close(); pp.context.close()
+
+
 def TODAY_OF(page) -> str:
     return json.loads(page.locator("#page-data").text_content())["today"]
 
@@ -612,6 +792,8 @@ def main() -> int:
                 check_text_page(browser, base + href, href)
             else:
                 check_page(browser, base + href, href, Path(href).stem, first_page=(i == 0))
+                if href == "states.html":
+                    check_states(browser, base)
         browser.close()
 
     print(f"\nScreenshots in {SHOTS}")

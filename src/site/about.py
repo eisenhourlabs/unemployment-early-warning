@@ -9,6 +9,7 @@ import re
 import pandas as pd
 
 from common import ROOT, claims_weekly
+from states import WEIGHTED_SENTENCE
 
 LICENCE_TEXT = {
     "public": "Public",
@@ -53,4 +54,5 @@ def iur_check() -> tuple[float, int]:
 def build() -> dict:
     max_diff, since = iur_check()
     return {"sources": source_rows(), "iur_max_diff": f"{max_diff:.2f}", "iur_since": since,
+            "weighted_sentence": WEIGHTED_SENTENCE,
             "issues_url": "https://github.com/eisenhourlabs/unemployment-early-warning/issues/new"}

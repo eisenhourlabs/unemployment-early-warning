@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{#- States page (Phase 4 stage 4b). The tiles, map and table are filled in by assets/states.js from
+    assets/states.json and follow the END of the time setting; the three charts are ordinary chart cards.
+    Wording rule (decision O1): "Weighted", never "footprint" or "employer"; no weights, ranks or a count of
+    weighted states. Counts of states meeting a condition sit only in elements marked data-count. -#}
+{% from "_macros.html" import chart_card %}
+
+{% block content %}
+<div class="page-intro">
+  <h1>States: where claims and unemployment are rising</h1>
+  <p>{{ intro }}</p>
+</div>
+
+<div class="states-head">
+  <div class="viewswitch" role="group" aria-label="View">
+    <span class="tc-label">View:</span>
+    <button type="button" data-view="national" aria-pressed="true">National</button>
+    <button type="button" data-view="weighted" aria-pressed="false">Weighted</button>
+  </div>
+  <p class="states-asof" id="states-asof" aria-live="polite">Loading state data…</p>
+</div>
+<p class="weighted-note" data-view-only="weighted" hidden>{{ weighted_sentence }}</p>
+<noscript><p class="model-note">The map, tiles and state table need JavaScript.</p></noscript>
+
+<div class="tiles states-tiles" id="states-tiles">
+  <section class="card tile" id="tile-icy">
+    <h3>New claims vs. a year ago</h3>
+    <p class="tile-value" data-fill="value">–</p>
+    <p class="tile-weighted" data-view-only="weighted" data-fill="weighted" hidden></p>
+    <p class="tile-asof" data-fill="asof"></p>
+  </section>
+  <section class="card tile" id="tile-cc">
+    <h3>Continuing claims rate</h3>
+    <p class="tile-value" data-fill="value">–</p>
+    <p class="tile-pct" data-fill="change"></p>
+    <p class="tile-weighted" data-view-only="weighted" data-fill="weighted" hidden></p>
+    <p class="tile-asof" data-fill="asof"></p>
+  </section>
+  <section class="card tile" id="tile-diff">
+    <h3>Jobs in states with new claims up {{ threshold }}%+</h3>
+    <p class="tile-value" data-fill="value">–</p>
+    <p class="tile-pct" data-fill="count" data-count></p>
+    <p class="tile-weighted" data-view-only="weighted" data-fill="weighted" hidden></p>
+    <p class="tile-asof" data-fill="asof"></p>
+  </section>
+  <section class="card tile" id="tile-gap">
+    <h3>Unemployment {{ gap_threshold }} pt+ above its 12-month low</h3>
+    <p class="tile-value" data-fill="value" data-count>–</p>
+    <p class="tile-pct" data-fill="list"></p>
+    <p class="tile-asof" data-fill="asof"></p>
+  </section>
+</div>
+<p class="note">Tiles: all states on the same basis (not seasonally adjusted, 4-week averages); the year-on-year
+  comparison is with the same weeks a year earlier.</p>
+
+<section class="card map-card" aria-labelledby="map-title">
+  <h2 id="map-title">Map</h2>
+  <fieldset class="measure-switch">
+    <legend class="tc-label">Measure:</legend>
+    {%- for m in measures %}
+    <label><input type="radio" name="measure" value="{{ m.key }}"{% if loop.first %} checked{% endif %}> {{ m.label }}</label>
+    {%- endfor %}
+  </fieldset>
+  <div class="map" id="states-map" role="img" aria-label="Map of the selected measure by state; the table below lists every value"></div>
+  <p class="chart-note" id="map-missing" hidden></p>
+  <p class="chart-footer" id="map-footer"></p>
+  <p class="chart-footer">Colours stop at the 5th and 95th percentiles across states, so a few extreme states don't
+    wash out the rest; the tooltip and the table give each exact value. Territories (PR, VI) are in the table only.</p>
+</section>
+
+<div class="grid">
+  {{ chart_card(breadth) }}
+</div>
+
+<section class="weighted-section" data-view-only="weighted" hidden aria-labelledby="weighted-title">
+  <h2 id="weighted-title" class="section-title">Weighted vs. national</h2>
+  <p class="why">{{ weighted_sentence }}</p>
+  <div class="grid">
+    {%- for c in weighted_charts %}
+    {{ chart_card(c) }}
+    {%- endfor %}
+  </div>
+</section>
+
+<section class="card state-table-card" aria-labelledby="table-title">
+  <h2 id="table-title">State table</h2>
+  <p class="why" id="table-asof"></p>
+  <div class="table-scroll">
+  <table class="state-table" id="state-table">
+    <thead><tr>
+      <th aria-sort="ascending"><button type="button" data-sort="name">State</button></th>
+      <th class="num"><button type="button" data-sort="ic4">New claims, 4-wk avg</button></th>
+      <th class="num"><button type="button" data-sort="icy">vs. yr ago</button></th>
+      <th class="num"><button type="button" data-sort="cc">Cont. claims rate</button></th>
+      <th class="num"><button type="button" data-sort="ccy">vs. yr ago</button></th>
+      <th class="num"><button type="button" data-sort="ur">Unemp. rate</button></th>
+      <th class="num"><button type="button" data-sort="gap">vs. 12-mo low</button></th>
+      <th class="num"><button type="button" data-sort="exh">Exhaustion, 12-mo</button></th>
+      <th class="num"><button type="button" data-sort="dur">Avg weeks paid</button></th>
+      <th><button type="button" data-sort="through">Data through</button></th>
+    </tr></thead>
+    <tbody></tbody>
+  </table>
+  </div>
+  <p class="chart-footer">Click a column heading to sort (again to reverse). Claims: regular state UI programs, not
+    seasonally adjusted, 4-week averages; rates are per 100 covered jobs; "vs. yr ago" compares with the same 4 weeks
+    a year earlier (% for new claims, points for the continuing claims rate). Unemployment rate: BLS LAUS, seasonally
+    adjusted; "vs. 12-mo low" is the rise above its lowest value over the last 12 months, in points. Exhaustion and
+    average weeks paid: 12-month averages from DOL ETA 5159 (our calculation). Sources: DOL ETA 539 (ar539) and
+    ETA 5159; BLS via FRED. The state files are on the <a href="data.html">Data &amp; Downloads</a> page.</p>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="assets/states.js"></script>
+{% endblock %}

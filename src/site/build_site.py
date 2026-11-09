@@ -7,6 +7,7 @@ What it does, step by step:
        outlook.py     -> outlook.html      (early-warning score in full: history, triggers, forecasts, method)
        job_losses.py  -> job-losses.html   (7 charts)
        duration.py    -> duration.html     (7 charts)
+       states.py      -> states.html       (map, tiles, state table, 3 charts) + assets/states.json
        leading.py     -> leading.html      (summary table + 8 charts)
        downloads.py   -> data.html + every CSV / XLSX under site/data/
        about.py       -> about.html        (definitions, sources, updates, revisions, disclaimer)
@@ -45,6 +46,7 @@ import job_losses
 import leading
 import outlook
 import overview
+import states
 from common import PROCESSED, ROOT, claims_weekly, fmt_date, fmt_month, fred, is_preliminary
 
 HERE = Path(__file__).resolve().parent
@@ -64,7 +66,7 @@ DEFAULT_RANGE = "5y"
 
 # Top-bar links: (key, label, file). An empty file means "coming soon" (shown greyed out).
 NAV = [("overview", "Overview", "index.html"), ("outlook", "Outlook", "outlook.html"), ("job-losses", "Job Losses", "job-losses.html"),
-       ("duration", "Duration", "duration.html"), ("leading", "Leading", "leading.html"), ("data", "Data", "data.html"), ("about", "About", "about.html")]
+       ("duration", "Duration", "duration.html"), ("states", "States", "states.html"), ("leading", "Leading", "leading.html"), ("data", "Data", "data.html"), ("about", "About", "about.html")]
 
 
 # ===========================================================================
@@ -156,6 +158,7 @@ def main() -> None:
     jl = job_losses.build(built)
     du = duration.build(built)
     le = leading.build(built)
+    st = states.build(built)
     pages = [
         ("overview.html", "index.html",
          {**frame, **ov, "page": "overview", "title": "Overview", "calendar": release_calendar(),
@@ -172,6 +175,9 @@ def main() -> None:
          {**frame, **du, "page": "duration", "title": "Duration",
           "heading": "Duration: how long unemployment lasts",
           "page_data": page_data(du["charts"], built)}, len(du["charts"])),
+        ("states.html", "states.html",
+         {**frame, **st, "page": "states", "title": "States",
+          "page_data": page_data(st["charts"], built)}, len(st["charts"])),
         ("charts_page.html", "leading.html",
          {**frame, **le, "page": "leading", "title": "Leading Indicators",
           "heading": "Leading indicators: what tends to move first",
@@ -186,6 +192,8 @@ def main() -> None:
         shutil.copy(f, OUT / "assets" / f.name)
     # plotly.js ships inside the Python plotly package, so the browser version always matches.
     shutil.copy(Path(plotly.__file__).parent / "package_data" / "plotly.min.js", OUT / "assets" / "plotly.min.js")
+    # States page: per-state history behind its map, tiles and table (read in the browser by states.js)
+    print(f"  assets/states.json {states.write_payload(OUT / 'assets')} KB")
 
     # Every download file (CSV / XLSX) and the Data page's table
     dl = downloads.build(OUT, built)
