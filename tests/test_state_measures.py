@@ -99,13 +99,53 @@ class HelperTests(unittest.TestCase):
         self.assertAlmostEqual(mean.iloc[1], 1.0)
         self.assertAlmostEqual(present.iloc[1], 0.25)
 
-    def test_gap_to_12m_low_skips_missing_month(self):
-        idx = pd.period_range("2025-01", "2025-12", freq="M")
-        s = pd.Series([4.0, 3.8, 3.9, 4.0, 4.1, 4.0, 4.2, 4.3, 4.4, np.nan, 4.5, 4.6], index=idx)
-        low, gap = sm.gap_to_12m_low(s)
-        self.assertAlmostEqual(low.iloc[-1], 3.8)
-        self.assertAlmostEqual(gap.iloc[-1], 0.8)
-        self.assertTrue(np.isnan(low.iloc[9]))      # only 10 months of data so far, and one is missing
+    def test_gap_is_state_sahm_convention(self):
+        """Phase 4 review Gate 2: 3-month average minus the lowest 3-month average of the previous 12 months
+        (2 of 3 months allowed: Oct 2025 missing), identical to the national trigger's realtime.sahm()."""
+        idx = pd.period_range("2024-01", "2025-12", freq="M")
+        vals = [4.0] * 12 + [4.0] * 6 + [4.2, 4.4, 4.6, np.nan, 4.8, 5.0]
+        s = pd.Series(vals, index=idx)
+        avg3, low, gap = sm.gap_to_12m_low(s)
+        self.assertAlmostEqual(avg3.iloc[-1], 4.9)          # (4.8 + 5.0) / 2: October missing
+        self.assertAlmostEqual(low.iloc[-1], 4.0)
+        self.assertAlmostEqual(gap.iloc[-1], 0.9)
+        self.assertTrue(np.isnan(low.iloc[11]))             # needs 11 of the previous 12 months
+        sys.path.insert(0, str(ROOT / "src" / "model"))
+        from realtime import sahm
+        self.assertAlmostEqual(gap.iloc[-1], sahm(pd.Series(vals)))
+
+
+class ReviewGateTests(unittest.TestCase):
+    """Phase 4 review: 'vs. normal' and the weighted contributions."""
+
+    def test_vs_normal_median_of_prior_three_years_skipping_pandemic(self):
+        weeks = pd.date_range("2019-01-05", periods=52 * 4 + 1, freq="7D")       # last week: 2022-12-31
+        rate = pd.Series(2.0, index=weeks)                                       # 2021 after June: 2.0
+        rate[weeks < "2020-03-01"] = 1.0                                         # before the pandemic: 1.0
+        rate[(weeks >= "2020-03-01") & (weeks <= "2021-06-30")] = 9.0            # pandemic window: ignored
+        rate[weeks.year == 2022] = 1.0
+        rate[pd.Timestamp("2022-01-01")] = 2.0
+        df = pd.DataFrame({"state": "AA", "week_ended": weeks, "ic_rate_4wk": rate.values})
+        # same weeks 52/104/156 weeks earlier: 2022-01-01 (2.0), 2021-01-02 (pandemic: dropped), 2020-01-04 (1.0)
+        # normal = median(2.0, 1.0) = 1.5; latest 1.0 -> -33.3% vs. normal
+        self.assertAlmostEqual(sm.vs_normal(df).iloc[-1], (1.0 / 1.5 - 1) * 100)
+        df.loc[df.week_ended == weeks[-1], "ic_rate_4wk"] = 1.8
+        self.assertAlmostEqual(sm.vs_normal(df).iloc[-1], 20.0)
+
+    def test_contributions_sum_to_weighted_change(self):
+        weeks = pd.date_range("2024-01-06", periods=53, freq="7D")
+        rows = []
+        for st, r0, r1 in [("AA", 1.0, 1.5), ("BB", 2.0, 2.0), ("CC", 1.0, 0.5)]:
+            for i, wk in enumerate(weeks):
+                rows.append({"state": st, "week_ended": wk, "ic_rate_4wk": r0 if i < 52 else r1})
+        w = pd.Series({"AA": 0.5, "BB": 0.3, "CC": 0.2})
+        c = sm.contributions(pd.DataFrame(rows), w)
+        last = c[c.week_ended == weeks[-1]].set_index("state").contribution_pct
+        base = 0.5 * 1.0 + 0.3 * 2.0 + 0.2 * 1.0
+        self.assertAlmostEqual(last["AA"], 0.5 * 0.5 / base * 100)
+        self.assertAlmostEqual(last["CC"], 0.2 * -0.5 / base * 100)
+        weighted_change = ((0.5 * 1.5 + 0.3 * 2.0 + 0.2 * 0.5) / base - 1) * 100
+        self.assertAlmostEqual(last.sum(), weighted_change)
 
 
 class WeightFileTests(unittest.TestCase):
