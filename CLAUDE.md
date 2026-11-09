@@ -267,14 +267,16 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   (nav after Duration): National / Weighted switch, 4 tiles, map with 5 measures, breadth (diffusion) chart, weighted vs.
   national charts, sortable 53-row table; map / tiles / table follow the END of the time setting (last period with 90%+
   of areas reporting). Downloads data/states/ (3 files x CSV + XLSX), Leading row (context), About notes, catalog
-  STATE_DIFFUSION active. Browser check 876 pass (States section added); 17 unit tests OK. Waiting for Troy's review.
+  STATE_DIFFUSION active. Browser check 876 pass (States section added); 17 unit tests OK. Troy approved; phase4b
+  fast-forwarded into main and pushed by Troy (auto mode blocks Claude from pushing main); "Publish site" run
+  42562377636 green; live States page verified (51 map shapes, no browser errors). Next: 4c on branch phase4c.
 - Watch: on 2026-11-08 the Claude Code process crashed once (exit 0xC0000409, likely low memory on this 6 GB PC). Keep
   sessions short, commit work in progress often.
 
 ## Next steps, in order
-Phase 4 stage 4a is approved and merged. Stage 4b is built on branch phase4b and waits for Troy's review (preview:
-build the site, then `python -m http.server 8000 --directory site`, open http://localhost:8000/states.html). After his
-approval: commit, push phase4b, merge into main, confirm "Publish site" is green. Then 4c (shutdown fallback) on phase4c. Earlier phases are done and live.
+Phase 4 stages 4a and 4b are approved, merged and live. Next: 4c (shutdown fallback) on branch phase4c. Note: Claude
+Code's auto mode blocks Claude from pushing to main (it publishes the site); Troy runs the merge + push himself, or
+approves it, then Claude verifies the Publish run. Branches phase4a / phase4b equal main and can be deleted when Troy agrees. Earlier phases are done and live.
 1. Watch the first automated runs (no build work):
    - Thu 2026-11-12, 7:35 am CT "Refresh data": the model step should archive a second run and the panel should switch
      from "First live run" to "vs. last week". Check the run log and the site.
