@@ -1,5 +1,6 @@
 """
-Job Losses page (frequency: how many people are losing jobs). Seven charts, in the design's order.
+Job Losses page (frequency: how many people are losing jobs). Eight charts, in the design's order
+(the eighth, ADP vs. BLS private payrolls, is the Phase 4 stage 4d context chart).
 Called by build_site.py.
 """
 
@@ -8,7 +9,8 @@ from datetime import datetime
 import pandas as pd
 import plotly.graph_objects as go
 
-from common import (WHATIF_FOOTER, add_whatif, bars_with_average, claims_weekly, fred, line_chart, model_output,
+from common import (WHATIF_FOOTER, add_whatif, bars_with_average, claims_weekly, fred, line_chart, lines_chart,
+                    model_output,
                     ordinal, seasonal_chart, weekly_claims_chart, with_outlook, year_ago_change_pct)
 from overview import ic_rate_chart
 
@@ -114,5 +116,25 @@ def build(built: datetime) -> dict:
         "Source: BLS Current Population Survey via FRED (UEMPLT5). Number unemployed less than 5 weeks, "
         "thousands, seasonally adjusted, monthly. Gap: no October 2025 survey (government shutdown).",
         fred("UEMPLT5"), "Unemployed < 5 weeks", "Thousands of people", "%{y:,.0f}k", "unemployed_lt5wk_thousands"))
+
+    # 8. Alternative employment read (Phase 4 stage 4d): ADP private payrolls vs. BLS private payrolls, monthly change.
+    # Planned as Revelio RPLS; its Terms of Service do not allow it, so ADP (public via FRED) takes its place.
+    adp = fred("ADPMNUSNERSA").diff() / 1000          # ADP is in persons; thousands like BLS
+    bls = fred("USPRIV").diff()                       # BLS private nonfarm payrolls, thousands
+    gap = (adp - bls).dropna()
+    gap = gap[(gap.index >= "2010-02-01") & ((gap.index < "2020-03-01") | (gap.index > "2021-12-01"))].abs()
+    charts.append(lines_chart(
+        "adp-vs-bls", "Private payrolls: ADP vs. BLS",
+        "A second, independent read on private jobs; useful when the BLS jobs report is delayed (as in the October "
+        "2025 shutdown).",
+        "Sources: ADP National Employment Report via FRED (ADPMNUSNERSA) and BLS Current Employment Statistics via "
+        "FRED (USPRIV). Monthly change in private nonfarm payrolls, thousands of jobs, seasonally adjusted, from 2010. "
+        "ADP is built from payroll records of ADP clients and published two days before the BLS report. Outside "
+        f"2020-21 the two differ by about {gap.median():,.0f}k jobs in a typical month and by 100k or more in "
+        f"{(gap >= 100).mean() * 10:.0f} months out of 10. Context only: not used in the early-warning score.",
+        [(adp[adp.index >= "2010-02-01"], "ADP private payrolls", "ADP"),
+         (bls[bls.index >= "2010-02-01"], "BLS private payrolls", "BLS")],
+        "Thousands of jobs", "%{y:+,.0f}k",
+        ["month", "adp_private_change_thousands", "bls_private_change_thousands"], zero_line=True))
 
     return {"intro": INTRO, "charts": charts}
