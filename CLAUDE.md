@@ -293,34 +293,44 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   nowcast fix; ar539 confirmed to keep updating in the 2025 shutdown (probe run 42681568854; no second reader);
   "Simulate delay" workflow + dry run 42680910366 green; estimates-file read bug fixed. Temporary branches
   simulate-delay-dry-run and probe-shutdown-sources on GitHub (delete when Troy agrees).
+- 2026-11-09: Review Gates 2-4 built on phase4-review (decisions delegated by Troy; NOT merged): one year-on-year basis
+  (claims rate; National = state sums), state Sahm-style flag, own-date / "not reported" cells, shutdown note, vs.
+  normal, rising states, contributors, weighted unemployment charts, drill-down, severity context, weighted downloads,
+  sparklines; ratification table in docs/decisions.md; Next steps rewritten. Browser check 947 pass; unit tests OK.
 - Watch: on 2026-11-08 the Claude Code process crashed once (exit 0xC0000409, likely low memory on this 6 GB PC). Keep
   sessions short, commit work in progress often.
 
 ## Next steps, in order
-Phase 4 is complete (4a-4e; see Status). No new phase is designed yet; next design questions go to Troy's Claude project.
-LATER (Troy, 2026-11-09: not worth the effort now; revisit later): WARN notices (openICPSR sign-up for the Cleveland Fed CC BY
-data, or a WARN Firehose key); asking Revelio for written permission to chart RPLS. Note: Claude
-Code's auto mode blocks Claude from pushing to main (it publishes the site); Troy runs the merge + push himself, or
-approves it, then Claude verifies the Publish run. Branches phase4a / phase4b equal main and can be deleted when Troy agrees. Earlier phases are done and live.
-1. Watch the first automated runs (no build work):
+Phase 4 is complete (4a-4e) and the Phase 4 review (branch phase4-review) is built: Gate 1 merged and live; Gates 2-4
+built and checked on the branch, waiting for Troy's approval to merge (then confirm "Publish site" is green). Troy also
+needs to ratify the delegated decisions (table at the end of docs/decisions.md).
+Note: Claude Code's auto mode can block Claude from pushing to main (it publishes the site); when it does, Troy runs the
+merge + push himself or approves it, then Claude verifies the Publish run.
+1. Watch (no build work):
    - Thu 2026-11-12, 7:35 am CT "Refresh data": the model step should archive a second run and the panel should switch
      from "First live run" to "vs. last week". Check the run log and the site.
-   - Thanksgiving week: claims come out Wed 2026-11-25. live.py only counts continuing claims 12 days after the week
-     ends, so the November nowcast (reference week ending Nov 14) would wait until the Thu Dec 3 run, one day before the
-     Dec 4 jobs report. Small fix to consider: use the data actually present instead of the fixed lag in live runs.
+   - Thanksgiving week: claims come out Wed 2026-11-25; since Gate 1 the live nowcast uses the reference week (ending
+     Nov 14) as soon as it is on file. Check that the Nov 25/26 run shows the November nowcast.
    - Fri 2026-12-04 jobs report: the 7:45 am CT run should make a new live run (new unemployment month).
+   - Dec 11, 2026 federal funding deadline (from Troy's review): if a shutdown starts, the shutdown fallback should
+     estimate claims from state filings (ar539 kept updating in 2025, about a week behind); before it, run the
+     "Simulate delay" workflow once more (push a branch to simulate-delay-dry-run) to confirm it still works.
+   - Shutdown note on the States page switches itself off after the week ending Dec 12, 2026: check it has.
    - Thu 2027-01-15 "Re-fit model": the first real re-fit opens a pull request into main for Troy's review.
+   - Repo size, monthly: `gh api repos/eisenhourlabs/unemployment-early-warning -q .size` (KB; 21,962 on 2026-11-09).
+     Act at 500 MB: stop committing the derived state tables (data/processed/states/) and rebuild them in the workflow.
+     GitHub recommends staying under 1 GB. site/assets/states.json is 4.2 MB (about 1.4 MB compressed).
 2. Gaps against docs/phase3_plan.md, to raise with Troy (not in the approved 3e brief): alerts on a red Layer 1 trigger
    (plan decision 9; only colour changes and failed refreshes are wired); trigger badges on the Job Losses / Duration
    chart cards.
-3. Phase 4 (not designed yet; design questions go back to Troy's Claude project): States page and map weighted by the
-   footprint ranking (state series are already fetched; the public "footprint" / state-count wording rule needs a
-   decision first); the catalog's "future" sources (Challenger headline, charted only; WARN notices; Revelio RPLS;
-   Google Trends); shutdown backups (Chicago Fed LMI once its terms of use are confirmed, state data) with gaps labeled.
-   (Status 2026-11-09: States page, shutdown fallback and ADP chart done; RPLS not usable; WARN waiting for Troy.)
+3. LATER (Troy, 2026-11-09: not worth the effort now; revisit later): WARN notices (openICPSR sign-up for the Cleveland
+   Fed CC BY data, or a WARN Firehose key); asking Revelio for written permission to chart RPLS.
 4. Deferred to a later phase (do not build): consumer credit stress (Tier 5) and any company data.
-Open items to watch: ETA 539 allowed age (42 days); DOL certificate glitch seen once on
-2026-11-08; GitHub moving ubuntu-latest to Ubuntu 26. Branch phase3a now equals main and can be deleted when Troy agrees.
+5. Branches to delete ONLY when Troy says so (all contained in main except phase4-review until it is merged):
+   phase2-review-fixes, phase3a (local and GitHub), phase4c, phase4d, phase4e (local and GitHub; phase4a / phase4b
+   already deleted), and phase4-review after its merge.
+Open items to watch: ETA 539 allowed age (42 days); DOL certificate glitch seen once on 2026-11-08; GitHub moving
+ubuntu-latest to Ubuntu 26.
 
 ## Where planning lives
 The full plan, roadmap and decisions are kept in Troy's Claude project ("Unemployment Correlations"),

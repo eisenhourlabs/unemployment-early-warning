@@ -73,12 +73,28 @@ class TestPayload(unittest.TestCase):
 
 
 class TestDownloads(unittest.TestCase):
-    def test_weighted_files_never_offered(self):
+    def test_weighted_series_offered_contributions_never(self):
+        """Review Gate 3 item 6: the weighted series are downloadable; the contributions file is not (it would list
+        every weighted state, i.e. their count; decision O1)."""
         sys.path.insert(0, str(ROOT / "src" / "site"))
         import downloads
         stems = [s for s, _, _ in downloads.STATE_FILES]
-        self.assertEqual(stems, ["state_weekly", "state_monthly", "diffusion_weekly"])
-        self.assertFalse(any(s.startswith("weighted") for s in stems))
+        self.assertEqual(stems, ["state_weekly", "state_monthly", "diffusion_weekly", "weighted_weekly",
+                                 "weighted_monthly"])
+        self.assertFalse(any("contribution" in s for s in stems))
+
+
+@unittest.skipUnless((STATES_DIR / "state_weekly.csv").exists(), "state measures not built on this machine")
+class TestReviewPayload(unittest.TestCase):
+    def test_new_arrays_line_up(self):
+        p = states.states_payload()
+        n_weeks, n_months, n_q = len(p["weeks"]), len(p["months"]), len(p["quarters"])
+        for key in ("icn", "wc"):
+            self.assertTrue(all(len(a) == n_weeks for a in p["w"][key]), key)
+        for key in ("ur3", "urlow", "gap", "exhc"):
+            self.assertTrue(all(len(a) == n_months for a in p["m"][key]), key)
+        self.assertTrue(all(len(a) == n_q for a in p["q"]["pot"]))
+        self.assertEqual(len(p["shutdownWeeks"]), 2)
 
 
 if __name__ == "__main__":
