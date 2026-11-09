@@ -289,6 +289,10 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   committed before the run; src/model/state_candidates.py; NEITHER state input adopted (same-window skill change: C1
   diffusion -0.006, C2 weighted claims +0.001; both lose > 0.02 with claims as first published). Model unchanged; nothing
   for the January 2027 re-fit. docs/model.md section 8. PHASE 4 IS COMPLETE (WARN / RPLS on the later list). 
+- 2026-11-09: Phase 4 review (Troy's 4 gates, branch phase4-review). Gate 1 built, waiting for approval: Thanksgiving
+  nowcast fix; ar539 confirmed to keep updating in the 2025 shutdown (probe run 42681568854; no second reader);
+  "Simulate delay" workflow + dry run 42680910366 green; estimates-file read bug fixed. Temporary branches
+  simulate-delay-dry-run and probe-shutdown-sources on GitHub (delete when Troy agrees).
 - Watch: on 2026-11-08 the Claude Code process crashed once (exit 0xC0000409, likely low memory on this 6 GB PC). Keep
   sessions short, commit work in progress often.
 
