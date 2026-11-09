@@ -1,0 +1,24 @@
+# Probe shutdown sources (Phase 4 review, Gate 1a): which DOL source kept publishing state weekly claims during the
+# Oct-Nov 2025 shutdown, from the Internet Archive's saved copies. Read-only; runs on a GitHub runner because the
+# Archive rate-limits home connections. Start it by pushing to branch "probe-shutdown-sources".
+name: Probe shutdown sources
+
+on:
+  push:
+    branches: [probe-shutdown-sources]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.15"
+      - run: pip install -r requirements.txt
+      - name: List and read the archived copies
+        run: python src/checks/probe_shutdown_sources.py
