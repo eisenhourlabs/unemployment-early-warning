@@ -1,7 +1,7 @@
 {% extends "base.html" %}
-{#- States page (Phase 4 stage 4b). The tiles, map and table are filled in by assets/states.js from
-    assets/states.json and follow the END of the time setting; the three charts are ordinary chart cards.
-    Wording rule (decision O1): "Weighted", never "footprint" or "employer"; no weights, ranks or a count of
+{#- States page (Phase 4 stage 4b; review Gates 2-3). Tiles, map, lists, table and drill-down are filled in by
+    assets/states.js from assets/states.json and follow the END of the time setting; the charts are chart cards.
+    Wording rule (decision O1): "Weighted", never "footprint" or "employer"; no weights, ranks of weights or a count of
     weighted states. Counts of states meeting a condition sit only in elements marked data-count. -#}
 {% from "_macros.html" import chart_card %}
 
@@ -20,11 +20,12 @@
   <p class="states-asof" id="states-asof" aria-live="polite">Loading state data…</p>
 </div>
 <p class="weighted-note" data-view-only="weighted" hidden>{{ weighted_sentence }}</p>
-<noscript><p class="model-note">The map, tiles and state table need JavaScript.</p></noscript>
+<p class="model-note" id="shutdown-note" role="note" hidden></p>
+<noscript><p class="model-note">The map, tiles, lists and state table need JavaScript.</p></noscript>
 
 <div class="tiles states-tiles" id="states-tiles">
   <section class="card tile" id="tile-icy">
-    <h3>New claims vs. a year ago</h3>
+    <h3>New-claims rate vs. a year ago</h3>
     <p class="tile-value" data-fill="value">–</p>
     <p class="tile-weighted" data-view-only="weighted" data-fill="weighted" hidden></p>
     <p class="tile-asof" data-fill="asof"></p>
@@ -44,14 +45,13 @@
     <p class="tile-asof" data-fill="asof"></p>
   </section>
   <section class="card tile" id="tile-gap">
-    <h3>Unemployment {{ gap_threshold }} pt+ above its 12-month low</h3>
+    <h3>Unemployment {{ gap_threshold }} pt+ above its 12-month low (3-month average)</h3>
     <p class="tile-value" data-fill="value" data-count>–</p>
     <p class="tile-pct" data-fill="list"></p>
     <p class="tile-asof" data-fill="asof"></p>
   </section>
 </div>
-<p class="note">Tiles: all states on the same basis (not seasonally adjusted, 4-week averages); the year-on-year
-  comparison is with the same weeks a year earlier.</p>
+<p class="note">{{ basis }}</p>
 
 <section class="card map-card" aria-labelledby="map-title">
   <h2 id="map-title">Map</h2>
@@ -65,8 +65,31 @@
   <p class="chart-note" id="map-missing" hidden></p>
   <p class="chart-footer" id="map-footer"></p>
   <p class="chart-footer">Colours stop at the 5th and 95th percentiles across states, so a few extreme states don't
-    wash out the rest; the tooltip and the table give each exact value. Territories (PR, VI) are in the table only.</p>
+    wash out the rest; the tooltip and the table give each exact value. Click a state to open it below. Territories
+    (PR, VI) are in the table only.</p>
 </section>
+
+<div class="states-lists">
+  <section class="card" id="rising" aria-labelledby="rising-title">
+    <h2 id="rising-title">Rising states <span class="muted small">context, not tested</span></h2>
+    <p class="why">States where new claims have been {{ normal_threshold }}% or more above normal for 3 weeks in a row,
+      or where unemployment (3-month average) is {{ gap_threshold }} point or more above its 12-month low. A watch
+      list, not a signal: these rules have not been backtested.</p>
+    <ul class="rising-list" id="rising-list"></ul>
+  </section>
+  <section class="card" id="contributors" data-view-only="weighted" hidden aria-labelledby="contrib-title">
+    <h2 id="contrib-title">What moves the weighted change</h2>
+    <p class="why" id="contrib-why"></p>
+    <div class="table-scroll">
+    <table class="contrib-table">
+      <thead><tr><th>Pushing it up</th><th class="num">pts</th><th>Pulling it down</th><th class="num">pts</th></tr></thead>
+      <tbody id="contrib-body"></tbody>
+    </table>
+    </div>
+    <p class="chart-footer">Contribution of a state = its weight × (its claims rate now − a year ago) ÷ the weighted
+      claims rate a year ago, in percentage points; all contributions add up to the weighted % change.</p>
+  </section>
+</div>
 
 <div class="grid">
   {{ chart_card(breadth) }}
@@ -82,6 +105,23 @@
   </div>
 </section>
 
+<section class="card drill" id="drill" aria-labelledby="drill-title">
+  <div class="drill-head">
+    <h2 id="drill-title">State detail</h2>
+    <label>State <select id="drill-state"></select></label>
+  </div>
+  <p class="why">Pick a state here, or click it on the map or in the table. The charts show the 5 years to the end of
+    the time setting (new claims: this year and the 3 before it, by week).</p>
+  <div class="drill-grid">
+    <div><h3>New claims (not seasonally adjusted), by week of year</h3><div class="chart-small drill-chart" id="drill-ic"></div></div>
+    <div><h3>Continuing claims rate (4-week average)</h3><div class="chart-small drill-chart" id="drill-cc"></div></div>
+    <div><h3>Unemployment rate, 3-month average and its 12-month low</h3><div class="chart-small drill-chart" id="drill-ur"></div></div>
+    <div><h3>Exhaustion rate (12-month)</h3><div class="chart-small drill-chart" id="drill-exh"></div></div>
+    <div><h3>Average weeks paid (12-month)</h3><div class="chart-small drill-chart" id="drill-dur"></div></div>
+  </div>
+  <p class="chart-footer">{{ severity_note }}</p>
+</section>
+
 <section class="card state-table-card" aria-labelledby="table-title">
   <h2 id="table-title">State table</h2>
   <p class="why" id="table-asof"></p>
@@ -91,23 +131,29 @@
       <th aria-sort="ascending"><button type="button" data-sort="name">State</button></th>
       <th class="num"><button type="button" data-sort="ic4">New claims, 4-wk avg</button></th>
       <th class="num"><button type="button" data-sort="icy">vs. yr ago</button></th>
+      <th class="num"><button type="button" data-sort="icn">vs. normal</button></th>
+      <th><span class="th-plain">Last 26 wks</span></th>
       <th class="num"><button type="button" data-sort="cc">Cont. claims rate</button></th>
       <th class="num"><button type="button" data-sort="ccy">vs. yr ago</button></th>
       <th class="num"><button type="button" data-sort="ur">Unemp. rate</button></th>
       <th class="num"><button type="button" data-sort="gap">vs. 12-mo low</button></th>
       <th class="num"><button type="button" data-sort="exh">Exhaustion, 12-mo</button></th>
+      <th class="num"><button type="button" data-sort="exhc">vs. yr ago</button></th>
       <th class="num"><button type="button" data-sort="dur">Avg weeks paid</button></th>
-      <th><button type="button" data-sort="through">Data through</button></th>
+      <th class="num"><button type="button" data-sort="pot">Potential weeks</button></th>
     </tr></thead>
     <tbody></tbody>
   </table>
   </div>
-  <p class="chart-footer">Click a column heading to sort (again to reverse). Claims: regular state UI programs, not
-    seasonally adjusted, 4-week averages; rates are per 100 covered jobs; "vs. yr ago" compares with the same 4 weeks
-    a year earlier (% for new claims, points for the continuing claims rate). Unemployment rate: BLS LAUS, seasonally
-    adjusted; "vs. 12-mo low" is the rise above its lowest value over the last 12 months, in points. Exhaustion and
-    average weeks paid: 12-month averages from DOL ETA 5159 (our calculation). Sources: DOL ETA 539 (ar539) and
-    ETA 5159; BLS via FRED. The state files are on the <a href="data.html">Data &amp; Downloads</a> page.</p>
+  <p class="chart-footer">Click a column heading to sort (again to reverse), or a state to open its detail. A value
+    from an earlier period than the column's shows its own date; "not reported" means the state has not filed that
+    report yet. {{ basis }} "vs. normal": vs. the median of the same weeks in the prior 3 years (Mar 2020 – Jun 2021
+    left out). "Last 26 wks": new claims, 4-week average (blue), against the same weeks a year earlier (grey).
+    Unemployment rate: BLS LAUS, seasonally adjusted; "vs. 12-mo low": 3-month average minus its lowest 3-month
+    average of the previous 12 months, in points. Exhaustion and average weeks paid: 12-month averages from DOL ETA
+    5159 (our calculation); "vs. yr ago" in points. Potential weeks: average weeks of benefits new claimants are
+    entitled to (DOL ETA 218, quarterly). {{ severity_note }} Sources: DOL ETA 539, ETA 5159, ETA 218; BLS via FRED.
+    The state files are on the <a href="data.html">Data &amp; Downloads</a> page.</p>
 </section>
 {% endblock %}
 

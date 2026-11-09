@@ -13,7 +13,7 @@ Each XLSX has an "About" sheet (source, units, link, citation); DOL files also g
 with the description of every column (config/dol_columns.csv and config/derived_columns.csv).
 
 What it never writes: series whose catalog licence is not "public" (e.g. U. Michigan sentiment:
-citation-required; Chicago Fed Labor Market Indicators: restricted, local-only) and the state weights.
+citation-required; Chicago Fed Labor Market Indicators: restricted, local-only) and the state weights themselves.
 Called by build_site.py.
 """
 
@@ -86,12 +86,15 @@ DOL_FILES = [
 # Files we calculate from DOL data (the rest are DOL's figures with plain column names)
 DOL_DERIVED = {"national_weekly", "claims_rates_weekly", "exhaustion_duration_monthly", "benefit_duration_quarterly"}
 # State files (Phase 4, States page): (file stem, frequency, plain name). Built by src/transforms/state_measures.py.
-# The weighted files (weighted_weekly / weighted_monthly) are charted only and NEVER listed here (Phase 4 brief).
+# Since the Phase 4 review (Gate 3 item 6) the weighted series are downloadable too (they were charted only before).
 STATE_FILES = [
-    ("state_weekly", "weekly", "State claims: rates and year-on-year changes, by state and week, from 1995"),
-    ("state_monthly", "monthly", "State unemployment rate, gap to its 12-month low, exhaustion and duration, by month"),
+    ("state_weekly", "weekly", "State claims: rates, year-on-year and vs.-normal changes, by state and week, from 1995"),
+    ("state_monthly", "monthly", "State unemployment rate and Sahm-style gap, exhaustion and duration, by month"),
     ("diffusion_weekly", "weekly", "State claims diffusion index (share of states / covered jobs with claims up 20%+)"),
+    ("weighted_weekly", "weekly", "Weighted claims rates and year-on-year changes vs. national (state sums)"),
+    ("weighted_monthly", "monthly", "Weighted unemployment rate and Sahm-style gap vs. national"),
 ]
+# Not offered: weighted_contributions_weekly (it would list every weighted state, i.e. their count; decision O1).
 STATE_CITATION = ("U.S. Department of Labor, Employment and Training Administration, unemployment insurance data "
                   "(ar539, ETA 5159), https://oui.doleta.gov/unemploy/DataDownloads.asp; state unemployment rates: "
                   "U.S. Bureau of Labor Statistics (LAUS) via FRED, Federal Reserve Bank of St. Louis. Calculated by "
@@ -175,9 +178,9 @@ def dol_entries() -> list[dict]:
     for stem, freq, name in STATE_FILES:
         entries.append({
             "kind": "DOL", "id": stem, "name": name, "title": name,
-            "source": "DOL (derived)" if stem != "state_monthly" else "DOL and BLS (derived)",
+            "source": "DOL and BLS (derived)" if stem in ("state_monthly", "weighted_monthly") else "DOL (derived)",
             "source_url": DOL_PAGE, "frequency": freq, "units": "Various (see data dictionary)",
-            "sa": "NSA" if stem != "state_monthly" else "SA (unemployment rate) and NSA",
+            "sa": "SA (unemployment rate) and NSA" if stem in ("state_monthly", "weighted_monthly") else "NSA",
             "page": "states", "state": "", "updated": last_check,
             "csv": f"data/states/{stem}.csv", "xlsx": f"data/states/{stem}.xlsx",
             "path": PROCESSED / "states" / f"{stem}.csv", "report": "", "citation": STATE_CITATION,

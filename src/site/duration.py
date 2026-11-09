@@ -23,6 +23,21 @@ def us_rows(filename: str, date_col: str) -> pd.DataFrame:
     return df[df.state == "US"].set_index(date_col)
 
 
+def ar218_not_reported() -> str:
+    """Review Gate 2: name the states holding back the latest ETA 218 quarter (e.g. Alabama, 2026 Q3), so a blank US
+    value reads as 'not reported', not as missing data."""
+    b = pd.read_csv(DOL / "benefit_duration_quarterly.csv", parse_dates=["quarter_ended"])
+    states = b[b.state != "US"]
+    latest = states.quarter_ended.max()
+    if (b[(b.state == "US") & (b.quarter_ended == latest)].potential_avg_weeks.notna()).any():
+        return ""
+    names = pd.read_csv(DOL.parents[2] / "config" / "states.csv", comment="#", dtype=str).set_index("state").state_name
+    missing = sorted(set(names.index) - set(states[states.quarter_ended == latest].state))
+    q = f"Q{(latest.month - 1) // 3 + 1} {latest.year}"
+    return (f" {q} is not shown yet: not reported by {', '.join(names.get(s, s) for s in missing)}."
+            if missing else "")
+
+
 def cc_outlook(c: dict, live: dict) -> dict:
     """Phase 3 on the continuing-claims-rate chart: the 13 and 26-week fan, what-if paths, and why 52 weeks is not
     shown (its 80% band held too few outcomes in testing)."""
@@ -78,13 +93,14 @@ def build(built: datetime) -> dict:
 
     # 4. Average benefit duration: all claimants (monthly) vs. weeks entitled (quarterly ETA 218)
     quarterly = us_rows("benefit_duration_quarterly.csv", "quarter_ended")
+    unreported = ar218_not_reported()
     charts.append(line_with_comparison(
         "benefit-duration", "Average benefit duration",
         "Weeks of state UI benefits paid per claimant, against weeks entitled. For involuntary unemployment "
         "insurance (IUI), the closest public match to benefit months.",
         "DOL standard definition · NSA, 12-month average. Source: DOL ETA 5159 and ETA 218, our calculation. Bold: 12-month weeks compensated ÷ 12-month first "
         "payments, all claimants, monthly. Grey: average potential (entitled) duration of new claimants, "
-        "quarterly. Weeks, US; quarters with a state missing are left blank.",
+        "quarterly. Weeks, US; quarters with a state missing are left blank." + unreported,
         monthly["avg_duration_12m"], "Average weeks paid (all claimants)", "ME",
         quarterly["potential_avg_weeks"], "Average weeks entitled (ETA 218)", "QE",
         "Weeks", "%{y:.1f} weeks",

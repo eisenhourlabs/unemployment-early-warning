@@ -319,11 +319,11 @@ def check_data_page(browser, url, base):
             mismatched.append(href)
     check(not mismatched, f"every series / DOL / state CSV equals its source file row for row {mismatched[:3]}")
     state_files = sorted(Path(l).name for l in links if "/states/" in l)
-    check(state_files == sorted(f"{s}.{x}" for s in ("diffusion_weekly", "state_monthly", "state_weekly")
+    check(state_files == sorted(f"{s}.{x}" for s in ("diffusion_weekly", "state_monthly", "state_weekly",
+                                                      "weighted_monthly", "weighted_weekly")
                                 for x in ("csv", "xlsx")), f"States downloads: {state_files}")
-    weighted_leaks = [str(q.relative_to(SITE)) for q in (SITE / "data").rglob("*weighted*")
-                      if "ce_weighted" not in q.name]
-    check(not weighted_leaks, f"no weighted figures offered for download {weighted_leaks[:3]}")
+    leaks = [str(q.relative_to(SITE)) for q in (SITE / "data").rglob("*contribution*")]
+    check(not leaks, f"weighted contributions (they list every weighted state) never offered {leaks[:3]}")
     bad_xlsx = []
     for href in [l for l in links if l.endswith(".xlsx")]:
         names = load_workbook(SITE / href, read_only=True).sheetnames
@@ -674,7 +674,14 @@ def check_states(browser, base) -> None:
         .map(r => [...r.cells].map(c => c.textContent)).filter(c => c[0] === 'Texas')[0]""")
     want_ic = f"{sw.initial_claims_4wk[('TX', week)]:,.0f}"
     want_cc = f"{sw.cc_rate_4wk[('TX', P['weeks'][snap['cc']])]:.2f}%"
-    check(tx[1] == want_ic and tx[3] == want_cc, f"Texas row = data file ({tx[1]}, {tx[3]} vs {want_ic}, {want_cc})")
+    check(tx[1] == want_ic and tx[5] == want_cc, f"Texas row = data file ({tx[1]}, {tx[5]} vs {want_ic}, {want_cc})")
+    want_n = signed(sw.ic_vs_normal_pct[('TX', week)], 0, "%")
+    check(tx[3] == want_n, f"Texas 'vs. normal' = data file ({tx[3]} vs {want_n})")
+    cells = page.evaluate("""() => [...document.querySelectorAll('#state-table tbody td.num')].map(c => c.textContent)""")
+    odd = [c for c in cells if not re.match(r"^(not reported|n/a|[−+]?[\d,.]+( pt|%)?( \(.+\))?)$", c)]
+    check(not odd, f"every table value is a number (with its own date if older), 'not reported' or 'n/a' {odd[:3]}")
+    n_spark = page.locator("#state-table svg.spark").count()
+    check(n_spark >= 50, f"table sparklines drawn ({n_spark})")
     n_rows = page.locator("#state-table tbody tr").count()
     check(n_rows == len(P["areas"]), f"table has every area ({n_rows} rows)")
     texts = page.locator("main").inner_text()
@@ -704,9 +711,9 @@ def check_states(browser, base) -> None:
     s08 = expected_snapshot("2011-12-31")
     w08 = fmt_long(P["weeks"][s08["ic"]])
     check(w08 in page.locator("#states-asof").text_content(), f"2008-09 view: tiles and map as of {w08}")
-    through = table_column(page, 9)
-    n08 = sum(x == w08 for x in through)
-    check(n08 >= 50, f"2008-09 view: table data through {w08} ({n08} rows)")
+    dated = page.evaluate("() => document.querySelectorAll('#state-table .cell-date').length")
+    check(w08 in page.locator("#table-asof").text_content() and dated < 40,
+          f"2008-09 view: table as of {w08}; {dated} values carry an older date of their own")
     page.click(".timecontrol > button[data-range='5y']")
     page.wait_for_timeout(500)
     check(fmt_long(week) in page.locator("#states-asof").text_content(), "back to 5Y: latest week again")
@@ -726,13 +733,33 @@ def check_states(browser, base) -> None:
     check(shown and dashed == [True] and "view=weighted" in page.url,
           "Weighted view: parts shown, dashed line on, address ?view=weighted")
     check(all(w > 400 for w in widths), f"weighted charts drawn at full width ({widths})")
-    no_dl = page.locator(".weighted-section [data-csv-menu], .weighted-section [data-png]").count()
-    check(no_dl == 0, "weighted charts offer no download")
+    n_dl = page.locator(".weighted-section [data-csv-menu]").count()
+    check(n_dl == 4, f"weighted charts offer CSV downloads ({n_dl} of 4)")
+    contrib = page.locator("#contrib-body tr").count()
+    check(page.locator("#contributors").is_visible() and contrib >= 1, f"top-contributors table shown ({contrib} rows)")
     check(page.evaluate("document.getElementById('states-map').data[0].z") == map_z, "the map is the same in both views")
     page.goto(url + "?view=weighted&range=2020")
     page.wait_for_selector("body[data-ready=true][data-states-ready=true]")
     check(page.evaluate("[...document.querySelectorAll('.weighted-section')].every(e => !e.hidden)"),
           "shared link ?view=weighted opens the Weighted view")
+
+    print("Review Gates 2-3: notes, lists, drill-down")
+    import datetime as _dt
+    ago = _dt.date.fromisoformat(week) - _dt.timedelta(days=364)
+    want_note = (ago - _dt.timedelta(days=21)).isoformat() <= P["shutdownWeeks"][1] and ago.isoformat() >= P["shutdownWeeks"][0]
+    page.goto(url)
+    page.wait_for_selector("body[data-ready=true][data-states-ready=true]")
+    check(page.locator("#shutdown-note").is_visible() == want_note, f"2025-shutdown note shown = {want_note}")
+    check("context, not tested" in page.locator("#rising").inner_text(), "rising-states list labelled 'context, not tested'")
+    check(page.locator("#rising .signal").count() == 0, "rising-states list has no red / amber / green")
+    page.select_option("#drill-state", "OH")
+    page.wait_for_timeout(500)
+    n_drill = page.evaluate("() => [...document.querySelectorAll('.drill-chart')].filter(d => d.data && d.data.length).length")
+    check("Ohio" in page.locator("#drill-title").inner_text() and n_drill == 5, f"drill-down: Ohio, {n_drill} of 5 charts")
+    page.click("#state-table tbody tr:nth-child(3)")
+    page.wait_for_timeout(500)
+    first3 = table_column(page, 0)[2]
+    check(first3 in page.locator("#drill-title").inner_text(), f"table row click opens the drill-down ({first3})")
 
     print("Wording (O1)")
     visible = page.evaluate("""() => { const c = document.querySelector('main').cloneNode(true);
