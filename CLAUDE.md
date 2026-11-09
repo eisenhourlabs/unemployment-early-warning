@@ -276,12 +276,20 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   initial claims 0.84% / 3.52%, continuing 0.27% / 1.30% (scaled fill-in, chosen by the pre-registered rule); 2025 replay
   within 1.8% every week; all pass 2% / 5%. Fallback step in the refresh workflow; estimates labelled on Overview / Job
   Losses / Duration; provisional live runs; About note. 26 unit tests OK; browser check passes (fallback section added;
-  preview with UW_PREVIEW_DELAY=2 also passes the label checks). 
+  preview with UW_PREVIEW_DELAY=2 also passes the label checks). Cloud test on phase4c green (run 42633549251: fallback
+  step "No delayed release", 26 tests OK); merged into main (Claude, with Troy's go-ahead); "Publish site" run
+  42635303773 green; About note verified live.
+- 2026-11-09: Stage 4d built on branch phase4d (decisions delegated by Troy): RPLS NOT used (Revelio Terms of Service
+  forbid reposting and automated download; O5 gate); WARN deferred (needs an account in Troy's name; preferred source:
+  Cleveland Fed researchers' CC BY 4.0 WARN data on openICPSR); new Job Losses chart "Private payrolls: ADP vs. BLS"
+  (ADPMNUSNERSA vs. new catalog row USPRIV); About "Considered but not used" list; UNRATEMD skipped in quality checks. 
 - Watch: on 2026-11-08 the Claude Code process crashed once (exit 0xC0000409, likely low memory on this 6 GB PC). Keep
   sessions short, commit work in progress often.
 
 ## Next steps, in order
-Phase 4 stages 4a and 4b are approved, merged and live. Stage 4c done (see Status). Next: 4d (alternative signals). Note: Claude
+Phase 4 stages 4a-4d are done and live (see Status). Next: 4e model tests (pre-registration doc first, for Troy's
+approval). Open for Troy: WARN notices (sign up for openICPSR to use the Cleveland Fed CC BY data, or a WARN Firehose key);
+whether to ask Revelio for written permission to chart RPLS. Note: Claude
 Code's auto mode blocks Claude from pushing to main (it publishes the site); Troy runs the merge + push himself, or
 approves it, then Claude verifies the Publish run. Branches phase4a / phase4b equal main and can be deleted when Troy agrees. Earlier phases are done and live.
 1. Watch the first automated runs (no build work):
@@ -299,6 +307,7 @@ approves it, then Claude verifies the Publish run. Branches phase4a / phase4b eq
    footprint ranking (state series are already fetched; the public "footprint" / state-count wording rule needs a
    decision first); the catalog's "future" sources (Challenger headline, charted only; WARN notices; Revelio RPLS;
    Google Trends); shutdown backups (Chicago Fed LMI once its terms of use are confirmed, state data) with gaps labeled.
+   (Status 2026-11-09: States page, shutdown fallback and ADP chart done; RPLS not usable; WARN waiting for Troy.)
 4. Deferred to a later phase (do not build): consumer credit stress (Tier 5) and any company data.
 Open items to watch: ETA 539 allowed age (42 days); DOL certificate glitch seen once on
 2026-11-08; GitHub moving ubuntu-latest to Ubuntu 26. Branch phase3a now equals main and can be deleted when Troy agrees.

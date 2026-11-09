@@ -29,6 +29,7 @@ UMCSENT,FRED,2,monthly,1990-01-01,2026-09-01,69,100,0,,-0.57,,ok,,OK
 NFCICREDIT,FRED,2,weekly,1990-01-05,2026-10-30,10,14,0,,1.35,,ok,,OK
 NFCI,FRED,2,weekly,1990-01-05,2026-10-30,10,14,0,,1.35,,ok,,OK
 ADPMNUSNERSA,FRED,3,monthly,2010-01-01,2026-10-01,39,70,0,,0.38,,ok,,OK
+USPRIV,FRED,3,monthly,1990-01-01,2026-10-01,39,70,0,,1.15,,ok,,OK
 ALICLAIMS,FRED,4,weekly,1990-01-06,2026-10-31,9,21,0,,0.16,,ok,,OK
 AKICLAIMS,FRED,4,weekly,1990-01-06,2026-10-31,9,21,0,,0.7,,ok,,OK
 AZICLAIMS,FRED,4,weekly,1990-01-06,2026-10-31,9,21,0,,-0.03,,ok,,OK
@@ -182,7 +183,7 @@ WAUR,FRED,4,monthly,1990-01-01,2026-09-01,69,85,0,,-1.6,,ok,,OK
 WVUR,FRED,4,monthly,1990-01-01,2026-09-01,69,85,0,,0.0,,ok,,OK
 WIUR,FRED,4,monthly,1990-01-01,2026-09-01,69,85,0,,0.0,,ok,,OK
 WYUR,FRED,4,monthly,1990-01-01,2026-09-01,69,85,0,,0.0,,ok,,OK
-UNRATEMD,FRED,4,monthly,2026-01-01,2029-01-01,-784,70,33,2026-02 2026-03 2026-04 2026-05 2026-06,,,ok,33 unexpected gap(s),WARN
+UNRATEMD,FRED,4,monthly,,,,70,,,,,ok,not checked: FOMC median projection: a few year-end values (reference marker only),SKIP
 DOL:national_weekly_eta539.csv:ic_nsa,DOL,1,weekly,1971-01-02,2026-10-10,30,42,0,,1.38,,ok,,OK
 DOL:national_weekly_eta539.csv:ic_sa,DOL,1,weekly,1971-01-02,2026-10-10,30,42,0,,0.22,,ok,,OK
 DOL:national_weekly_eta539.csv:cc_nsa,DOL,1,weekly,1971-01-02,2026-10-10,30,42,0,,0.56,,ok,,OK

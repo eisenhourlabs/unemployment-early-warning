@@ -44,3 +44,4 @@ min_future_weeks,DOL:seasonal_factors.csv,8,Warn when fewer than 8 future weeks 
 skip,CFLMIFORECASTREV*,,One-off revised forecast published only for October 2025 (shutdown); not an ongoing series
 outlier_window_years,*,3,Trailing window of period-to-period changes (decision 2026-11-07)
 outlier_z,*,6,Flag when |robust z| of the latest change exceeds this (median / 1.4826 x MAD)
+skip,UNRATEMD,,FOMC median projection: a few year-end values (reference marker only), not a monthly series; gap and age checks do not apply
