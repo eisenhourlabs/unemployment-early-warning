@@ -116,6 +116,24 @@ class TestEstimator(unittest.TestCase):
         off = ("2026-11-06_ic2026-10-31_ur2026-10.json", "2026-10-31", "2026-10-01")
         self.assertFalse(live.has_new_inputs(inputs, off))
 
+    def test_file_round_trip_then_official(self):
+        """Phase 4 review Gate 1: an estimate saved to the CSV and read back can still take its official figure
+        (blank text columns used to load as numbers, so the release step crashed)."""
+        import tempfile
+        factors = pd.DataFrame({"ic_sf": [100.0] * 3, "cc_sf": [100.0] * 3}, index=[W1, W2, W3])
+        official = {"ic": pd.Series([360.0, 410.0], index=[W1, W2]),
+                    "cc": pd.Series([3600.0], index=[W1 - pd.Timedelta(days=7)])}
+        late = datetime(2026, 11, 6, 7, 0, tzinfo=fb.EASTERN)
+        rows = [r for r in fb.estimate_rows(self.ic, self.cc, factors, official, late) if r["measure"] == "ic"]
+        with tempfile.TemporaryDirectory() as d:
+            path = Path(d) / "est.csv"
+            pd.DataFrame(rows, columns=fb.COLUMNS).to_csv(path, index=False, date_format="%Y-%m-%d")
+            est = fb.read_estimates(path)
+        official["ic"] = pd.concat([official["ic"], pd.Series([600.0], index=[W3])])
+        est, lines = fb.fill_officials(est, official, late)
+        self.assertEqual(est.official_sa.iloc[0], 600)
+        self.assertEqual(len(lines), 1)
+
     def test_unknown_method(self):
         with self.assertRaises(ValueError):
             fb.estimate_nsa(self.ic, W3, [], "average")

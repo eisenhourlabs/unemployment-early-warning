@@ -401,6 +401,17 @@ def next_release_month(p_month: pd.Timestamp) -> tuple[pd.Timestamp, str | None]
     return p_month + pd.DateOffset(months=1), None
 
 
+def claims_available(w: pd.DataFrame, col: str, week: pd.Timestamp, lag_days: int, asof: pd.Timestamp,
+                     today: pd.Timestamp | None = None) -> bool:
+    """Is the reference week's claims figure usable for the nowcast?
+    Phase 4 review (Gate 1): a run dated today uses it as soon as it is actually on file (e.g. Thanksgiving week, when
+    DOL publishes on Wednesday, a day before the usual 12-day continuing-claims lag would allow). A run for a past date
+    keeps the fixed lag, because today's file also holds weeks published after that date."""
+    today = (today or pd.Timestamp.now()).normalize()
+    present = week in w.index and pd.notna(w[col].get(week))
+    return bool(present and (asof.normalize() >= today or week + pd.Timedelta(days=lag_days) <= asof))
+
+
 def nowcast(fz: dict, asof: pd.Timestamp) -> dict:
     nc = fz["nowcast"]
     ur = as_known_on("UNRATE", asof).dropna()
@@ -409,8 +420,8 @@ def nowcast(fz: dict, asof: pd.Timestamp) -> dict:
     months_since = (month.year - p_month.year) * 12 + month.month - p_month.month
     sat_m, sat_p = reference_saturday(month), reference_saturday(p_month)
     w = realtime.claims_table()
-    have_ic = sat_m in w.index and pd.notna(w.ICSA.get(sat_m)) and sat_m + pd.Timedelta(days=nc["initial_claims_lag_days"]) <= asof
-    have_cc = sat_m in w.index and pd.notna(w.CCSA.get(sat_m)) and sat_m + pd.Timedelta(days=nc["continuing_claims_lag_days"]) <= asof
+    have_ic = claims_available(w, "ICSA", sat_m, nc["initial_claims_lag_days"], asof)
+    have_cc = claims_available(w, "CCSA", sat_m, nc["continuing_claims_lag_days"], asof)
     out = {"month": f"{month:%Y-%m-%d}", "release_date": release, "prior_month": f"{p_month:%Y-%m-%d}",
            "prior_value": p_val, "months_since": months_since, "reference_week": f"{sat_m:%Y-%m-%d}",
            "available_after": f"{sat_m + pd.Timedelta(days=nc['continuing_claims_lag_days']):%Y-%m-%d}",

@@ -137,7 +137,8 @@ def preview_delay() -> int:
 def read_estimates(path: Path = ESTIMATES) -> pd.DataFrame:
     if not path.exists():
         return pd.DataFrame(columns=COLUMNS)
-    df = pd.read_csv(path, dtype={"missing_areas": str}, parse_dates=["week_ended"])
+    text_cols = {"missing_areas": str, "method": str, "made_utc": str, "replaced_utc": "object"}   # blanks stay text
+    df = pd.read_csv(path, dtype=text_cols, parse_dates=["week_ended"])
     df["missing_areas"] = df.missing_areas.fillna("")
     return df
 
@@ -167,7 +168,7 @@ def cut_official(s: pd.Series, n: int | None = None) -> pd.Series:
 # ===========================================================================
 # The run
 # ===========================================================================
-def estimate_rows(ic_wide, cc_wide, factors, official, now: datetime, delay: int = 0) -> list[dict]:
+def estimate_rows(ic_wide, cc_wide, factors, official, now: datetime, delay: int = 0, missing=()) -> list[dict]:
     """Rows for every overdue week that ar539 has but the official series do not (after cutting `delay` weeks)."""
     rows = []
     for measure, wide, sf_col in [("ic", ic_wide, "ic_sf"), ("cc", cc_wide, "cc_sf")]:
@@ -177,10 +178,10 @@ def estimate_rows(ic_wide, cc_wide, factors, official, now: datetime, delay: int
         for week in wide.index[wide.index > last_official]:
             if not (delay or overdue(release_week(week), now)):
                 continue
-            reported = wide.loc[week].notna()
+            reported = wide.loc[week].notna() & ~wide.columns.isin(list(missing))   # simulation: areas held back
             if reported.sum() == 0 or week not in factors.index or pd.isna(factors.at[week, sf_col]):
                 continue
-            nsa, filled = estimate_nsa(wide, week, [], FILL_METHOD)
+            nsa, filled = estimate_nsa(wide, week, list(missing), FILL_METHOD)
             sf = float(factors.at[week, sf_col])
             rows.append({"week_ended": week, "measure": measure, "estimate_nsa": round(nsa),
                          "seasonal_factor": sf, "estimate_sa": round(to_sa(nsa, sf)),
@@ -236,7 +237,12 @@ def log_revisions(lines: list[str]) -> None:
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[1])
     ap.add_argument("--simulate-delay", type=int, default=0,
-                    help="PC preview only: pretend the last N official weeks are missing (writes the preview file)")
+                    help="Simulation: pretend the last N official weeks are missing (writes the preview file only)")
+    ap.add_argument("--simulate-missing", default="",
+                    help="Simulation: areas treated as not reporting, e.g. \"AZ MA NV TN\"")
+    ap.add_argument("--simulate-release", action="store_true",
+                    help="Simulation: DOL 'publishes' the hidden weeks: fill in official values and errors in the "
+                         "preview file and print the revision-log lines (docs/data_revisions.md is not touched)")
     args = ap.parse_args(argv)
     now = datetime.now(EASTERN)
     ar539 = pd.read_csv(DOL / "ar539.csv")
@@ -244,16 +250,26 @@ def main(argv=None) -> int:
     factors = pd.read_csv(DOL / "seasonal_factors.csv", parse_dates=["week_ended"]).set_index("week_ended")
     official = official_sa()
 
-    if args.simulate_delay:
-        if os.environ.get("GITHUB_ACTIONS"):
-            sys.exit("--simulate-delay is a PC preview and never runs in the cloud")
-        rows = estimate_rows(ic_wide, cc_wide, factors, official, now, delay=args.simulate_delay)
+    if args.simulate_delay or args.simulate_release:
+        # Simulation only (PC preview, or the "Simulate delay" workflow on a branch, which never publishes or commits).
+        if os.environ.get("GITHUB_ACTIONS") and not os.environ.get("UW_SIMULATION_OK"):
+            sys.exit("Simulation runs in the cloud only from the 'Simulate delay' workflow (never on main)")
+        if args.simulate_release:
+            df = read_estimates(PREVIEW)
+            df, lines = fill_officials(df, official, now)
+            df[COLUMNS].to_csv(PREVIEW, index=False, date_format="%Y-%m-%d")
+            print("Simulated release: official figures replace the estimates. Revision-log lines (simulation; "
+                  "docs/data_revisions.md not changed):")
+            print("\n".join(lines) if lines else "  (no open estimates)")
+            return 0
+        missing = args.simulate_missing.split()
+        rows = estimate_rows(ic_wide, cc_wide, factors, official, now, delay=args.simulate_delay, missing=missing)
         df = pd.DataFrame(rows, columns=COLUMNS)
-        df, _ = fill_officials(df, official, now)      # the preview knows the real answer: shows the error
         df.to_csv(PREVIEW, index=False, date_format="%Y-%m-%d")
-        print(f"Preview: {len(df)} estimates written to {PREVIEW.relative_to(ROOT)} (git-ignored)")
-        print(df[["week_ended", "measure", "estimate_sa", "official_sa", "error_pct", "areas_reported"]].to_string(index=False))
-        print(f"Build the site with  $env:UW_PREVIEW_DELAY={args.simulate_delay}  to see the labels.")
+        print(f"Simulated delay of {args.simulate_delay} week(s), areas held back: {missing or 'none'}. "
+              f"{len(df)} open estimates written to {PREVIEW.relative_to(ROOT)} (git-ignored):")
+        print(df[["week_ended", "measure", "estimate_sa", "areas_reported", "missing_areas"]].to_string(index=False))
+        print(f"Build the site / run live.py with UW_PREVIEW_DELAY={args.simulate_delay} to see the labels.")
         return 0
 
     est = merge(read_estimates(), estimate_rows(ic_wide, cc_wide, factors, official, now))

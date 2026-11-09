@@ -1,0 +1,77 @@
+# Simulate delay: a dry run of the shutdown fallback in the cloud (Phase 4 review, Gate 1).
+#
+# It pretends DOL's last N weekly releases have not come out (and that some states have not reported), then runs the
+# whole chain twice:
+#   1. during the delay: estimate claims from state filings -> provisional live run -> build the site -> check labels
+#   2. after DOL "publishes": official figures replace the estimates (errors filled in) -> normal live run -> build ->
+#      check the labels are gone
+# Both built sites are saved as run artifacts (download from the run page) so they can be looked at.
+#
+# Safety: it NEVER publishes the site and NEVER commits anything (read-only permissions), it refuses to run on main,
+# and live.py runs without --archive (no permanent archive file is written).
+#
+# How to start it: push the branch to "simulate-delay-dry-run" (a workflow can be started by hand only once it is on
+# main), e.g.  git push origin phase4-review:simulate-delay-dry-run --force
+# Once this file is on main, the Actions tab also has a "Run workflow" button with the two settings below.
+
+name: Simulate delay
+
+on:
+  push:
+    branches: [simulate-delay-dry-run]
+  workflow_dispatch:
+    inputs:
+      weeks:
+        description: "How many of the latest official weeks to treat as not yet published"
+        default: "2"
+      missing:
+        description: "States treated as not reporting (as in Oct 2025)"
+        default: "AZ MA NV TN"
+
+permissions:
+  contents: read              # read-only: this workflow cannot commit or publish
+
+jobs:
+  simulate:
+    if: github.ref != 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      UW_SIMULATION_OK: "1"
+      WEEKS: ${{ inputs.weeks || '2' }}
+      MISSING: ${{ inputs.missing || 'AZ MA NV TN' }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.15"
+      - run: pip install -r requirements.txt
+
+      - name: "1a. Estimate the 'missing' weeks from state filings"
+        run: python src/fetchers/dol_state_fallback.py --simulate-delay "$WEEKS" --simulate-missing "$MISSING"
+      - name: "1b. Live model run during the delay (provisional, no archive)"
+        run: UW_PREVIEW_DELAY="$WEEKS" python src/model/live.py
+      - name: "1c. Build the site during the delay"
+        run: UW_PREVIEW_DELAY="$WEEKS" python src/site/build_site.py
+      - name: "1d. Check the estimate labels are shown"
+        run: python src/checks/check_estimate_labels.py --expect estimates
+      - name: "1e. Save the site as it looks during the delay"
+        uses: actions/upload-artifact@v5
+        with:
+          name: site-during-delay
+          path: site/
+          retention-days: 14
+
+      - name: "2a. DOL publishes: official figures replace the estimates"
+        run: python src/fetchers/dol_state_fallback.py --simulate-release
+      - name: "2b. Live model run with the official week"
+        run: python src/model/live.py
+      - name: "2c. Build the site after the release"
+        run: python src/site/build_site.py
+      - name: "2d. Check the estimate labels are gone"
+        run: python src/checks/check_estimate_labels.py --expect none
+      - name: "2e. Save the site as it looks after the release"
+        uses: actions/upload-artifact@v5
+        with:
+          name: site-after-release
+          path: site/
+          retention-days: 14
