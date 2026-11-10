@@ -193,7 +193,7 @@ DOL:national_weekly.csv:cc_sa,DOL,1,weekly,1971-01-02,2026-10-24,17,21,0,,1.05,,
 DOL:claims_rates_weekly.csv:ic_rate_sa,DOL,1,weekly,1971-01-02,2026-10-31,10,14,0,,-0.67,,n/a,,OK
 DOL:claims_rates_weekly.csv:cc_rate_sa,DOL,1,weekly,1971-01-02,2026-10-24,17,21,0,,1.05,,n/a,,OK
 DOL:ar539.csv:ic_state_ui,DOL,4,weekly,1995-01-07,2026-10-31,10,14,0,,,53/53 (2026-10-31),ok,,OK
-DOL:ar5159.csv:fp_state_ui_total,DOL,2,monthly,1995-01-31,2026-09-30,41,75,0,,,16/53 (2026-10-31),ok,,OK
+DOL:ar5159.csv:fp_state_ui_total,DOL,2,monthly,1995-01-31,2026-09-30,41,75,0,,,23/53 (2026-10-31),ok,,OK
 DOL:ar218.csv:actual_avg_weeks,DOL,2,quarterly,1995-03-31,2026-06-30,133,200,0,,,52/53 (2026-09-30),ok,,OK
 DOL:exhaustion_duration_monthly.csv:exhaustion_rate_12m,DOL,2,monthly,1996-06-30,2026-09-30,41,100,0,,-2.06,,n/a,,OK
 DOL:exhaustion_duration_monthly.csv:avg_duration_12m,DOL,2,monthly,1995-12-31,2026-09-30,41,100,0,,-1.52,,n/a,,OK
