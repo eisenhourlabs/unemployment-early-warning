@@ -184,10 +184,10 @@ WVUR,FRED,4,monthly,1990-01-01,2026-09-01,70,85,0,,0.0,,ok,,OK
 WIUR,FRED,4,monthly,1990-01-01,2026-09-01,70,85,0,,0.0,,ok,,OK
 WYUR,FRED,4,monthly,1990-01-01,2026-09-01,70,85,0,,0.0,,ok,,OK
 UNRATEMD,FRED,4,monthly,,,,70,,,,,ok,not checked: FOMC median projection: a few year-end values (reference marker only),SKIP
-DOL:national_weekly_eta539.csv:ic_nsa,DOL,1,weekly,1971-01-02,2026-10-10,31,42,0,,1.38,,FAILED,last fetch FAILED,WARN
-DOL:national_weekly_eta539.csv:ic_sa,DOL,1,weekly,1971-01-02,2026-10-10,31,42,0,,0.22,,FAILED,last fetch FAILED,WARN
-DOL:national_weekly_eta539.csv:cc_nsa,DOL,1,weekly,1971-01-02,2026-10-10,31,42,0,,0.56,,FAILED,last fetch FAILED,WARN
-DOL:national_weekly_eta539.csv:cc_sa,DOL,1,weekly,1971-01-02,2026-10-10,31,42,0,,0.91,,FAILED,last fetch FAILED,WARN
+DOL:national_weekly_eta539.csv:ic_nsa,DOL,1,weekly,1971-01-02,2026-10-10,31,42,0,,1.38,,ok,,OK
+DOL:national_weekly_eta539.csv:ic_sa,DOL,1,weekly,1971-01-02,2026-10-10,31,42,0,,0.22,,ok,,OK
+DOL:national_weekly_eta539.csv:cc_nsa,DOL,1,weekly,1971-01-02,2026-10-10,31,42,0,,0.56,,ok,,OK
+DOL:national_weekly_eta539.csv:cc_sa,DOL,1,weekly,1971-01-02,2026-10-10,31,42,0,,0.91,,ok,,OK
 DOL:national_weekly.csv:ic_sa,DOL,1,weekly,1971-01-02,2026-10-31,10,14,0,,-0.67,,ok,,OK
 DOL:national_weekly.csv:cc_sa,DOL,1,weekly,1971-01-02,2026-10-24,17,21,0,,1.05,,ok,,OK
 DOL:claims_rates_weekly.csv:ic_rate_sa,DOL,1,weekly,1971-01-02,2026-10-31,10,14,0,,-0.67,,n/a,,OK
