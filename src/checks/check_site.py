@@ -570,12 +570,29 @@ def check_phase3(browser, base) -> None:
     check(head_badges == 1, f"Outlook: exactly one colour badge in the header section ({head_badges})")
     check(page.locator("#tr-title").inner_text().strip() == "Confirmation triggers", "Outlook: heading 'Confirmation triggers'")
     check(not re.search(r"Layer 1|[Ww]arning triggers|trigger 1 or 2", body), "Outlook: no 'Layer 1' / 'warning triggers' wording")
-    ev = page.locator("#track table").first
+    ev = page.locator("#track table:not(#hit-rates)").first   # WP1: the hit-rate table comes first
     heads = [h.strip() for h in ev.locator("thead th").all_inner_texts()]
     rises = [t.strip() for t in ev.locator("tbody tr td:nth-child(4)").all_inner_texts()]
     check("Unemployment rise" in heads and len(rises) == 7, f"Outlook: event table has 'Unemployment rise' for 7 events {rises}")
     check(rises == ["+2.2 pt", "+0.5 pt", "+0.1 pt", "+5.6 pt", "+11.3 pt", "+0.5 pt", "+0.9 pt"],
           f"Outlook: unemployment rises match events.csv (#9-#15) {rises}")
+    # Review WP1: the track record states the range, the first-published figure and the long 2022-2025 run, and the
+    # hit-rate table (3 rows) matches data/model/score_skill_summary.csv
+    track = " ".join(page.locator("#track").text_content().split())
+    method = " ".join(page.locator(".method").first.text_content().split())     # closed <details> included
+    for words in ["90% range", "as first published", "Episode counts understate long warnings"]:
+        check(words in track, f"Outlook track record: says '{words}'")
+    for words in ["38 months in a row", "so those results lean favourable"]:
+        check(words in method, f"Outlook methodology: says '{words}'")
+    check(page.locator("details#stretch-2022-2025").count() == 1, "Outlook: the 2022–2025 note has its anchor")
+    import csv
+    with open(ROOT / "data" / "model" / "score_skill_summary.csv", encoding="utf-8") as f:
+        rv = next(r for r in csv.DictReader(f) if r["basis"] == "revised")
+    cells = [[c.strip() for c in r] for r in page.eval_on_selector_all(
+        "#hit-rates tbody tr", "rows => rows.map(r => [...r.cells].map(c => c.innerText))")]
+    want = [[str(int(rv[f"n_{k}"])), f"{float(rv[f'hit_{k}']) * 100:.0f}%"] for k in ("red", "amber", "green")]
+    check(len(cells) == 3 and [c[1:] for c in cells] == want,
+          f"Outlook: hit-rate table has 3 rows matching score_skill_summary.csv ({[c[1:] for c in cells]} vs {want})")
     live = json.loads((ROOT / "data" / "model" / "live_latest.json").read_text(encoding="utf-8"))
     page.goto(base + "index.html")
     page.wait_for_selector("body[data-ready=true]")
