@@ -1047,7 +1047,7 @@ Troy asked Claude to decide using best judgement; he leaned towards showing the 
 
 | # | Decision | Reason |
 | --- | --- | --- |
-| 1 | **Score display:** percentages up to 35%; above that, verbal bands, **"elevated"** (35–50%) and **"more likely than not"** (50%+). Raw score, no recalibration | Recalibration made the Brier score worse. Only 7–9 independent episodes per band above 35%, so the percentages there aren't precise enough to print |
+| 1 | **Score display:** percentages up to 35%; above that, verbal bands, **"elevated"** (35–50%) and **"more likely than not"** (50%+). Raw score, no recalibration | Recalibration made the Brier score worse. Only 7–9 independent episodes per band above 35%, so the percentages there aren't precise enough to print *Review note (2026-11): the 50%+ label became **"High"**: on claims as first published, which the live score uses, months scored 50% or more were followed by an event 44% of the time (56% on today's claims), so "more likely than not" overstated it.* |
 | 2 | **Colour hysteresis:** amber entered at 20%, kept until the score falls below 15%; red entered at 50%, kept until below 40% | Judged on pre-2000 data: the same warnings with about 20% fewer colour changes. After 2000: weekly changes 3.2 → 2.6 a year, false reds 2 → 1 |
 | 3 | **NSA claims input: not adopted** | It didn't meet the adoption rule (A2) |
 | 4 | **Initial-claims-rate fans: not shown.** The initial-claims-rate history and its stress paths stay | Accuracy vs. no-change 0.98 / 0.93 / 0.93, with every 90% interval including 1: no demonstrated gain, and a fan implies forecasting skill |

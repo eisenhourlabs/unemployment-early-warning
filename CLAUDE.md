@@ -7,8 +7,8 @@ read `internal/README.md` and `internal/project_instructions.md` at the start of
 
 ## What we're building
 An automated dashboard showing where US unemployment has been, where it is now versus history, and a
-forecast range (3–6 months is the priority; 12 months shown too) with a green / amber / red layoff-risk
-signal. Built to inform consumer-lending and credit involuntary-unemployment (IUI) insurance decisions,
+forecast range (3–6 months is the priority; 12 months shown too) with a green / amber / red labour-market
+stress signal for new job losses (not a recession forecast). Built to inform consumer-lending and credit involuntary-unemployment (IUI) insurance decisions,
 so always cover BOTH dimensions:
 - new job losses (drives claim frequency): initial claims, WARN notices, layoffs rates
 - duration of unemployment (drives claim severity): continuing claims, weeks unemployed, job-finding rate
@@ -298,6 +298,10 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   normal, rising states, contributors, weighted unemployment charts, drill-down, severity context, weighted downloads,
   sparklines; ratification table in docs/decisions.md; Next steps rewritten. Browser check 947 pass; unit tests OK.
   Troy approved the merge and ratified all delegated decisions (2026-11-09); merged into main.
+- 2026-11-12: Independent review work packages started (build order and specs are private; decisions in docs/decisions.md,
+  section "Independent review, work packages"). WP2 (what the score is: "stress alert, not a recession forecast", "High"
+  for 50%+, "Confirmation triggers", event-size column, one glossary) built on branch review-wp2; NOT merged.
+  tests/test_score_wording.py added.
 - Watch: on 2026-11-08 the Claude Code process crashed once (exit 0xC0000409, likely low memory on this 6 GB PC). Keep
   sessions short, commit work in progress often.
 
