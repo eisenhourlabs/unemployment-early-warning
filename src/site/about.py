@@ -71,5 +71,4 @@ def fallback_accuracy() -> dict | None:
 def build() -> dict:
     max_diff, since = iur_check()
     return {"sources": source_rows(), "iur_max_diff": f"{max_diff:.2f}", "iur_since": since,
-            "weighted_sentence": WEIGHTED_SENTENCE, "fallback": fallback_accuracy(),
-            "issues_url": "https://github.com/eisenhourlabs/unemployment-early-warning/issues/new"}
+            "weighted_sentence": WEIGHTED_SENTENCE, "fallback": fallback_accuracy()}

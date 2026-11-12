@@ -51,7 +51,6 @@ from common import PROCESSED, ROOT, claims_weekly, fmt_date, fmt_month, fred, is
 
 HERE = Path(__file__).resolve().parent
 OUT = ROOT / "site"
-REPO_URL = "https://github.com/eisenhourlabs/unemployment-early-warning"
 CENTRAL = ZoneInfo("America/Chicago")
 
 # Page-wide time control. Recession views run from about a year before each NBER recession to about
@@ -155,7 +154,6 @@ def main() -> None:
         "range_buttons": RANGE_BUTTONS,
         "recession_views": RECESSION_VIEWS,
         "default_range": DEFAULT_RANGE,
-        "repo_url": REPO_URL,
         "has_charts": True,          # the Data page sets this to False (no time control, no plotly.js)
     }
 

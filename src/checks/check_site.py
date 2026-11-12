@@ -389,8 +389,9 @@ def check_text_page(browser, url, name):
     anchors = page.eval_on_selector_all("a[href^='#']", "els => els.map(e => e.getAttribute('href').slice(1))")
     missing = [a for a in anchors if page.locator(f"[id='{a}']").count() == 0]
     check(not missing, f"{len(anchors)} in-page links all lead somewhere {missing}")
-    issues = page.eval_on_selector_all("a[href*='/issues/new']", "els => els.map(e => e.href)")
-    check(len(issues) >= 1, f"'Report a problem' link present: {issues[:1]}")
+    # 2026-11-12 (Troy): the site does not link to the project's GitHub repository or issue tracker
+    repo_links = page.eval_on_selector_all("a[href*='github.com']", "els => els.map(e => e.href)")
+    check(not repo_links, f"no links to GitHub {repo_links[:2]}")
     page.screenshot(path=str(SHOTS / f"{Path(name).stem}_desktop.png"), full_page=True)
     pp = browser.new_context(viewport={"width": 400, "height": 860}, device_scale_factor=2,
                              is_mobile=True, has_touch=True).new_page()
@@ -427,6 +428,9 @@ def check_wording() -> None:
     # Review WP2 (2026-11): the 50%+ label is "High" on every page, never "More likely than not"
     old = [p.name for p in pages if re.search(r"(?i)more likely than not", p.read_text(encoding="utf-8"))]
     check(not old, f"no page says 'More likely than not' {old}")
+    # 2026-11-12 (Troy): no page links to the project's GitHub repository, issue tracker or account
+    repo = [p.name for p in pages if re.search(r"(?i)github\.com/eisenhourlabs", p.read_text(encoding="utf-8"))]
+    check(not repo, f"no page links to the GitHub repository {repo}")
     # Review WP9 (C1, C3, C6, C10, C11): statements the data do not support are gone from every page ...
     banned = r"(?i)before finding work|only the data known|reprinted with permission|every chart on this page|free-to-use"
     gone = [f"{p.name}: {m.group(0)}" for p in pages for m in re.finditer(banned, p.read_text(encoding="utf-8"))]
