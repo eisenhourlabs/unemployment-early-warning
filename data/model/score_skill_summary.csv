@@ -1,0 +1,3 @@
+basis,months,event_months,events_in_test,brier,brier_base,skill,skill_p05,skill_p95,share_le_0,auc,n_red,hit_red,n_amber,hit_amber,n_green,hit_green,longest_elevated_run_months,longest_elevated_run_start,longest_elevated_run_end
+revised,236,36,6,0.10796,0.13166,0.18,-0.0669,0.4181,0.101,0.8444,27,0.5556,36,0.2778,173,0.0636,38,2022-11,2025-12
+first_published,236,36,6,0.13308,0.13166,-0.0108,-0.4923,0.2996,0.4946,0.8142,39,0.4359,36,0.2222,161,0.0683,38,2022-11,2025-12
