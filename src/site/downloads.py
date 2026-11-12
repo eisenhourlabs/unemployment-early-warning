@@ -343,9 +343,9 @@ def model_files() -> list[dict]:
                 n = pd.concat([n, pd.DataFrame({"month": r.nowcast_month, "kind": "live (run " + r["asof"] + ")",
                                                 "nowcast": r.nowcast.round(3)})])
         add("nowcast_history", "Nowcast history",
-            "Every nowcast of the next unemployment-rate release with its first release and error (backtest from 2000; "
+            "Every nowcast of the next unemployment-rate release with its first release and error (tested on history from 2000; "
             "live runs once available). Typical range +/-0.2 point (held about 80% of first releases)", "release date",
-            n, [["month", "Month the release covers"], ["kind", "backtest or live"],
+            n, [["month", "Month the release covers"], ["kind", "backtest (= tested on history) or live"],
                 ["released", "Date of the first release"], ["prior_value", "Previous published rate (no-change forecast)"],
                 ["nowcast", "Our nowcast (%)"], ["first_release", "Rate as first published (%)"],
                 ["error", "first_release - nowcast (points)"]])
