@@ -194,6 +194,11 @@ def horizons_table(live: dict) -> list[dict]:
     return out
 
 
+# Review WP3 (F3): the nowcast is shown only here, with what testing showed about it
+NOWCAST_NOTE = ("In testing it was within 0.2 point of the first release 9 times in 10, about the same as simply "
+                "repeating last month's rate; it helped mainly when unemployment was moving fast (2001, 2008–09).")
+
+
 def forecast_rows(live: dict) -> list[dict]:
     rows = []
     n = live["nowcast"]
@@ -201,17 +206,23 @@ def forecast_rows(live: dict) -> list[dict]:
     if n.get("status") == "ready":
         v, r = n["value"], n["range_pt"]
         rows.append({"target": "Unemployment rate", "horizon": f"{month:%b %Y} nowcast (next release)",
-                     "median": f"{v:.1f}%", "b50": "—", "b80": f"{v - r:.1f}–{v + r:.1f}% (about 80%)", "bench": ""})
+                     "median": f"{v:.1f}%", "b50": "—", "b80": f"{v - r:.1f}–{v + r:.1f}% (about 80%)",
+                     "bench": NOWCAST_NOTE})
     else:
         rows.append({"target": "Unemployment rate", "horizon": f"{month:%b %Y} nowcast (next release)",
                      "median": f"after {fmt_date(n['available_after'])}", "b50": "—",
-                     "b80": f"±{n['range_pt']:.1f} pt once available", "bench": ""})
+                     "b80": f"±{n['range_pt']:.1f} pt once available", "bench": NOWCAST_NOTE})
     f = live["fans"]["ur"]
+    fm = live.get("fomc")
+    nx = (fm or {}).get("next")
     for h in f["horizons"]:
         label = f"{h['horizon']} months ({fmt_month(h['target_period'])})" + (", lower confidence" if h["horizon"] == 12 else "")
-        rows.append({"target": "", "horizon": label, "median": f"{h['median']:.1f}%",
-                     "b50": f"{h['q25']:.1f}–{h['q75']:.1f}%", "b80": f"{h['q10']:.1f}–{h['q90']:.1f}%", "bench": ""})
-    fm = live.get("fomc")
+        # Review WP3 (F1): at 12 months the middle value is shown muted (no middle line on the chart there) and the
+        # FOMC median for next year's Q4 is the benchmark
+        twelve = h["horizon"] == 12
+        rows.append({"target": "", "horizon": label, "median": f"{h['median']:.1f}%", "median_muted": twelve,
+                     "b50": f"{h['q25']:.1f}–{h['q75']:.1f}%", "b80": f"{h['q10']:.1f}–{h['q90']:.1f}%",
+                     "bench": f"FOMC Q4 {nx['year']}: {nx['value']:.1f}%" if twelve and nx else ""})
     if fm:
         rows.append({"target": "", "horizon": f"Q4 {fm['year']} average", "median": f"{fm['our_q4_median']:.2f}%",
                      "b50": "", "b80": "",
@@ -241,14 +252,24 @@ def backtest() -> dict | None:
     shown = {("ur", 3): "Unemployment rate, 3 months", ("ur", 6): "Unemployment rate, 6 months",
              ("ur", 12): "Unemployment rate, 12 months (lower confidence)",
              ("cc", 13): "Continuing claims rate, 13 weeks", ("cc", 26): "Continuing claims rate, 26 weeks"}
+    # Review WP3 (F2): 80% coverage before and during events (src/model/forecast_regimes.py)
+    try:
+        reg = pd.read_csv(MODEL / "forecast_evaluation_regimes.csv")
+    except OSError:
+        reg = pd.DataFrame(columns=["target", "horizon", "regime", "cover80"])
+
+    def regime_cover(t, h, regime):
+        r_ = reg[(reg.target == t) & (reg.horizon == h) & (reg.regime == regime)]
+        return f"{r_.cover80.iloc[0] * 100:.0f}%" if len(r_) else "—"
+
     fans = []
     for (t, h), label in shown.items():
         g = fe[(fe.target == t) & (fe.horizon == h) & (fe.subset == "2000-on excl. 2020")]
         if len(g):
             g = g.iloc[0]
             fans.append({"label": label, "ratio": f"{g.rmse_ratio:.2f}", "c50": f"{g.cover50 * 100:.0f}%",
-                         "c80": f"{g.cover80 * 100:.0f}%", "c80_event": f"{g.cover80_event * 100:.0f}%",
-                         "origins": int(g.origins)})
+                         "c80": f"{g.cover80 * 100:.0f}%", "c80_before": regime_cover(t, h, "before an event"),
+                         "c80_during": regime_cover(t, h, "during an event"), "origins": int(g.origins)})
     keep = ev_fc[ev_fc.apply(lambda x: (x.target, int(x.horizon)) in shown, axis=1)]
     rows = []
     for e in events[events.start_month >= "2000-01"].itertuples():

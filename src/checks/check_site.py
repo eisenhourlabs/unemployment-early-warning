@@ -507,6 +507,25 @@ def check_phase3(browser, base) -> None:
     check(len(st["today"]) >= 4 and all(v is True for v in st["today"]),
           f"5Y: fan, middle line and FOMC marker shown ({len(st['today'])} elements)")
     check(st["whatif"] and all(v is False for v in st["whatif"]), "5Y: what-if paths hidden until the box is ticked")
+    # Review WP3: two FOMC markers, middle line to 6 months only (3 points), no nowcast, bands = live_latest.json
+    traces = page.evaluate("""() => document.getElementById('chart-unemployment-rate').data.map(t => ({
+        name: t.name || '', n: (t.x || []).length, y: t.y}))""")
+    live_ur = json.loads((ROOT / "data" / "model" / "live_latest.json").read_text(encoding="utf-8"))
+    fomc_names = [t["name"] for t in traces if t["name"].startswith("FOMC median")]
+    check(len(fomc_names) == 2, f"Overview: 2 FOMC markers, this year's and next year's Q4 {fomc_names}")
+    mid = [t for t in traces if t["name"] == "Forecast: middle line"]
+    check(len(mid) == 1 and mid[0]["n"] == 3, f"Overview: middle line has 3 points (today, 3 and 6 months) {[t['n'] for t in mid]}")
+    check(not any(t["name"].startswith("Nowcast") for t in traces), "Overview: no nowcast on the unemployment chart")
+    fan = live_ur["fans"]["ur"]
+    want_80 = [round(v, 6) for v in [fan["level"]] + [h["q10"] for h in fan["horizons"]]]
+    got_80 = [[round(v, 6) for v in t["y"]] for t in traces if t["name"] == "Forecast: 80% band"]
+    check(got_80 == [want_80], f"Overview: 80% band lower edge = live_latest.json fans ({got_80} vs {want_80})")
+    ur_notes = " ".join(page.locator("#card-unemployment-rate .chart-note").all_inner_texts())
+    check("Q4 2027" in ur_notes and "Nowcast" not in ur_notes and "nowcast" not in ur_notes,
+          f"Overview: unemployment notes name Q4 2027 and no nowcast ({ur_notes[:120]!r})")
+    for name in ("index.html", "duration.html"):
+        check("50% and 80% of outcomes" not in (SITE / name).read_text(encoding="utf-8"),
+              f"{name}: fan footer gives coverage as measured (no '50% and 80% of outcomes')")
     check(st["x"][1] == ur_spec["ahead"], f"5Y: unemployment chart runs on to the forecast end {ur_spec['ahead']} (got {st['x'][1]})")
     for key in ["2008-09", "2001", "2020"]:
         page.click(f".timecontrol > button[data-range='{key}']")
@@ -585,6 +604,15 @@ def check_phase3(browser, base) -> None:
     for words in ["38 months in a row", "so those results lean favourable"]:
         check(words in method, f"Outlook methodology: says '{words}'")
     check(page.locator("details#stretch-2022-2025").count() == 1, "Outlook: the 2022–2025 note has its anchor")
+    # Review WP3: forecast-range wording, the split coverage columns, the nowcast row in the forecast table
+    check("weakest when it mattered most" in method, "Outlook methodology: says 'weakest when it mattered most'")
+    check("live ranges will react more slowly than the tests suggest" in method, "Outlook Limits: live-dating item")
+    fan_heads = [h.strip() for h in page.locator("#track table").last.locator("thead th").all_inner_texts()]
+    check("80%, before an event" in fan_heads and "80%, during an event" in fan_heads
+          and "80%, around events" not in fan_heads, f"Outlook: backtest table splits coverage {fan_heads}")
+    fc_rows = [" ".join(r.split()) for r in page.locator("#fc-title ~ .table-scroll tbody tr").all_inner_texts()]
+    check(any("nowcast" in r and "9 times in 10" in r for r in fc_rows), "Outlook: forecast table has the nowcast row")
+    check(any("12 months" in r and "FOMC Q4 2027" in r for r in fc_rows), "Outlook: 12-month row benchmarks FOMC Q4 2027")
     import csv
     with open(ROOT / "data" / "model" / "score_skill_summary.csv", encoding="utf-8") as f:
         rv = next(r for r in csv.DictReader(f) if r["basis"] == "revised")

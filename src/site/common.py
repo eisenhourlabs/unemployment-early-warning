@@ -286,16 +286,19 @@ def add_colour_band(fig: go.Figure, dates_: pd.Series, colours: pd.Series, end) 
 
 
 def add_fan(fig: go.Figure, f: dict, mult: float, fmt: str, unit: str, period_label, low_conf: int | None = None,
-            labels_below: bool = False) -> str:
+            labels_below: bool = False, median_until: int | None = None) -> str:
     """Forecast fan from the latest published level (live_latest.json 'fans' entry): 80% band (light), 50% band
     (dark), dashed middle line with a dot at each horizon, joined by straight lines; a short label above each 80%
     band. mult: display scale (e.g. 100 for 'per 10,000'); fmt: number format ('.1f'); unit: '%' or '';
     period_label(h) -> text for the hover, e.g. 'Jan 2027 (3 months)'. labels_below: put the horizon labels under the
     band (where reference-line labels sit at the chart's right edge above it). All traces carry meta.today / meta.forecast,
-    so site.js shows them only when the time range includes today. Returns the last forecast date."""
+    so site.js shows them only when the time range includes today. Returns the last forecast date.
+    median_until (review WP3): draw the middle line only to this horizon (e.g. 6 months); later horizons show the
+    bands only, with their hover on an invisible marker at the 50% band's mid-point."""
     hz = f["horizons"]
     x = [f["latest_period"]] + [h["target_period"] for h in hz]
     col = lambda k: [f["level"] * mult] + [h[k] * mult for h in hz]
+    beyond = [h for h in hz if median_until is not None and h["horizon"] > median_until]
     today = {"today": True, "forecast": True}
     for lo, hi, label, alpha in [("q10", "q90", "Forecast: 80% band", 0.14), ("q25", "q75", "Forecast: 50% band", 0.30)]:
         fig.add_trace(go.Scatter(x=x, y=col(hi), mode="lines", line=dict(width=0), showlegend=False,
@@ -304,15 +307,25 @@ def add_fan(fig: go.Figure, f: dict, mult: float, fmt: str, unit: str, period_la
                                  fillcolor=f"rgba(42, 120, 214, {alpha})", name=label, hoverinfo="skip",
                                  meta={"role": "fan", "alpha": alpha, **today}))
     lev = f["level"] * mult
+    mid = [h for h in hz if h not in beyond]               # horizons that keep a middle value
     fig.add_trace(go.Scatter(
-        x=x, y=col("median"), name="Forecast: middle line", mode="lines+markers",
-        line=dict(color=ACCENT, width=2, dash="dash"), marker=dict(size=[0] + [7] * len(hz), color=ACCENT),
+        x=x[:1 + len(mid)], y=col("median")[:1 + len(mid)], name="Forecast: middle line", mode="lines+markers",
+        line=dict(color=ACCENT, width=2, dash="dash"), marker=dict(size=[0] + [7] * len(mid), color=ACCENT),
         customdata=[["latest published", lev, lev, lev, lev]]
-                   + [[period_label(h), h["q10"] * mult, h["q25"] * mult, h["q75"] * mult, h["q90"] * mult] for h in hz],
+                   + [[period_label(h), h["q10"] * mult, h["q25"] * mult, h["q75"] * mult, h["q90"] * mult] for h in mid],
         hovertemplate=(f"%{{customdata[0]}}: middle %{{y:{fmt}}}{unit}, 50% band %{{customdata[2]:{fmt}}}–"
                        f"%{{customdata[3]:{fmt}}}{unit}, 80% band %{{customdata[1]:{fmt}}}–%{{customdata[4]:{fmt}}}{unit}"
                        "<extra>Forecast</extra>"),
         meta={"role": "main", **today}))
+    if beyond:
+        fig.add_trace(go.Scatter(
+            x=[h["target_period"] for h in beyond], y=[(h["q25"] + h["q75"]) / 2 * mult for h in beyond],
+            mode="markers", marker=dict(size=12, opacity=0), showlegend=False, name="Forecast: range only",
+            customdata=[[period_label(h), h["q10"] * mult, h["q25"] * mult, h["q75"] * mult, h["q90"] * mult]
+                        for h in beyond],
+            hovertemplate=(f"%{{customdata[0]}}: 50% band %{{customdata[2]:{fmt}}}–%{{customdata[3]:{fmt}}}{unit}, "
+                           f"80% band %{{customdata[1]:{fmt}}}–%{{customdata[4]:{fmt}}}{unit}<extra>Forecast</extra>"),
+            meta={"role": "fan-hover", **today}))
     short = "mo" if f["frequency"] == "M" else "wk"
     side, edge = ("bottom", "q10") if labels_below else ("top", "q90")
     fig.add_trace(go.Scatter(

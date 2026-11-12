@@ -92,7 +92,7 @@
     <thead><tr><th>Target</th><th>Horizon</th><th class="num">Middle</th><th class="num">50% range</th><th class="num">80% range</th><th>Benchmark</th></tr></thead>
     <tbody>
       {%- for r in forecasts %}
-      <tr><td>{{ r.target }}</td><td>{{ r.horizon }}</td><td class="num">{{ r.median }}</td><td class="num">{{ r.b50 }}</td>
+      <tr><td>{{ r.target }}</td><td>{{ r.horizon }}</td><td class="num{% if r.median_muted %} muted{% endif %}">{{ r.median }}</td><td class="num">{{ r.b50 }}</td>
         <td class="num">{{ r.b80 }}</td><td class="small">{{ r.bench }}</td></tr>
       {%- endfor %}
     </tbody>
@@ -160,18 +160,19 @@
   <div class="table-scroll">
   <table class="model-table">
     <thead><tr><th>Forecast, 2000–2026 excluding 2020</th><th class="num">Error vs. no change</th><th class="num">Inside 50% range</th>
-      <th class="num">Inside 80% range</th><th class="num">80%, around events</th></tr></thead>
+      <th class="num">Inside 80% range</th><th class="num">80%, before an event</th>
+      <th class="num">80%, during an event</th></tr></thead>
     <tbody>
       {%- for f in backtest.fans %}
       <tr><td>{{ f.label }}</td><td class="num">{{ f.ratio }}</td><td class="num">{{ f.c50 }}</td><td class="num">{{ f.c80 }}</td>
-        <td class="num">{{ f.c80_event }}</td></tr>
+        <td class="num">{{ f.c80_before }}</td><td class="num">{{ f.c80_during }}</td></tr>
       {%- endfor %}
     </tbody>
   </table>
   </div>
   <p class="chart-footer">Error vs. no change: root-mean-square error of our middle value divided by that of assuming no
-    change (below 1 = better). Targets: 50% and 80%. "Around events": forecasts made during an event or just before one
-    started. Every forecast failed in 2020; it is reported separately in the method notes.</p>
+    change (below 1 = better). Targets: 50% and 80%. Before an event: forecasts made in the months before one started.
+    During an event: forecasts made once an event had lasted 3 months or more. Every forecast failed in 2020; it is reported separately in the method notes.</p>
   {%- endif %}
 </section>
 
@@ -255,7 +256,10 @@
     <p>Each range mixes two things: a "quiet times" path fitted on months with no event near, and the paths that followed
       past events, weighted by the score's probability for the matching window. When risk rises, the upper side of the
       range stretches toward past downturns, so the fan is lopsided. The ranges held about the right share of outcomes in
-      testing, in downturn months as well as quiet ones, and the middle line beat "no change" by 13–27%. But professional
+      testing overall, and the middle line beat "no change" by 13–27%. They were weakest when it mattered most: once the
+      2008–09 downturn was under way, the 80% range for unemployment held only half to two-thirds of outcomes and the
+      middle line ran 0.4 to 1.2 points too low. During a downturn, treat the upper edge of the range as a floor for
+      planning, and look at the what-if paths. But professional
       forecasters' consensus has been a better single-number forecast than our middle line (about 15–20% lower error):
       use the range and the tilt, not the middle line. In 2022–26 unemployment drifted up slowly without an event, and the
       middle line ran 0.1–0.3 point below what happened; across all late-cycle periods since 2000 there is no such lean,
@@ -275,6 +279,8 @@
       <li>Values as first published exist only from about 2011 for temp help, the factory surveys and the NFCI (claims:
         today's figures throughout); earlier tests use revised values, which flatters them somewhat.</li>
       <li>Event dates come from final data; a new event is added only after review.</li>
+      <li>The forecast tests date each event with today's data; a live forecast learns that an event has started a few
+        months later, so live ranges will react more slowly than the tests suggest.</li>
       <li>Some design choices (which inputs, the weight constraint, the colour rules) were made after seeing the
         2000–2026 results, so those results lean favourable. The live record, kept since November 2026, is the clean
         test.</li>

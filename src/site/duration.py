@@ -50,9 +50,14 @@ def cc_outlook(c: dict, live: dict) -> dict:
     row = ev[(ev.target == "cc") & (ev.horizon == 52) & (ev.subset == "2000-on excl. 2020")]
     held = f" (80% bands held only {row.cover80.iloc[0] * 100:.0f}% of outcomes)" if len(row) else ""
     notes = [f"52-week ranges are not shown: in testing they were too narrow{held}."]
+    # Review WP3 (F6): coverage as measured in testing, at the two horizons shown
+    shown = ev[(ev.target == "cc") & ev.horizon.isin([13, 26]) & (ev.subset == "2000-on excl. 2020")]
+    span = lambda col: f"{shown[col].min() * 100:.0f}–{shown[col].max() * 100:.0f}%"
     return with_outlook(c, fig, ahead, whatif_ahead, notes,
-                        " Fan = our forecast range for the 4-week average at 13 and 26 weeks: 50% and 80% of outcomes "
-                        "in testing (2000–2026, excluding 2020) fell inside the bands." + WHATIF_FOOTER)
+                        " Fan = our forecast range for the 4-week average at 13 and 26 weeks: in testing (2000–2026, "
+                        f"excluding 2020) the darker band held {span('cover50')} of outcomes and the lighter band "
+                        f"{span('cover80')}; when it missed, outcomes were more often below the range than above it."
+                        + WHATIF_FOOTER)
 
 
 def build(built: datetime) -> dict:

@@ -88,6 +88,7 @@ jobs:
       - name: Forecast fans and nowcast (backtest)
         run: |
           python src/model/forecast.py
+          python src/model/forecast_regimes.py
           python src/model/nowcast.py
       - name: Freeze the new model
         run: python src/model/freeze_model.py ${{ steps.cfg.outputs.year }}

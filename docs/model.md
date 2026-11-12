@@ -947,8 +947,37 @@ inside the band (targets 50% and 80%).
 No indicator anticipated a pandemic, and the paths of past events have nothing like a 25-fold jump in claims.
 
 **What it says:**
-- **Unemployment-rate fans work.** They are 19–26% more accurate than no-change, beat climatology at every horizon, and
-  their bands hold up in downturn months as well as in quiet ones. That last point is the one that matters.
+- **Unemployment-rate fans work.** They are 19–26% more accurate than no-change and beat climatology at every horizon. Their
+  coverage by regime (review WP3, 2026-11; `src/model/forecast_regimes.py` -> `data/model/forecast_evaluation_regimes.csv`;
+  origins from 2000, outside 2020; "during an event" = an event had lasted 3+ months; "before an event" = not in an
+  event, one starts within the horizon):
+
+| Forecast | Regime | Origins | Inside 80% | Above the 80% range | Below it | Mean error (outcome − middle) | Error vs. no change |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Unemployment rate, 3 months | before an event | 18 | 89% | 11% | 0% | +0.11 | 1.09 |
+| Unemployment rate, 3 months | during an event | 50 | 74% | 22% | 4% | +0.27 | 0.79 |
+| Unemployment rate, 3 months | other | 234 | 83% | 8% | 9% | −0.01 | 0.79 |
+| Unemployment rate, 3 months | all | 302 | 82% | 11% | 7% | +0.05 | 0.80 |
+| Unemployment rate, 6 months | before an event | 36 | 94% | 6% | 0% | +0.22 | 1.02 |
+| Unemployment rate, 6 months | during an event | 50 | 66% | 32% | 2% | +0.50 | 0.74 |
+| Unemployment rate, 6 months | other | 210 | 80% | 8% | 12% | −0.03 | 0.71 |
+| Unemployment rate, 6 months | all | 296 | 79% | 11% | 9% | +0.09 | 0.74 |
+| Unemployment rate, 12 months | before an event | 64 | 95% | 5% | 0% | +0.38 | 0.91 |
+| Unemployment rate, 12 months | during an event | 50 | 60% | 36% | 4% | +0.82 | 0.73 |
+| Unemployment rate, 12 months | other | 170 | 75% | 4% | 21% | −0.13 | 0.67 |
+| Unemployment rate, 12 months | all | 284 | 77% | 10% | 13% | +0.15 | 0.72 |
+| Continuing claims rate, 13 weeks | before an event | 18 | 83% | 17% | 0% | +0.05 | 0.95 |
+| Continuing claims rate, 13 weeks | during an event | 50 | 86% | 12% | 2% | +0.16 | 0.88 |
+| Continuing claims rate, 13 weeks | other | 234 | 74% | 7% | 18% | −0.03 | 0.84 |
+| Continuing claims rate, 13 weeks | all | 302 | 77% | 9% | 15% | +0.00 | 0.87 |
+| Continuing claims rate, 26 weeks | before an event | 36 | 81% | 17% | 3% | +0.09 | 0.93 |
+| Continuing claims rate, 26 weeks | during an event | 50 | 80% | 18% | 2% | +0.29 | 0.84 |
+| Continuing claims rate, 26 weeks | other | 210 | 71% | 8% | 21% | −0.08 | 0.82 |
+| Continuing claims rate, 26 weeks | all | 296 | 74% | 10% | 16% | +0.01 | 0.84 |
+
+  Pooled 'event' coverage hides over-coverage before events and under-coverage during them. Inside the 2008–09
+  downturn (origins from its 3rd month) the unemployment 80% range held 62% / 58% / 50% of outcomes at 3 / 6 / 12 months
+  and the middle ran +0.43 / +0.76 / +1.16 point too low.
 - **Continuing-claims fans work at 13 and 26 weeks.** At 52 weeks the bands are too narrow, so that horizon fails the gate.
 - **Initial-claims fans are well calibrated but barely more accurate than no-change.** Initial claims are close to a random
   walk at these horizons. Their 90% intervals include 1.
@@ -1226,6 +1255,8 @@ so the FOMC's flat path is a reasonable reminder that the gap may be our downwar
   is not a pure out-of-sample choice, and its small accuracy gain should be read that way.
 - **Nowcast range:** ±0.2 point contained the first release in **82%** of 311 releases (2000–2026 excluding March–December
   2020). The range covering 80% is ±0.19, so **±0.2 is the right label** for an "about 80%" range.
+  Review WP3 (2026-11): last published rate ±0.2: 88%; nowcast rounded to one decimal ±0.2: 90% (same 311 releases;
+  differences of exactly 0.2 count as inside). The nowcast is shown only in the Outlook forecast table.
 
   | Range | ±0.1 | ±0.15 | ±0.2 | ±0.25 | ±0.3 |
   | --- | --- | --- | --- | --- | --- |

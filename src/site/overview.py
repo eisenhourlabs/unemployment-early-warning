@@ -10,7 +10,7 @@ from zoneinfo import ZoneInfo
 import pandas as pd
 import plotly.graph_objects as go
 
-from common import (ACCENT, GREYS, WHATIF_FOOTER, add_colour_band, add_fan, add_whatif, asof_line, with_outlook, base_layout, card, claims_weekly, dates, model_csv,
+from common import (ACCENT, GREYS, MODEL, WHATIF_FOOTER, add_colour_band, add_fan, add_whatif, asof_line, with_outlook, base_layout, card, claims_weekly, dates, model_csv,
                     model_output, pre_recession_averages, fmt_change, fmt_claims, fmt_date, fmt_month, fred,
                     fred_metadata, is_estimate, is_preliminary, last_time_as_extreme, line_chart, ordinal, percentile_text, plain,
                     prelim_label, signal, streak, value_on_or_before, vs_month, weekly_claims_chart)
@@ -26,11 +26,12 @@ MONTHLY_NEWS_DAYS = 7
 # ===========================================================================
 def unemployment_chart(live: dict | None = None) -> dict:
     """Unemployment rate with recession shading; with the model output (Phase 3) also:
-      - the forecast fan after the last published month: 80% band (light), 50% band (dark), middle line (dashed),
-        at 3, 6 and 12 months, joined by straight lines; 12 months labeled lower confidence;
-      - the next-release nowcast (diamond with a +/-0.2 bar) once the reference-week claims are out;
-      - the FOMC median for this year's Q4 (triangle at mid-Q4);
+      - the forecast fan after the last published month: 80% band (light), 50% band (dark), at 3, 6 and 12 months,
+        joined by straight lines; the dashed middle line stops at 6 months (review WP3: none at 12 months, where
+        confidence is lower);
+      - the FOMC median for this year's Q4 and, when published, next year's Q4 (triangles at mid-Q4);
       - the 2001-type and 2008-type what-if paths (dashed, hidden until the reader ticks the toggle).
+    The next-release nowcast is shown only in the Outlook forecast table (review WP3).
     All of these carry meta.today: site.js shows them only when the time range includes today."""
     c = line_chart(
         "unemployment-rate", "Unemployment rate",
@@ -44,55 +45,58 @@ def unemployment_chart(live: dict | None = None) -> dict:
     fig = go.Figure(c["figure"])
     ahead = add_fan(fig, live["fans"]["ur"], 1, ".1f", "%",
                     lambda h: f"{fmt_month(h['target_period'])} ({h['horizon']} months"
-                              + (", lower confidence)" if h["horizon"] == 12 else ")"), low_conf=12)
+                              + (", lower confidence)" if h["horizon"] == 12 else ")"), low_conf=12, median_until=6)
     today = {"today": True, "forecast": True}
     fm = live.get("fomc")
     if fm:
         released = f"{pd.Timestamp(fm['released']):%b %Y} projections" if fm.get("released") else "latest projections"
-        fig.add_trace(go.Scatter(
-            x=[fm["marker_date"]], y=[fm["value"]], mode="markers", name=f"FOMC median, Q4 {fm['year']} ({released})",
-            marker=dict(symbol="triangle-up", size=11, color=GREYS[0]),
-            hovertemplate=f"FOMC median for Q4 {fm['year']}: %{{y:.1f}}% ({released})<extra></extra>",
-            meta={"role": "grey0", **today}))
-    n = live["nowcast"]
-    if n.get("status") == "ready":
-        fig.add_trace(go.Scatter(
-            x=[n["month"]], y=[n["value"]], mode="markers", name=f"Nowcast, {fmt_month(n['month'])} release",
-            marker=dict(symbol="diamond", size=10, color=ACCENT),
-            error_y=dict(type="constant", value=n["range_pt"], thickness=1.5, width=6, color=ACCENT),
-            hovertemplate=f"Nowcast for {fmt_month(n['month'])}: %{{y:.1f}}% (±{n['range_pt']:.1f})<extra></extra>",
-            meta={"role": "main", **today}))
+        markers = [(fm["year"], fm["value"], fm["marker_date"])]
+        if fm.get("next"):
+            markers.append((fm["next"]["year"], fm["next"]["value"], fm["next"]["marker_date"]))
+            # the chart runs on past next year's marker
+            ahead = max(pd.Timestamp(ahead), pd.Timestamp(fm["next"]["marker_date"]) + pd.Timedelta(days=15)
+                        ).strftime("%Y-%m-%d")
+        for year, value, when in markers:
+            fig.add_trace(go.Scatter(
+                x=[when], y=[value], mode="markers", name=f"FOMC median, Q4 {year} ({released})",
+                marker=dict(symbol="triangle-up", size=11, color=GREYS[0]),
+                hovertemplate=f"FOMC median for Q4 {year}: %{{y:.1f}}% ({released})<extra></extra>",
+                meta={"role": "grey0", **today}))
     whatif_ahead = add_whatif(fig, live["stress"]["ur"], 1, ".1f", "%")
     return with_outlook(
         c, fig, ahead, whatif_ahead, ur_notes(live),
-        " Fan = our forecast range: 50% and 80% of outcomes in testing (2000–2026, excluding 2020) fell inside the "
-        "bands. Since 2022 the middle line has run 0.1–0.3 pt below what happened. The 3, 6 and 12-month ranges are "
-        "joined by straight lines; 12 months is lower confidence." + WHATIF_FOOTER
+        " " + fan_coverage_sentence() + " Since 2022 the middle line has run 0.1–0.3 pt below what happened. The 3, 6 "
+        "and 12-month ranges are joined by straight lines; no middle line is drawn at 12 months, where confidence is "
+        "lower." + WHATIF_FOOTER
         + " FOMC median: Federal Reserve Board Summary of Economic Projections via FRED (UNRATEMD), shown for "
         "comparison and not offered for download.")
 
 
+def fan_coverage_sentence() -> str:
+    """Review WP3 (F6): coverage as measured in testing, from data/model/forecast_evaluation.csv."""
+    ev = pd.read_csv(MODEL / "forecast_evaluation.csv")
+    ur = ev[(ev.target == "ur") & (ev.subset == "2000-on excl. 2020")]
+    return ("Fan = our forecast range: in testing (2000–2026, excluding 2020) the darker band held about half of "
+            f"outcomes and the lighter band {ur.cover80.min() * 100:.0f}–{ur.cover80.max() * 100:.0f}%.")
+
+
 def ur_notes(live: dict) -> list[str]:
-    """Lines under the unemployment-rate chart: the nowcast status and the FOMC comparison."""
-    n, notes = live["nowcast"], []
-    month = pd.Timestamp(n["month"])
-    published = f", published {fmt_date(n['release_date'])}" if n.get("release_date") else ""
-    if n.get("status") == "ready":
-        notes.append(f"◆ Next-release nowcast for {month:%B %Y}{published}: {n['value']:.1f}% (±{n['range_pt']:.1f} "
-                     "point, a range that held about 80% of first releases since 2000). It hits the exact published "
-                     "figure no more often than assuming no change does.")
-    else:
-        notes.append(f"◆ Next-release nowcast ({month:%B %Y}{published}): available after "
-                     f"{fmt_date(n['available_after'])} (needs claims for the survey reference week).")
-    if n.get("bridges"):
-        missed = ", ".join(f"{pd.Timestamp(b):%B}" for b in n["bridges"])
-        notes.append(f"The nowcast for {month:%B} covers {n['months_since']} months ({missed} was not collected).")
+    """Line under the unemployment-rate chart: the FOMC comparison (the nowcast moved to the Outlook table, WP3)."""
     fm = live.get("fomc")
-    if fm:
-        notes.append(f"▲ FOMC median for Q4 {fm['year']}: {fm['value']:.1f}% "
-                     f"({pd.Timestamp(fm['released']):%b %Y} projections); our middle line for Q4 averages "
-                     f"{fm['our_q4_median']:.2f}%.")
-    return notes
+    if not fm:
+        return []
+    released = f"{pd.Timestamp(fm['released']):%b %Y}" if fm.get("released") else "latest"
+    nx = fm.get("next")
+    if not nx:
+        return [f"▲ FOMC median for Q4 {fm['year']}: {fm['value']:.1f}% ({released} projections); our middle line for "
+                f"Q4 averages {fm['our_q4_median']:.2f}%."]
+    note = (f"▲ FOMC median: {fm['value']:.1f}% for Q4 {fm['year']} and {nx['value']:.1f}% for Q4 {nx['year']} "
+            f"({released} projections). Our middle value is {fm['our_q4_median']:.2f}% for Q4 {fm['year']} and "
+            f"{nx['our_12m_median']:.2f}% twelve months out.")
+    if abs(nx["gap"]) >= 0.3:
+        note += (f" The two differ by {abs(nx['gap']):.1f} point at twelve months. Forecasters' consensus has been the "
+                 "better guide to the middle; use our range for the spread of outcomes.")
+    return [note]
 
 
 # ===========================================================================
