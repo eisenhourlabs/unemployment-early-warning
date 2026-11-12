@@ -307,8 +307,9 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   exception in the score-history notes, "First live run" / "unchanged under 0.5 pt" change line, exhaustion and benefit
   duration wording, claims-as-proxy About definition and intros, 4-week-average rate tiles with the 1978 note, time
   control label, payroll-is-net line, About "Intended use", FRED citation for consumer sentiment.
-  tests/test_score_change_line.py added; 42 unit tests OK, browser check 974 pass. Waiting for Troy's approval.
-  Next after it: WP1, then WP3.
+  Outlook weights note also gets the claims-revision exception (Troy). tests/test_score_change_line.py added; 42 unit
+  tests OK, browser check 973 pass. Troy approved; fast-forwarded into main and pushed; "Publish site" run 43320236699
+  green; verified live. Next: WP1, then WP3.
 - Watch: 2026-11-12 two scheduled refreshes overlapped (21:03 / 21:06 UTC); the second failed (DOL ETA 539 returned an
   unreadable reply, then its push was rejected). The first had already saved the data. Check the next morning run.
 - Watch: on 2026-11-08 the Claude Code process crashed once (exit 0xC0000409, likely low memory on this 6 GB PC). Keep
