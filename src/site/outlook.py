@@ -12,7 +12,7 @@ import pandas as pd
 import plotly.graph_objects as go
 
 from common import (ACCENT, FAINT, GREYS, MODEL, add_colour_band, asof_line, base_layout, card, dates, fmt_date,
-                    fmt_month, model_csv, model_output, plain, signal)
+                    fmt_month, fred, model_csv, model_output, plain, signal)
 
 CENTRAL = ZoneInfo("America/Chicago")
 MINUS = "−"
@@ -262,9 +262,36 @@ def backtest() -> dict | None:
         rows.append({"event": f"#{e.event}", "start": fmt_month(e.start_month + "-01"), "kind": kind, "rise": rise,
                      "amber": lead_text(r.get(f"amber_lead_#{e.event}")), "red": lead_text(r.get(f"red_lead_#{e.event}")),
                      "fan6": inside[6], "fan3": inside[3]})
-    return {"score": score, "fans": fans, "events": rows,
+    return {"score": score, "fans": fans, "events": rows, "evidence": evidence(),
             "false_ambers": ", ".join(fmt_month(x + "-01") for x in str(r.amber_false_starts).split(", ")),
             "false_reds": ", ".join(fmt_month(x + "-01") for x in str(r.red_false_starts).split(", "))}
+
+
+def evidence() -> dict | None:
+    """Review WP1: the tested record with its uncertainty, from data/model/score_skill_summary.csv
+    (written by src/model/score_uncertainty.py). One entry per claims basis ("revised", "first_published"),
+    already formatted, plus the longest amber-or-red run and the unemployment rate's range over it."""
+    try:
+        summary = pd.read_csv(MODEL / "score_skill_summary.csv").set_index("basis")
+    except OSError:
+        return None
+    pc = lambda v: f"{v * 100:.0f}%"                       # hit rates: whole percent
+    out = {}
+    for basis, r in summary.iterrows():
+        out[basis] = {"months": int(r.months), "events": int(r.events_in_test), "skill": signed(r.skill, 2),
+                      "p05": signed(r.skill_p05, 2), "p95": signed(r.skill_p95, 2),
+                      "base_rate": pc(r.event_months / r.months),
+                      "red_n": int(r.n_red), "red_hit": pc(r.hit_red), "amber_n": int(r.n_amber),
+                      "amber_hit": pc(r.hit_amber), "green_n": int(r.n_green), "green_hit": pc(r.hit_green)}
+    # The longest run of months at amber or red (same on both rows) and the unemployment rate over it
+    first = summary.iloc[0]
+    start = pd.Timestamp(first.longest_elevated_run_start + "-01")
+    end = pd.Timestamp(first.longest_elevated_run_end + "-01")
+    ur = fred("UNRATE")
+    during = ur[(ur.index >= start) & (ur.index <= end)]
+    out["run"] = {"months": int(first.longest_elevated_run_months), "start": f"{start:%B %Y}", "end": f"{end:%B %Y}",
+                  "ur_low": f"{during.min():.1f}", "ur_high": f"{during.max():.1f}"}
+    return out
 
 
 def weights_table(live: dict) -> dict:

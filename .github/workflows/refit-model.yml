@@ -82,6 +82,7 @@ jobs:
       - name: Score and follow-ups (out-of-sample backtest)
         run: |
           python src/model/score.py
+          python src/model/score_uncertainty.py
           python src/model/score_followups.py
           python src/model/part0.py prep
       - name: Forecast fans and nowcast (backtest)

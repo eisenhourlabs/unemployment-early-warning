@@ -630,6 +630,12 @@ by an event 56% of the time.
 - **After #15 ended (September 2024):** 7 months at or above 50% and 17 at or above 20%, with no new event so far. That
   counts against the Brier score, but it doesn't show up as false alarms, because those months bridge into the long run
   that began in 2022.
+- **The long run (review WP1, 2026-11):** from November 2022 to December 2025 the score was at or above 20% for **38
+  months in a row** (all months, revised claims). Two short scares followed (#14 and #15) and no recession; the
+  unemployment rate rose from 3.4% to 4.5% over the stretch. Episode counts (one warning per episode) understate this.
+- **Month-based record (scored months 2000–2026, revised claims):** red (50%+) 27 months, 56% followed by an event within
+  6 months; amber (20–50%) 36 months, 28%; green (below 20%) 173 months, 6%; long-run average 15%. On claims as first
+  published: red 39 months, 44%; amber 36, 22%; green 161, 7%. Bands on the probability, without hysteresis.
 
 **Calibration** (final model):
 
@@ -682,6 +688,40 @@ claims figures. With claims as they were first published, its 2010–2026 skill 
 that is 2022: first-published claims rose 36–46% above their March 2022 low, against 2–6% after DOL's 2023 seasonal-factor
 revision. In real time the score would have been 77–99% from June 2022 to January 2023, a false red that today's figures
 hide. Outside 2022–23 the effect is smaller (+0.21 vs. +0.14), but real-time claims still add false ambers (7 vs. 3).
+
+#### Uncertainty of the headline skill (review WP1, 2026-11)
+
+`src/model/score_uncertainty.py` -> `data/model/score_skill_summary.csv`. Scored months from 2000 (236; 36 with y = 1,
+leading into 6 distinct events). Skill range: block bootstrap, whole 2-calendar-year blocks resampled with replacement,
+5,000 draws, seed 20261111. AUC: chance a y = 1 month scored above a y = 0 month.
+
+| Claims basis | Months | Event months | Skill | 90% range | Share of draws ≤ 0 | AUC | Red: months / hit | Amber: months / hit | Green: months / hit |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Revised (today's figures) | 236 | 36 | +0.180 | −0.07 to +0.42 | 10% | 0.844 | 27 / 56% | 36 / 28% | 173 / 6% |
+| As first published (2010 on) | 236 | 36 | −0.011 | −0.49 to +0.30 | 49% | 0.814 | 39 / 44% | 36 / 22% | 161 / 7% |
+
+Note: the review's specification gave −0.55 for the first-published 5th percentile; it did not reproduce. The review's
+own reference run gives −0.487 and this script −0.492 (Troy chose the computed figure, 2026-11-12).
+
+By period (revised claims, scored months):
+
+| Period | Months | With y = 1 | Skill |
+| --- | --- | --- | --- |
+| 2000–2009 | 69 | 24 | +0.17 |
+| 2010–2019 | 111 | 0 | +0.73 |
+| 2021–2026 | 56 | 12 | −0.03 |
+
+#### Frozen specification (2026-11)
+
+- Inputs: the 8 measures in `src/model/score.py` `MAIN` (sahm, claims_low, claims_yoy, cont_yoy, temp_help,
+  yield_curve, mfg, nfci); weights ≥ 0.
+- Penalty: `C_GRID` = 0.01, 0.03, 0.1, 0.3, 1, 3, 10, chosen by time-ordered cross-validation with 5 blocks.
+- Horizon: 6 months.
+- Colours: amber entered at 20% and left below 15%; red entered at 50% and left below 40%.
+- Event rule (`src/model/events.py`): `UR_RISE` 0.5, `CLAIMS_RISE` 0.25, `QUIET_MONTHS` 6.
+
+From this date, any change to these is tested under a pre-registered plan (template: `docs/phase4_model_tests.md`),
+and every result is reported first on claims as first published (2010 on), then on revised claims.
 
 ## 6. Stage 3d: score follow-ups and forecast fans
 

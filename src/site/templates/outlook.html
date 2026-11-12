@@ -112,11 +112,32 @@
     {{ first_live }}.</p>
   {%- if backtest %}
   <h3>Tested on history (not live forecasts)</h3>
-  <p class="why">Score, {{ backtest.score.months }} months from 2000 to 2026, each scored by a model fitted only on
-    earlier data: Brier score {{ backtest.score.brier }} vs. {{ backtest.score.base }} for always predicting the average
-    (skill {{ backtest.score.skill }}). Amber warnings: {{ backtest.score.amber_real }} followed by an event,
-    {{ backtest.score.amber_false }} false ({{ backtest.false_ambers }}). Red: {{ backtest.score.red_real }} followed by an
-    event, {{ backtest.score.red_false }} false ({{ backtest.false_reds }}).</p>
+  {#- Review WP1: every number below comes from data/model/score_skill_summary.csv (src/model/score_uncertainty.py) #}
+  {%- set rv = backtest.evidence.revised %}
+  {%- set fp = backtest.evidence.first_published %}
+  <p class="why" id="test-evidence"><strong>What the test shows.</strong> Tested on {{ rv.months }} months from 2000 to
+    2026, each scored by a model fitted only on earlier data. The score ranks months well: months it marked red were
+    followed by an event within 6 months {{ rv.red_hit }} of the time, amber months {{ rv.amber_hit }}, green months
+    {{ rv.green_hit }} (long-run average {{ rv.base_rate }}). Its probabilities are less dependable than its ranking.
+    Measured against always quoting the average, its Brier skill is {{ rv.skill }}, with a 90% range of {{ rv.p05 }} to
+    {{ rv.p95 }}, because the test holds only {{ rv.events }} events. That figure uses today's revised claims. With
+    claims as first published, which is what the live score sees, the skill is about zero ({{ fp.skill }}) and red
+    months were followed by an event {{ fp.red_hit }} of the time. Read the colour as "risk is clearly above or below
+    normal", not as a precise probability.</p>
+  <div class="table-scroll">
+  <table class="model-table compact" id="hit-rates">
+    <thead><tr><th>Colour in testing, 2000–2026</th><th class="num">Months</th>
+      <th class="num">Followed by an event within 6 months</th></tr></thead>
+    <tbody>
+      <tr><td>Red (50% or more)</td><td class="num">{{ rv.red_n }}</td><td class="num">{{ rv.red_hit }}</td></tr>
+      <tr><td>Amber (20–50%)</td><td class="num">{{ rv.amber_n }}</td><td class="num">{{ rv.amber_hit }}</td></tr>
+      <tr><td>Green (below 20%)</td><td class="num">{{ rv.green_n }}</td><td class="num">{{ rv.green_hit }}</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="chart-footer">Months outside events, today's revised claims. With claims as first published: red
+    {{ fp.red_n }} months, {{ fp.red_hit }}; amber {{ fp.amber_n }} months, {{ fp.amber_hit }}; green {{ fp.green_n }}
+    months, {{ fp.green_hit }}. Long-run average: {{ rv.base_rate }}.</p>
   <div class="table-scroll">
   <table class="model-table">
     <thead><tr><th>Event</th><th>Start</th><th>Type</th><th class="num">Unemployment rise</th><th class="num">Warning at amber</th><th class="num">Warning at red</th>
@@ -131,7 +152,11 @@
   </div>
   <p class="chart-footer">Warning = months between the colour first showing and the event's start; "on since" = the colour
     was already showing from an earlier, unresolved warning. Fans: of the 5 forecasts shown on this site (unemployment rate
-    at 3, 6 and 12 months, continuing claims rate at 13 and 26 weeks), how many outcomes fell inside the 80% range.</p>
+    at 3, 6 and 12 months, continuing claims rate at 13 and 26 weeks), how many outcomes fell inside the 80% range.
+    Counted as warning episodes: amber {{ backtest.score.amber_real }} followed by an event,
+    {{ backtest.score.amber_false }} false ({{ backtest.false_ambers }}); red {{ backtest.score.red_real }} followed by
+    an event, {{ backtest.score.red_false }} false ({{ backtest.false_reds }}). Episode counts understate long warnings:
+    see the <a href="#stretch-2022-2025">2022–2025 note</a> below.</p>
   <div class="table-scroll">
   <table class="model-table">
     <thead><tr><th>Forecast, 2000–2026 excluding 2020</th><th class="num">Error vs. no change</th><th class="num">Inside 50% range</th>
@@ -194,9 +219,13 @@
       history, not from this week's number alone, so it does not flicker around a threshold. The amber level was chosen
       on 1968–1999 data only (about one false amber per real warning) and then tested from 2000.</p>
   </details>
-  <details>
-    <summary>Why the score was high in 2024–26</summary>
-    <p>From late 2024 through 2025 the score was often elevated without a new event following. Three things drove it:
+  <details id="stretch-2022-2025">
+    <summary>The long amber and red stretch of 2022–2025</summary>
+    <p>From {{ backtest.evidence.run.start }} to {{ backtest.evidence.run.end }} the score was amber or red for
+      {{ backtest.evidence.run.months }} months in a row. Two short scares followed (mid-2023 and the mid-2024 rise in
+      unemployment) and no recession. Over the same stretch the unemployment rate rose from
+      {{ backtest.evidence.run.ur_low }}% to {{ backtest.evidence.run.ur_high }}%: a slow drift, which this score flags
+      but cannot tell apart from the start of something sharper. From late 2024 through 2025 the score was often elevated without a new event following. Three things drove it:
       temporary-help employment was falling (the largest push in most months); the Sahm indicator stayed in the 0.3–0.5
       range after the mid-2024 rise in unemployment; and initial claims had several short jumps above their 52-week low,
       the largest in October 2024 (Hurricanes Helene and Milton and the Boeing strike) and in June and September 2025.
@@ -246,6 +275,9 @@
       <li>Values as first published exist only from about 2011 for temp help, the factory surveys and the NFCI (claims:
         today's figures throughout); earlier tests use revised values, which flatters them somewhat.</li>
       <li>Event dates come from final data; a new event is added only after review.</li>
+      <li>Some design choices (which inputs, the weight constraint, the colour rules) were made after seeing the
+        2000–2026 results, so those results lean favourable. The live record, kept since November 2026, is the clean
+        test.</li>
       <li>The model is frozen between January re-fits: weekly runs plug new data into the same weights.</li>
       <li>The score does not measure the duration of unemployment. Continuing claims are an input but have never carried
         weight beside initial claims.</li>
