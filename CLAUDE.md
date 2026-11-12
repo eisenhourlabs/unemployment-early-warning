@@ -313,8 +313,8 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 - 2026-11-12: WP1 (score evidence) built on branch review-wp1 (NOT merged): src/model/score_uncertainty.py ->
   data/model/score_skill_summary.csv (also in refit-model.yml); Outlook track record restated (skill +0.18 with 90% range
   −0.07 to +0.42, first-published −0.01, hit-rate table by colour, 2022–2025 stretch of 38 months, Limits item);
-  docs/model.md 5.10 uncertainty tables + frozen specification. 46 unit tests OK, browser check 980 pass. Waiting for
-  Troy's approval. Next after it: WP3.
+  docs/model.md 5.10 uncertainty tables + frozen specification. 46 unit tests OK, browser check 980 pass. Troy approved;
+  fast-forwarded into main and pushed; "Publish site" run 43323985616 green; verified live. Next: WP3.
 - Watch: 2026-11-12 two scheduled refreshes overlapped (21:03 / 21:06 UTC); the second failed (DOL ETA 539 returned an
   unreadable reply, then its push was rejected). The first had already saved the data. Check the next morning run.
 - Watch: on 2026-11-08 the Claude Code process crashed once (exit 0xC0000409, likely low memory on this 6 GB PC). Keep
