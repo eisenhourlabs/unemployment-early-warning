@@ -318,8 +318,9 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 - 2026-11-12: WP3 (forecast framing) built on branch review-wp3 (NOT merged): Overview fan without a middle line beyond
   6 months, second FOMC marker (Q4 2027), nowcast only in the Outlook table, coverage as measured in the fan footers;
   forecast_regimes.py (coverage before / during events) and fomc_marker.py; Outlook table split, "weakest when it mattered
-  most" wording, Limits item; docs/model.md. 50 unit tests OK, browser check 992 pass. Waiting for Troy's approval.
-  WP3 is the last package before the meeting; after it: WP7 (after the meeting).
+  most" wording, Limits item; docs/model.md. 50 unit tests OK, browser check 992 pass. Troy approved;
+  fast-forwarded into main and pushed; "Publish site" run 43326947709 green; verified live. All pre-meeting packages
+  are live; next (after the meeting): WP7.
 - Watch: 2026-11-12 two scheduled refreshes overlapped (21:03 / 21:06 UTC); the second failed (DOL ETA 539 returned an
   unreadable reply, then its push was rejected). The first had already saved the data. Check the next morning run.
 - Watch: on 2026-11-08 the Claude Code process crashed once (exit 0xC0000409, likely low memory on this 6 GB PC). Keep
