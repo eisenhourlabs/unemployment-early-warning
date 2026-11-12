@@ -18,10 +18,10 @@
       <p class="score-line">
         <span class="signal signal-{{ score.signal.colour }}"><span aria-hidden="true">{{ score.signal.icon }}</span> {{ score.signal.label }}</span>
         <span class="score-value" title="{{ score.tooltip }}">{{ score.value }}</span>
-        <span class="score-unit">{% if score.words %}chance of a new deterioration in the next 6 months{% else %}chance in the next 6 months{% endif %}</span>
+        <span class="score-unit">chance of a claims jump or unemployment rise in the next 6 months</span>
       </p>
       <p class="score-change">{{ score.change }}</p>
-      <p class="why">{{ score.definition }}</p>
+      <p class="why">{{ score.definition }} <a href="duration.html">Duration</a>.</p>
       <h3>What's moving it</h3>
       <ul class="drivers">
         {%- for d in score.drivers %}
@@ -35,7 +35,7 @@
       <h3>{{ charts.score.title }}</h3>
       <div class="chart chart-small" id="chart-{{ charts.score.id }}" role="img" aria-label="{{ charts.score.title }} chart"></div>
       <p class="chart-footer">Dotted: weekly scores re-computed for each past Thursday with only the data known that
-        day and that year's model (backtest). Solid: live runs. Strip: the colour shown, with its rule (amber from 20%
+        day and that year's model (tested on history). Solid: live runs. Strip: the colour shown, with its rule (amber from 20%
         until below 15%; red from 50% until below 40%).</p>
     </div>
     {%- endif %}

@@ -98,9 +98,12 @@ def ur_notes(live: dict) -> list[str]:
 # ===========================================================================
 # Early-warning score panel (Phase 3)
 # ===========================================================================
-SCORE_DEFINITION = ("The chance that a new deterioration starts within 6 months: initial claims (4-week average) jump "
-                    "25% or more above their low of the past year, or unemployment's 3-month average rises 0.5 point "
-                    "above its low. Past alerts include short scares as well as recessions.")
+# Review WP2 (2026-11). The template adds the link: "... see <a href="duration.html">Duration</a>."
+SCORE_DEFINITION = ("The chance that, within 6 months, new claims jump 25% or more above their low of the past year, "
+                    "or unemployment's 3-month average rises 0.5 point above its low. This is a stress alert, not a "
+                    "recession forecast: of the 14 such events since 1967 (2020 aside), 8 were tied to a recession "
+                    "and 6 were short scares that faded. It covers new job losses (claim frequency); for how long "
+                    "people stay unemployed (claim severity), see")
 
 
 def score_panel(m: dict) -> dict:
@@ -137,9 +140,9 @@ def score_mini_chart(live: dict | None, built: datetime) -> dict | None:
     back = shown[shown.basis == "backtest"]
     live_rows = pd.concat([back.tail(1), shown[shown.basis == "live"]])     # joined to the last backtest week
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=dates(back.date), y=plain(back.pct), name="Backtest (weekly, out of sample)",
+    fig.add_trace(go.Scatter(x=dates(back.date), y=plain(back.pct), name="Tested on history (weekly)",
                              mode="lines", line=dict(color=ACCENT, width=1.8, dash="dot"), meta={"role": "main"},
-                             hovertemplate="%{y:.0f}%<extra>Backtest</extra>"))
+                             hovertemplate="%{y:.0f}%<extra>Tested on history</extra>"))
     fig.add_trace(go.Scatter(x=dates(live_rows.date), y=plain(live_rows.pct), name="Live", mode="lines+markers",
                              line=dict(color=ACCENT, width=2.5), marker=dict(size=[0] * (len(live_rows) - 1) + [8]),
                              meta={"role": "main"}, hovertemplate="%{y:.1f}%<extra>Live</extra>"))
@@ -290,7 +293,7 @@ def score_sentence(live: dict | None) -> str | None:
     a, b = s["previous"]["display"]["text"], s["display"]["6"]["text"]
     colour = signal(s["colour"])["label"].lower()
     if s.get("first_live_run"):
-        return (f"The early-warning score is {b} in its first live run (last week's backtest score: {a}); "
+        return (f"The early-warning score is {b} in its first live run (last week's tested-on-history score: {a}); "
                 f"its colour is {colour}.")
     label = s.get("compare_label", "vs. last week")
     if label != "vs. last week":                   # the previous run was not a week earlier

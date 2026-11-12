@@ -21,7 +21,7 @@
   <p class="score-line">
     <span class="signal signal-{{ signal.colour }}"><span aria-hidden="true">{{ signal.icon }}</span> {{ signal.label }}</span>
     <span class="score-value" title="{{ tooltip }}">{{ value }}</span>
-    <span class="score-unit">chance of a new claims breakout or a rise in unemployment within 6 months</span>
+    <span class="score-unit">chance of a claims jump or unemployment rise within 6 months</span>
   </p>
 </section>
 
@@ -50,11 +50,12 @@
   </section>
 
   <section class="card" id="triggers" aria-labelledby="tr-title">
-    <h2 id="tr-title">Warning triggers (Layer 1)</h2>
-    <p class="score-line"><span class="muted">Overall:</span>
+    <h2 id="tr-title">Confirmation triggers</h2>
+    <p class="why">Has deterioration already begun? {{ triggers.rule }} These are simple, well-known rules. Red on the
+      Sahm indicator or new claims means the event the score warns about has started; in past recessions red came in the
+      month the event started or 1–3 months after. The score above is the early warning; these confirm it.
+      <span class="muted">Confirmation status:</span>
       <span class="signal signal-sm signal-{{ triggers.overall.colour }}"><span aria-hidden="true">{{ triggers.overall.icon }}</span> {{ triggers.overall.label }}</span></p>
-    <p class="why">{{ triggers.rule }} Simple rules, each tested on 1967–2026; the score above weighs the same measures
-      together.</p>
   </section>
 </div>
 
@@ -71,7 +72,7 @@
         <td class="small">{{ r.change }}</td></tr>
       {%- endfor %}
       {%- for r in triggers.context %}
-      <tr class="muted"><td>{{ r.n }}</td><td>{{ r.name }}<span class="block">context: not counted in the overall status</span></td>
+      <tr class="muted"><td>{{ r.n }}</td><td>{{ r.name }}<span class="block">shown for context</span></td>
         <td class="small">{{ r.rule }}</td><td class="num">{{ r.value }}</td><td>—</td><td class="small"></td></tr>
       {%- endfor %}
     </tbody>
@@ -110,7 +111,7 @@
   <p class="why">What we said 3 and 6 months ago vs. what happened, from the first archived live run. First entries from
     {{ first_live }}.</p>
   {%- if backtest %}
-  <h3>Backtest (tested on history; not live forecasts)</h3>
+  <h3>Tested on history (not live forecasts)</h3>
   <p class="why">Score, {{ backtest.score.months }} months from 2000 to 2026, each scored by a model fitted only on
     earlier data: Brier score {{ backtest.score.brier }} vs. {{ backtest.score.base }} for always predicting the average
     (skill {{ backtest.score.skill }}). Amber warnings: {{ backtest.score.amber_real }} followed by an event,
@@ -118,11 +119,11 @@
     event, {{ backtest.score.red_false }} false ({{ backtest.false_reds }}).</p>
   <div class="table-scroll">
   <table class="model-table">
-    <thead><tr><th>Event</th><th>Start</th><th>Type</th><th class="num">Warning at amber</th><th class="num">Warning at red</th>
+    <thead><tr><th>Event</th><th>Start</th><th>Type</th><th class="num">Unemployment rise</th><th class="num">Warning at amber</th><th class="num">Warning at red</th>
       <th class="num">Fans inside 80% range, 6 months before</th><th class="num">3 months before</th></tr></thead>
     <tbody>
       {%- for e in backtest.events %}
-      <tr><td>{{ e.event }}</td><td>{{ e.start }}</td><td>{{ e.kind }}</td><td class="num">{{ e.amber }}</td>
+      <tr><td>{{ e.event }}</td><td>{{ e.start }}</td><td>{{ e.kind }}</td><td class="num">{{ e.rise }}</td><td class="num">{{ e.amber }}</td>
         <td class="num">{{ e.red }}</td><td class="num">{{ e.fan6 }}</td><td class="num">{{ e.fan3 }}</td></tr>
       {%- endfor %}
     </tbody>
@@ -155,14 +156,15 @@
     <summary>What counts as an event</summary>
     <p>An event starts in the first month that either of two things happens, measured on today's data:</p>
     <ul>
-      <li><strong>Claims breakout:</strong> the SA initial claims 4-week average is 25% or more above its lowest value of
+      <li><strong>Claims jump:</strong> the SA initial claims 4-week average is 25% or more above its lowest value of
         the previous 52 weeks.</li>
       <li><strong>Unemployment rise:</strong> the unemployment rate's 3-month average is 0.5 point or more above its
         lowest 3-month average of the previous 12 months (the shape of the Sahm rule).</li>
     </ul>
     <p>It ends once both have been off for 6 months. Since 1967 there have been 15 events: 8 linked to a recession (or an
       early signal of one), 6 scares, and 2020. Scares count as events: for a lender, a sharp short jump in new claims
-      matters even if no recession follows.</p>
+      matters even if no recession follows. Since 2000, about 1 red month in 5 was followed by an event tied to a
+      recession; the rest preceded scares or nothing.</p>
   </details>
   <details>
     <summary>Inputs and their weights (today)</summary>
@@ -214,10 +216,10 @@
   </details>
   <details>
     <summary>Why scores above 35% are shown in words</summary>
-    <p>Below 35% the score is well calibrated in testing. Above it, it has been too confident: months scored 35–50%
-      (average 41%) were followed by an event 30% of the time, and months scored 50% or more (average 76%) 56% of the
-      time. Each band rests on only 7–9 independent episodes, too few to correct the numbers reliably. So the site shows
-      "Elevated" for 35–50% and "More likely than not" for 50% and above, with the number only in the tooltip.</p>
+    <p>Below 35% the score is well calibrated in testing. Above it, it has been too confident: months scored 50% or more
+      (average 76%) were followed by an event 56% of the time on today's claims figures and 44% on claims as first
+      published. Each band rests on only 7–9 independent episodes. So the site shows "Elevated" for 35–50% and "High" for
+      50% and above, with the number only in the tooltip.</p>
   </details>
   <details>
     <summary>What the forecast ranges can and can't do</summary>
@@ -245,6 +247,8 @@
         today's figures throughout); earlier tests use revised values, which flatters them somewhat.</li>
       <li>Event dates come from final data; a new event is added only after review.</li>
       <li>The model is frozen between January re-fits: weekly runs plug new data into the same weights.</li>
+      <li>The score does not measure the duration of unemployment. Continuing claims are an input but have never carried
+        weight beside initial claims.</li>
     </ul>
   </details>
 </section>

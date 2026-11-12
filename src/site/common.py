@@ -144,6 +144,27 @@ def claims_weekly() -> pd.DataFrame:
     return overlay_claims_table(df)
 
 
+# Review WP2 (2026-11): wording changes in src/model/live.py, applied here as well so a site rebuilt from a
+# live_latest.json written before the change (the "Publish site" run does not re-run live.py) shows the new words.
+WORDS_NOTE = ("In testing, readings this high were followed by a claims jump or unemployment rise roughly half the "
+              "time.")
+OLD_RULE_TAIL, NEW_RULE_TAIL = "another panel trigger is", "another trigger that counts toward the status is"
+
+
+def reword_live(live: dict) -> None:
+    """In place: "More likely than not" -> "High", the verbal-band tooltip sentence, and the trigger-rule wording."""
+    s = live.get("score") or {}
+    displays = list((s.get("display") or {}).values()) + [(s.get("previous") or {}).get("display") or {}]
+    for d in displays:
+        if d.get("text") == "More likely than not":
+            d["text"] = "High"
+        if d.get("words") and WORDS_NOTE not in d.get("tooltip", ""):
+            d["tooltip"] = f"{d.get('tooltip', '')}. {WORDS_NOTE}"
+    t = live.get("triggers") or {}
+    if "rule" in t:
+        t["rule"] = t["rule"].replace(OLD_RULE_TAIL, NEW_RULE_TAIL)
+
+
 def model_output(built) -> dict:
     """The live model result set (data/model/live_latest.json, from src/model/live.py), with a status note.
 
@@ -155,6 +176,7 @@ def model_output(built) -> dict:
         live = _json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError):
         return {"live": None, "note": "Early-warning score not available: the model output is missing."}
+    reword_live(live)
     from zoneinfo import ZoneInfo
     today = pd.Timestamp(pd.Timestamp(built).tz_convert(ZoneInfo("America/Chicago")).date())
     asof = pd.Timestamp(live["asof"])

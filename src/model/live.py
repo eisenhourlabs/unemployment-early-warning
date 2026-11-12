@@ -91,15 +91,23 @@ def num(v) -> float:
     return float("nan") if v is None or (isinstance(v, float) and math.isnan(v)) else float(v)
 
 
+# Tooltip sentence for the two verbal bands (review WP2)
+WORDS_NOTE = ("In testing, readings this high were followed by a claims jump or unemployment rise roughly half the "
+              "time.")
+
+
 def score_display(p: float, disp: dict) -> dict:
     """How the site shows a probability: a whole percent up to 35%, words above (number in the tooltip only).
     Rounding: whole percent ('1.8' -> '2%'), '<1%' below 0.5%."""
     pct = math.floor(p * 100 + 0.5)
     number = "<1%" if p < disp["below_text_under"] else f"{pct}%"
+    # Review WP2 (2026-11): 50%+ is labelled "High" (was "More likely than not": in testing such readings were
+    # followed by an event about half the time, 44% on claims as first published). The frozen model's key name
+    # "more_likely_from" is kept until the January 2027 re-fit.
     if p >= disp["more_likely_from"]:
-        return {"text": "More likely than not", "number": number, "words": True, "tooltip": f"about {pct}% in testing terms"}
+        return {"text": "High", "number": number, "words": True, "tooltip": f"about {pct}% in testing terms. {WORDS_NOTE}"}
     if p >= disp["words_from"]:
-        return {"text": "Elevated", "number": number, "words": True, "tooltip": f"about {pct}% in testing terms"}
+        return {"text": "Elevated", "number": number, "words": True, "tooltip": f"about {pct}% in testing terms. {WORDS_NOTE}"}
     return {"text": number, "number": number, "words": False, "tooltip": f"{p * 100:.1f}%"}
 
 
@@ -268,8 +276,8 @@ def triggers_now(asof: pd.Timestamp) -> dict:
     overall = ("red" if on(core, ("red",)) else
                "amber" if on(core) >= 1 and on(PANEL) >= 2 else "green")
     return {"rows": rows, "overall": overall,
-            "rule": "Red if trigger 1, 2 or 4 is red; amber if one of 1, 2, 4 is amber or red and another panel "
-                    "trigger is amber or red; otherwise green."}
+            "rule": "Red if trigger 1, 2 or 4 is red; amber if one of 1, 2, 4 is amber or red and another trigger "
+                    "that counts toward the status is amber or red; otherwise green."}
 
 
 # ===================================================================================================
