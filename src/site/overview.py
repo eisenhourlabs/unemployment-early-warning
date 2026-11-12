@@ -188,7 +188,7 @@ def cc_rate_chart(claims: pd.DataFrame, wide=False) -> dict:
         "How long people stay on state UI benefits. For involuntary unemployment insurance (IUI), this drives how "
         "long claims last (severity).",
         "Source: DOL state UI claims (ETA 539 weekly report and Thursday news release; FRED CCSA for preliminary "
-        "weeks). Seasonally adjusted continued claims as a percent of covered workers, weekly, from 1971; "
+        "weeks). Seasonally adjusted continuing claims as a percent of covered workers, weekly, from 1971; "
         "matches DOL's insured unemployment rate.",
         claims, "cc_rate_sa", "cc_rate_sa_4wk", "source_continued",
         "Percent of covered workers", "%{y:.1f}%",

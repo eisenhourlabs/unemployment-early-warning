@@ -67,17 +67,17 @@ def build(built: datetime) -> dict:
                        f"week since {both.week_ended.dt.year.min()} (DOL rounds to 0.1).")
     charts.append(cc_outlook(rate, live) if live else rate)
 
-    # 2. SA continued claims level: 4-week average bold, weekly faint (FRED, from 1967)
+    # 2. SA continuing claims level: 4-week average bold, weekly faint (FRED, from 1967)
     sources = claims.set_index("week_ended")["source_continued"]
     level = pd.DataFrame({"cc_sa": fred("CCSA"), "cc_sa_4wk": fred("CC4WSA")})
     level.index.name = "week_ended"
     level = level.reset_index()
     level["source"] = level.week_ended.map(sources).fillna("ETA 539")
     charts.append(weekly_claims_chart(
-        "cc-level", "SA continued claims",
-        "Number of people still claiming state UI benefits; continued claims run a week behind initial claims.",
+        "cc-level", "SA continuing claims",
+        "Number of people still claiming state UI benefits; continuing claims run a week behind initial claims.",
         "Source: DOL state UI claims via FRED (CCSA, CC4WSA). Seasonally adjusted, number of people claiming, weekly.",
-        level, "cc_sa", "cc_sa_4wk", "source", "Continued claims (SA)", "%{y:,.0f}",
+        level, "cc_sa", "cc_sa_4wk", "source", "Continuing claims (SA)", "%{y:,.0f}",
         ["week_ended", "cc_sa", "cc_sa_4wk", "source"]))
 
     # 3. Exhaustion rate, 12-month (our calculation from DOL's monthly ETA 5159 report)

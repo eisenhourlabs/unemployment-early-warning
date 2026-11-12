@@ -15,8 +15,9 @@ from common import (PROCESSED, ROOT, fmt_date, fmt_month, fred, fred_metadata, l
 
 INTRO = ("Indicators that have tended to move before layoffs: the yield curve, temporary help jobs, factory "
          "hours, housing permits, regional surveys, consumer sentiment and financial conditions. Two of them are "
-         "warning triggers with a colour (the yield curve and financial conditions); temporary help and the regional "
-         "surveys are shown as context. The full panel and the early-warning score are on the Outlook page.")
+         "confirmation triggers with a colour (the yield curve and financial conditions); temporary help and the "
+         "regional surveys are shown for context. All the confirmation triggers and the early-warning score are on "
+         "the Outlook page.")
 
 # Layer 1 links (Phase 3): catalog series -> (trigger id, note). Panel triggers get their colour; context rows a label.
 SIGNAL_FOR = {"T10Y3M": ("yield_curve", "long lead, often 12+ months; the trigger uses monthly averages"),
@@ -33,7 +34,7 @@ def signal_cell(sid: str, live: dict | None) -> dict | None:
         row = next(r for r in live["triggers"]["rows"] if r["id"] == tid)
         return {"signal": signal(row["colour"]), "note": note}
     if sid in CONTEXT:
-        out = {"context": "Context: not counted in the overall status"}
+        out = {"context": "Shown for context"}
         c = next((c for c in live["score"]["contributions"] if c["input"] == CONTEXT[sid]), None)
         if sid == "TEMPHELPS" and c and c.get("sentence"):
             # Same words as the Overview driver, so the two pages never seem to disagree (3e-1 review)

@@ -1,6 +1,6 @@
 """
 Outlook page (Phase 3): the early-warning score in full. Score history since 1980, the 3 / 6 / 12-month
-probabilities, the Layer 1 warning triggers, the forecast table, the track record and the methodology.
+probabilities, the confirmation triggers (Layer 1 in docs/model.md), the forecast table, the track record and the methodology.
 Called by build_site.py. Everything comes from the model output files (src/model/live.py); if they are missing
 the page still builds and says so.
 """
@@ -83,9 +83,9 @@ def history_chart(live: dict, built: datetime) -> dict | None:
                           fillcolor="rgba(42,120,214,0.13)" if kind == "recession" else "rgba(214,120,42,0.16)")
     pseudo = m[m.basis == "pseudo out of sample"]
     oos = pd.concat([pseudo.tail(1), m[m.basis == "out of sample"]])        # joined at January 2000
-    fig.add_trace(go.Scatter(x=dates(pseudo.month), y=plain(pseudo.pct), name="1980–1999: pseudo out of sample",
+    fig.add_trace(go.Scatter(x=dates(pseudo.month), y=plain(pseudo.pct), name="1980–1999: tested with partly revised data",
                              mode="lines", line=dict(color=FAINT, width=1.8), meta={"role": "faint"},
-                             hovertemplate="%{y:.0f}%<extra>Pseudo out of sample</extra>"))
+                             hovertemplate="%{y:.0f}%<extra>Tested with partly revised data</extra>"))
     fig.add_trace(go.Scatter(x=dates(oos.month), y=plain(oos.pct), name="2000 on: out of sample",
                              mode="lines", line=dict(color=ACCENT, width=2), meta={"role": "main"},
                              hovertemplate="%{y:.0f}%<extra>Out of sample</extra>"))
@@ -117,8 +117,8 @@ def history_chart(live: dict, built: datetime) -> dict | None:
     return card("score-history-long", "Early-warning score since 1980",
                 "Each month scored by a model fitted only on earlier data (re-fitted every January), so the line shows "
                 "what the score would have said at the time.",
-                "Line: chance of a new deterioration event within 6 months. 1980–1999 (light): pseudo out of sample, "
-                "inputs partly revised. 2000 on: out of sample. Dot: this week's live run. Shading: blue = events "
+                "Line: chance of a claims jump or unemployment rise within 6 months. 1980–1999 (light): tested with partly "
+                "revised data. 2000 on: out of sample. Dot: this week's live run. Shading: blue = events "
                 "linked to a recession, orange = scares; hatched = 2020 (the pandemic was not foreseeable from these "
                 "inputs and is not used to fit). Strip under the chart: the colour shown, with its hysteresis rule. "
                 "Model output, not official statistics.",
@@ -256,7 +256,9 @@ def backtest() -> dict | None:
                         f"{int((g.months_before_start == lead).sum())}" if (g.months_before_start == lead).any() else "—"
                   for lead in (6, 3)}
         kind = {"recession (pandemic)": "2020 pandemic (not used to fit)"}.get(e.classification, e.classification)
-        rows.append({"event": f"#{e.event}", "start": fmt_month(e.start_month + "-01"), "kind": kind,
+        # Review WP2: size of each event, peak rise in the unemployment rate (events.csv ur_peak_rise_pt)
+        rise = f"+{e.ur_peak_rise_pt:.1f} pt" if pd.notna(e.ur_peak_rise_pt) else "—"
+        rows.append({"event": f"#{e.event}", "start": fmt_month(e.start_month + "-01"), "kind": kind, "rise": rise,
                      "amber": lead_text(r.get(f"amber_lead_#{e.event}")), "red": lead_text(r.get(f"red_lead_#{e.event}")),
                      "fan6": inside[6], "fan3": inside[3]})
     return {"score": score, "fans": fans, "events": rows,

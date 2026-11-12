@@ -68,7 +68,7 @@ MAP_MEASURES = [
     {"key": "gap", "label": "Unemployment vs. 12-month low (Sahm-style)", "freq": "m", "kind": "sequential",
      "decimals": 1, "unit": " pt", "signed": True,
      "footer": "3-month average of the state unemployment rate minus its lowest 3-month average of the previous 12 "
-               "months, in percentage points: the Sahm rule applied to a state. No warning trigger is attached."},
+               "months, in percentage points: the Sahm rule applied to a state. No confirmation trigger is attached."},
     {"key": "exh", "label": "Exhaustion rate (12-month)", "freq": "m", "kind": "sequential", "decimals": 1, "unit": "%",
      "footer": "Share of claimants who use up all their state benefits: 12-month average final payments ÷ 12-month "
                "average first payments 6 months earlier (DOL ETA 5159, our calculation)."},

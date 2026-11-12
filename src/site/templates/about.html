@@ -25,10 +25,11 @@
       (DOL). These are the "claims" throughout this site.</dd>
     <dt>Initial claims</dt>
     <dd>New applications for state UI benefits in a week: the fastest public signal of job losses.</dd>
-    <dt>Continued (continuing) claims</dt>
-    <dd>People still claiming benefits; reported for the week before the initial claims week, so they run a week behind.</dd>
+    <dt>Continuing claims</dt>
+    <dd>People still claiming benefits; reported for the week before the initial claims week, so they run a week behind.
+      DOL and FRED call them “continued claims”.</dd>
     <dt>ETA 539</dt>
-    <dd>DOL's weekly claims report: national and state initial and continued claims, covered employment and the
+    <dd>DOL's weekly claims report: national and state initial and continuing claims, covered employment and the
       insured unemployment rate. Published every Thursday with the news release; the official figures follow.</dd>
     <dt>ETA 5159</dt>
     <dd>DOL's monthly report of state UI claims and payments: first payments, weeks compensated, final payments
@@ -43,7 +44,7 @@
     <dd>Seasonally adjusted initial claims per 10,000 covered workers, weekly. Example: 189,000 claims ÷ 153.9 million
       covered workers × 10,000 = 12.3.</dd>
     <dt>SA continuing claims rate</dt>
-    <dd>Seasonally adjusted continued claims as a percent of covered workers. It reproduces DOL's published insured
+    <dd>Seasonally adjusted continuing claims as a percent of covered workers. It reproduces DOL's published insured
       unemployment rate: the largest difference in any week since {{ iur_since }} is {{ iur_max_diff }} percentage
       points, which is DOL's rounding to one decimal.</dd>
     <dt>4-week average</dt>
@@ -66,6 +67,9 @@
     <dt>Sahm indicator</dt>
     <dd>The 3-month average unemployment rate minus the lowest 3-month average of the prior 12 months. Readings of
       0.50 or more have come in the early months of most past US recessions (St. Louis Fed, real-time version).</dd>
+    <dt>Event</dt>
+    <dd>A claims jump (new claims 25% or more above their low of the past year) or an unemployment rise (3-month average
+      0.5 point above its low of the past year). About half of past events were short scares.</dd>
     <dt>Recession shading</dt>
     <dd>Grey bands mark recessions as dated by the National Bureau of Economic Research (NBER). NBER announces dates
       months after the fact, so a new downturn appears only once it is official.</dd>
@@ -126,8 +130,8 @@
       <li>On Thursdays an extra run starts at about 7:35 am CT and waits up to an hour for the weekly claims release.</li>
       <li>The early-warning score and forecast ranges are recomputed automatically by the first refresh after each
         Thursday claims release and each jobs report (other days the last run stays), with weights fixed for the year.
-        Two steps are manual: the January re-fit of the weights is reviewed before it is used, and a new deterioration
-        event is added to the history only after review. If a model run fails or a release is late, the pages say so
+        Two steps are manual: the January re-fit of the weights is reviewed before it is used, and a new event
+        (a claims jump or unemployment rise) is added to the history only after review. If a model run fails or a release is late, the pages say so
         and keep the last good values. How it works: <a href="outlook.html#methodology">Outlook → Methodology</a>.</li>
       <li>The <span class="badge-inline">⚠ stale</span> badge next to "Data through" appears if a series is older than
         its normal release schedule allows (for example, a missed weekly claims release).</li>
@@ -176,8 +180,8 @@
       years, leaving out March 2020 to June 2021. DOL's national figures and FRED's state claims series also add
       work-sharing claims (and the national ones Puerto Rico and the Virgin Islands), so they run slightly above ours.
       The state "vs. 12-month low" gap follows the Sahm rule: the 3-month average of the state unemployment rate minus
-      its lowest 3-month average of the previous 12 months; no warning trigger is attached to it, and the "rising
-      states" list is a watch list that has not been backtested. The map, tiles and table show the last week or month
+      its lowest 3-month average of the previous 12 months; no confirmation trigger is attached to it, and the "rising
+      states" list is a watch list that has not been tested on history. The map, tiles and table show the last week or month
       at or before the end of the time setting in which nearly all states (90% or more) had reported; a state that
       has not reported that period shows its own latest value with its date, or "not reported".</li>
     <li><strong>Weighted view (States page).</strong> {{ weighted_sentence }} The weighted figures are each state's
