@@ -526,7 +526,9 @@ def check_phase3(browser, base) -> None:
                   "Has deterioration already begun?", "Red on the Sahm indicator or new claims",
                   "44% on claims as first published", "about 1 red month in 5",
                   "does not measure the duration of unemployment"]:
-        check(words in body, f"Outlook: says '{words}'")
+        # text_content also reads the closed Methodology <details> blocks (inner_text skips hidden text)
+        full = " ".join(page.locator("main").text_content().split())
+        check(words in body or words in full, f"Outlook: says '{words}'")
     check(page.locator(".method details").count() >= 8, f"Outlook: {page.locator('.method details').count()} methodology sections")
     check(not re.search(r"\b(nan|NaN|None|undefined)\b", body), "Outlook: no 'nan' / 'None' in the page text")
     # Review WP2: one headline colour badge, the confirmation-trigger heading, the event table's new column
