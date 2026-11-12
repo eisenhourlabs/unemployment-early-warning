@@ -427,6 +427,39 @@ def check_wording() -> None:
     # Review WP2 (2026-11): the 50%+ label is "High" on every page, never "More likely than not"
     old = [p.name for p in pages if re.search(r"(?i)more likely than not", p.read_text(encoding="utf-8"))]
     check(not old, f"no page says 'More likely than not' {old}")
+    # Review WP9 (C1, C3, C6, C10, C11): statements the data do not support are gone from every page ...
+    banned = r"(?i)before finding work|only the data known|reprinted with permission|every chart on this page|free-to-use"
+    gone = [f"{p.name}: {m.group(0)}" for p in pages for m in re.finditer(banned, p.read_text(encoding="utf-8"))]
+    check(not gone, f"no page says 'before finding work' / 'only the data known' / 'reprinted with permission' / "
+                    f"'every chart on this page' / 'free-to-use' {gone[:3]}")
+    # ... and the replacement sentences are where they belong (whitespace collapsed; HTML and chart data both read)
+    wanted = {
+        "index.html": ["except claims, which are today", "On claims as first published the 2022 readings would have",
+                       "last 2 years (fixed view)", "this is the public guide to how often claims start (frequency)",
+                       "this is the public guide to how long claims last (severity)"],
+        "outlook.html": ["apart from later revisions to the claims figures (largest in 2022)"],
+        "duration.html": ["It does not show whether they then found work.",
+                          "It covers people receiving state benefits, not all unemployed people.",
+                          "they rise with more new claims as well as with longer spells"],
+        "job-losses.html": ["Claims are applications under state rules: a guide to direction and timing.",
+                            "so layoffs can rise while payrolls still grow"],
+        "about.html": ["State UI claims as a proxy", "indicators of direction and timing, not measures of that",
+                       "Intended use: a regular briefing on labour-market conditions",
+                       "not a basis on their own for pricing, reserving or risk limits",
+                       "built from public data (one series is shown under its publisher"],
+        "leading.html": ["retrieved from FRED, Federal Reserve Bank of St. Louis (https://fred.stlouisfed.org/series/UMCSENT/), accessed",
+                         "Shown as a chart with this citation; the data are not offered for download here."],
+    }
+    missing = []
+    for name, phrases in wanted.items():
+        text = " ".join((SITE / name).read_text(encoding="utf-8").split())
+        missing += [f"{name}: {w}" for w in phrases if w not in text]
+    with_control = [p for p in pages if 'class="timecontrol"' in p.read_text(encoding="utf-8")]
+    labelled = [p for p in with_control
+                if 'aria-label="Time range for the charts on this page"' in p.read_text(encoding="utf-8")]
+    check(not missing, f"review WP9 sentences present {missing[:3]}")
+    check(with_control and len(labelled) == len(with_control),
+          f"time control labelled 'Time range for the charts on this page' on {len(labelled)} of {len(with_control)} pages")
     # Phase 4 (brief): the States page also never says "employer" (other pages use "employers" in the ordinary
     # sense, e.g. "employers usually cut hours before they cut jobs"); the live page is checked in check_states.
     states_html = SITE / "states.html"
@@ -546,10 +579,34 @@ def check_phase3(browser, base) -> None:
     page.goto(base + "index.html")
     page.wait_for_selector("body[data-ready=true]")
     change = page.locator(".score-change").inner_text()
-    want = "First live run" if live["score"].get("first_live_run") else "vs."
-    check(want in change and ("tested-on-history" in change) == bool(live["score"].get("first_live_run"))
-          and "backtest" not in change,
-          f"Overview: the change line says what it compares with ({change!r})")
+    # Review WP9 C2: a first live run says only "First live run" (no arrow, no number); otherwise the line names
+    # what it compares with. A delayed-claims suffix (" · provisional ...") may follow either.
+    if live["score"].get("first_live_run"):
+        ok = change.split(" · ")[0] == "First live run" and not re.search(r"[▲▼]|\d", change.split(" · ")[0])
+    else:
+        ok = "vs." in change or change == "no new claims data"
+    check(ok and "backtest" not in change, f"Overview: the change line says what it compares with ({change!r})")
+    # Review WP9 C5: the two rate tiles show the 4-week average, as in the latest row of the DOL rates file
+    import csv
+    with open(ROOT / "data" / "processed" / "dol" / "claims_rates_weekly.csv", encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+    est_file = ROOT / "data" / "processed" / "dol" / "claims_estimates.csv"
+    estimates_on = est_file.exists() and len(est_file.read_text(encoding="utf-8").strip().splitlines()) > 1
+    tiles = {t.locator("h3").inner_text().strip(): t for t in page.locator(".tile").all()}
+    for title, col, scale, unit in [("New claims rate, 4-week average", "ic_rate_sa_4wk", 100, " per 10k"),
+                                    ("Continuing claims rate, 4-week average", "cc_rate_sa_4wk", 1, "%")]:
+        if title not in tiles:
+            check(False, f"Overview: tile '{title}' present ({list(tiles)})")
+            continue
+        got = tiles[title].locator(".tile-value").inner_text().strip()
+        pct = tiles[title].locator(".tile-pct").inner_text().strip()
+        if estimates_on:
+            print(f"  (skipped value check for '{title}': estimated claims weeks are on file)")
+        else:
+            want = f"{float([r for r in rows if r[col]][-1][col]) * scale:.1f}{unit}"
+            check(got == want, f"Overview: '{title}' tile = latest {col} in the DOL file ({got} vs {want})")
+        check(pct.endswith("(rates before 1978 are not strictly comparable)"),
+              f"Overview: '{title}' percentile line carries the 1978 note ({pct!r})")
 
     # ---- Stage 3e-2: claims pages ----
     for href, cid, has_fan in [("job-losses.html", "ic-rate", False), ("duration.html", "cc-rate", True)]:
