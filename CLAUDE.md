@@ -300,8 +300,11 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   Troy approved the merge and ratified all delegated decisions (2026-11-09); merged into main.
 - 2026-11-12: Independent review work packages started (build order and specs are private; decisions in docs/decisions.md,
   section "Independent review, work packages"). WP2 (what the score is: "stress alert, not a recession forecast", "High"
-  for 50%+, "Confirmation triggers", event-size column, one glossary) built on branch review-wp2; NOT merged.
-  tests/test_score_wording.py added.
+  for 50%+, "Confirmation triggers", event-size column, one glossary) built on branch review-wp2; tests/test_score_wording.py
+  added; 37 unit tests OK, browser check 966 pass. Troy approved; fast-forwarded into main and pushed; "Publish site"
+  run 43315910297 green; verified live. Next: WP9 (items C1-C6, C9-C11).
+- Watch: 2026-11-12 two scheduled refreshes overlapped (21:03 / 21:06 UTC); the second failed (DOL ETA 539 returned an
+  unreadable reply, then its push was rejected). The first had already saved the data. Check the next morning run.
 - Watch: on 2026-11-08 the Claude Code process crashed once (exit 0xC0000409, likely low memory on this 6 GB PC). Keep
   sessions short, commit work in progress often.
 
