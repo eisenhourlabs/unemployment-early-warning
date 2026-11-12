@@ -279,30 +279,30 @@ def model_files() -> list[dict]:
             m = pd.concat([m, pd.DataFrame({"date": r["asof"], "kind": "live run", "score_3m": r.p3, "score_6m": r.p6,
                                             "score_12m": r.p12, "colour": r.colour, "basis": "live"})])
         add("score_history", "Early-warning score history",
-            "Month (1980 on) and live run: chance of a new deterioration event within 3 / 6 / 12 months, the colour "
-            "shown, and the basis (pseudo out of sample 1980-1999, out of sample 2000 on, live)", "each row", m,
-            [["date", "Month (backtest: as of its last day) or live run date"],
-             ["kind", "month (backtest) or live run"],
+            "Month (1980 on) and live run: chance of a claims jump or unemployment rise within 3 / 6 / 12 months, the "
+            "colour shown, and the basis (1980-1999 tested with partly revised data, out of sample 2000 on, live)", "each row", m,
+            [["date", "Month (tested on history: as of its last day) or live run date"],
+             ["kind", "month (backtest) = tested on history, or live run"],
              ["score_3m / score_6m / score_12m", "Probability (0-1) that an event starts within 3 / 6 / 12 months"],
              ["colour", "Colour shown (hysteresis: amber from 0.20 until below 0.15; red from 0.50 until below 0.40)"],
-             ["basis", "pseudo out of sample (1980-1999, inputs partly revised), out of sample (2000 on), live"]])
-    # 2. Trigger history: monthly Layer 1 values and colours since 1967
+             ["basis", "pseudo out of sample = 1980-1999, tested with partly revised data; out of sample (2000 on); live"]])
+    # 2. Trigger history: monthly confirmation-trigger (Layer 1) values and colours since 1967
     trig = MODEL / "triggers_monthly.csv"
     if trig.exists():
         t = pd.read_csv(trig, keep_default_na=False)
         t = t.drop(columns=[c for c in ("overall_old", "n_amber_or_red", "n_panel_amber_or_red") if c in t])
         t = t.rename(columns={"overall": "overall_status"})
-        add("trigger_history", "Warning-trigger history",
-            "Monthly Layer 1 trigger values and colours since 1967 (as of each month's last day), the data basis "
+        add("trigger_history", "Confirmation-trigger history",
+            "Monthly confirmation-trigger values and colours since 1967 (as of each month's last day), the data basis "
             "of each, and the overall status", "each row", t,
-            [["<trigger>_value", "The trigger's number (Sahm: points; claims and continued claims: ratio - 1; temp "
+            [["<trigger>_value", "The trigger's number (Sahm: points; claims and continuing claims: ratio - 1; temp "
               "help: 6-month change; yield curve: 10y-3m spread, points; factory surveys: index; NFCI: index)"],
              ["<trigger>_color", "green / amber / red (blank before enough data exist)"],
              ["<trigger>_basis", "real-time (as published then), current-vintage (today's claims cut back by the "
               "release lag) or revised (before the first archived vintage)"],
-             ["overall_status", "Panel rule: red if trigger 1, 2 or 4 is red; amber if one of them is amber/red and "
-              "another panel trigger (1, 2, 4, 6, 8) is amber/red; else green. Temp help and factory surveys are "
-              "context, not counted"]])
+             ["overall_status", "Status rule: red if trigger 1, 2 or 4 is red; amber if one of them is amber/red and "
+              "another trigger that counts toward the status (1, 2, 4, 6, 8) is amber/red; else green. Temp help "
+              "and factory surveys are shown for context, not counted"]])
     # 3. Forecast archive: every live run's fans
     fans = MODEL / "live_fans_history.csv"
     if fans.exists():

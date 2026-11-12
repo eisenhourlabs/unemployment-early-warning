@@ -152,7 +152,8 @@ OLD_RULE_TAIL, NEW_RULE_TAIL = "another panel trigger is", "another trigger that
 
 
 def reword_live(live: dict) -> None:
-    """In place: "More likely than not" -> "High", the verbal-band tooltip sentence, and the trigger-rule wording."""
+    """In place: "More likely than not" -> "High", the verbal-band tooltip sentence, the comparison label and the
+    trigger-rule wording."""
     s = live.get("score") or {}
     displays = list((s.get("display") or {}).values()) + [(s.get("previous") or {}).get("display") or {}]
     for d in displays:
@@ -160,6 +161,8 @@ def reword_live(live: dict) -> None:
             d["text"] = "High"
         if d.get("words") and WORDS_NOTE not in d.get("tooltip", ""):
             d["tooltip"] = f"{d.get('tooltip', '')}. {WORDS_NOTE}"
+    if s.get("compare_label") == "vs. last week's backtest score":
+        s["compare_label"] = "vs. last week's tested-on-history score"
     t = live.get("triggers") or {}
     if "rule" in t:
         t["rule"] = t["rule"].replace(OLD_RULE_TAIL, NEW_RULE_TAIL)

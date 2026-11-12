@@ -424,6 +424,9 @@ def check_wording() -> None:
         if n_iui != n_spelled:
             hits.append(f"{p.name}: {n_iui - n_spelled} 'IUI' without 'involuntary unemployment insurance (IUI)'")
     check(not hits, f"{len(pages)} pages free of 'footprint', state counts and unexplained 'IUI' {hits[:3]}")
+    # Review WP2 (2026-11): the 50%+ label is "High" on every page, never "More likely than not"
+    old = [p.name for p in pages if re.search(r"(?i)more likely than not", p.read_text(encoding="utf-8"))]
+    check(not old, f"no page says 'More likely than not' {old}")
     # Phase 4 (brief): the States page also never says "employer" (other pages use "employers" in the ordinary
     # sense, e.g. "employers usually cut hours before they cut jobs"); the live page is checked in check_states.
     states_html = SITE / "states.html"
@@ -501,6 +504,14 @@ def check_phase3(browser, base) -> None:
     check(all(v is False for v in ur_state()["whatif"]), "box unticked: what-if paths hidden again")
     text = page.inner_text("main")
     check(not re.search(r"\b(nan|NaN|None|undefined)\b", text), "Overview: no 'nan' / 'None' in the page text")
+    # Review WP2: what the score is, and is not
+    panel_text = page.locator(".score-panel").inner_text()
+    for words in ["stress alert, not a recession forecast", "claim frequency", "claim severity",
+                  "chance of a claims jump or unemployment rise in the next 6 months"]:
+        check(words in panel_text, f"Overview: score panel says '{words}'")
+    check(page.locator(".score-panel .why a[href='duration.html']").count() == 1, "Overview: score definition links to Duration")
+    check("new deterioration" not in (SITE / "index.html").read_text(encoding="utf-8"), "Overview: no 'new deterioration' in index.html")
+    check("Backtest" not in panel_text, "Overview: score chart says 'Tested on history', not 'Backtest'")
 
     page.goto(base + "outlook.html")
     page.wait_for_selector("body[data-ready=true]")
@@ -511,16 +522,31 @@ def check_phase3(browser, base) -> None:
     check(panel == 5 and context == 2, f"Outlook: 5 panel triggers and 2 context rows ({panel}, {context})")
     body = page.inner_text("main")
     for words in ["long lead, often 12+ months", "real-time history only since 2011", "lower confidence",
-                  "not counted in the overall status", "Backtest (tested on history; not live forecasts)"]:
+                  "shown for context", "Tested on history (not live forecasts)", "Confirmation status:",
+                  "Has deterioration already begun?", "Red on the Sahm indicator or new claims",
+                  "44% on claims as first published", "about 1 red month in 5",
+                  "does not measure the duration of unemployment"]:
         check(words in body, f"Outlook: says '{words}'")
     check(page.locator(".method details").count() >= 8, f"Outlook: {page.locator('.method details').count()} methodology sections")
     check(not re.search(r"\b(nan|NaN|None|undefined)\b", body), "Outlook: no 'nan' / 'None' in the page text")
+    # Review WP2: one headline colour badge, the confirmation-trigger heading, the event table's new column
+    head_badges = page.locator(".outlook-head .signal").count()
+    check(head_badges == 1, f"Outlook: exactly one colour badge in the header section ({head_badges})")
+    check(page.locator("#tr-title").inner_text().strip() == "Confirmation triggers", "Outlook: heading 'Confirmation triggers'")
+    check(not re.search(r"Layer 1|[Ww]arning triggers|trigger 1 or 2", body), "Outlook: no 'Layer 1' / 'warning triggers' wording")
+    ev = page.locator("#track table").first
+    heads = [h.strip() for h in ev.locator("thead th").all_inner_texts()]
+    rises = [t.strip() for t in ev.locator("tbody tr td:nth-child(4)").all_inner_texts()]
+    check("Unemployment rise" in heads and len(rises) == 7, f"Outlook: event table has 'Unemployment rise' for 7 events {rises}")
+    check(rises == ["+2.2 pt", "+0.5 pt", "+0.1 pt", "+5.6 pt", "+11.3 pt", "+0.5 pt", "+0.9 pt"],
+          f"Outlook: unemployment rises match events.csv (#9-#15) {rises}")
     live = json.loads((ROOT / "data" / "model" / "live_latest.json").read_text(encoding="utf-8"))
     page.goto(base + "index.html")
     page.wait_for_selector("body[data-ready=true]")
     change = page.locator(".score-change").inner_text()
     want = "First live run" if live["score"].get("first_live_run") else "vs."
-    check(want in change and ("backtest" in change) == bool(live["score"].get("first_live_run")),
+    check(want in change and ("tested-on-history" in change) == bool(live["score"].get("first_live_run"))
+          and "backtest" not in change,
           f"Overview: the change line says what it compares with ({change!r})")
 
     # ---- Stage 3e-2: claims pages ----
@@ -567,7 +593,7 @@ def check_phase3(browser, base) -> None:
           f"Leading: yield curve has its colour and 'long lead' note {yc}")
     check(len(nf) == 1 and re.match(r"[●▲■] (Green|Amber|Red)", nf[0]["signal"]) and "since 2011" in nf[0]["signal"],
           f"Leading: NFCI has its colour and 'real-time only since 2011' note {nf}")
-    ctx = [c for c in cells if "not counted in the overall status" in c["signal"]]
+    ctx = [c for c in cells if "Shown for context" in c["signal"]]
     check(len(ctx) == 3 and not any(re.search(r"Green|Amber|Red", c["signal"]) for c in ctx),
           f"Leading: temp help and the two factory surveys are context, with no colour ({len(ctx)} rows)")
     th = next((c for c in ctx if "Temporary-help" in c["signal"]), None)

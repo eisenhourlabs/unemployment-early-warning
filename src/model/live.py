@@ -596,7 +596,7 @@ def run(asof: pd.Timestamp, archive: bool) -> dict | None:
         days = (asof - prev.name).days
         compare = "vs. last week" if 5 <= days <= 9 else f"vs. the run of {prev.name:%b} {prev.name.day}"
     else:
-        compare = "vs. last week's backtest score"
+        compare = "vs. last week's tested-on-history score"   # review WP2 wording
     for c in raw[6][1]:
         c["sentence"] = (None if c["value"] is None or abs(c["contribution"]) < 1e-9 else   # zero weight: no direction
                          driver_sentence(c["input"], c["value"], c["contribution"] > 0, c.get("mean")))
