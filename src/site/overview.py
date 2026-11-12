@@ -106,6 +106,23 @@ SCORE_DEFINITION = ("The chance that, within 6 months, new claims jump 25% or mo
                     "people stay unemployed (claim severity), see")
 
 
+def change_line(s: dict) -> str:
+    """The line under the score: how it moved since the previous run (review WP9 C2).
+
+    - First live run: exactly "First live run". The previous point is a tested-on-history score, and a change
+      between a live run and a tested-on-history point is not shown.
+    - Score shown as a number: moves under 0.5 point read "unchanged", because the display rounds to whole
+      percent and a smaller move cannot be seen.
+    - Score shown in words (verbal bands): any move of 0.05 point or more is shown, as before.
+    """
+    if s.get("first_live_run"):
+        return "First live run"
+    ch, label = s["change_pt"], s.get("compare_label", "vs. last week")
+    shown_in_words = s["display"]["6"].get("words", False)
+    unchanged_below = 0.05 if shown_in_words else 0.5
+    return f"unchanged {label}" if abs(ch) < unchanged_below else f"{'▲' if ch > 0 else '▼'} {abs(ch):.1f} pt {label}"
+
+
 def score_panel(m: dict) -> dict:
     """Everything the score panel shows. m = common.model_output()."""
     live = m["live"]
@@ -113,10 +130,7 @@ def score_panel(m: dict) -> dict:
         return {"available": False, "note": m["note"]}
     s = live["score"]
     d6 = s["display"]["6"]
-    ch, label = s["change_pt"], s.get("compare_label", "vs. last week")
-    change = (f"unchanged {label}" if abs(ch) < 0.05 else f"{'▲' if ch > 0 else '▼'} {abs(ch):.1f} pt {label}")
-    if s.get("first_live_run"):
-        change = "First live run · " + change      # 3e-1 review: never present live vs. backtest as a plain change
+    change = change_line(s)
     if m.get("claims_delayed") and live.get("provisional"):
         change += " · provisional (estimated claims)"     # stage 4c: run on claims estimated from state filings
     elif m.get("claims_delayed"):
@@ -154,7 +168,7 @@ def score_mini_chart(live: dict | None, built: datetime) -> dict | None:
     base_layout(fig, "Chance within 6 months (%)", "Week of %b %-d, %Y")
     fig.update_layout(height=230, margin=dict(l=52, r=16, t=8, b=30),
                       meta={"refs": [{"text": "amber from 20%", "value": 20}, {"text": "red from 50%", "value": 50}]})
-    c = card("score-history", "Early-warning score, last 2 years", "", "", fig,
+    c = card("score-history", "Early-warning score, last 2 years (fixed view)", "", "", fig,
              ["date", "score_6m_pct", "basis", "colour"],
              [[d, p, b, col] for d, p, b, col in zip(dates(shown.date), plain(shown.pct.round(2)), shown.basis,
                                                      shown.colour)],
@@ -172,7 +186,7 @@ def ic_rate_chart(claims: pd.DataFrame, wide=False) -> dict:
     rate = claims.dropna(subset=["ic_rate_sa_per10k"]).set_index("week_ended")["ic_rate_sa_per10k"]
     return weekly_claims_chart(
         "ic-rate", "SA initial claims rate",
-        "New job losses. For involuntary unemployment insurance (IUI), this drives how often claims start (frequency).",
+        "New job losses. For involuntary unemployment insurance (IUI), this is the public guide to how often claims start (frequency).",
         "Source: DOL state UI claims (ETA 539 weekly report and Thursday news release; FRED ICSA for preliminary "
         "weeks). Seasonally adjusted initial claims per 10,000 covered workers, weekly, from 1971.",
         claims, "ic_rate_sa_per10k", "ic_rate_sa_4wk_per10k", "source_initial",
@@ -185,8 +199,8 @@ def cc_rate_chart(claims: pd.DataFrame, wide=False) -> dict:
     rate = claims.dropna(subset=["cc_rate_sa"]).set_index("week_ended")["cc_rate_sa"]
     return weekly_claims_chart(
         "cc-rate", "SA continuing claims rate",
-        "How long people stay on state UI benefits. For involuntary unemployment insurance (IUI), this drives how "
-        "long claims last (severity).",
+        "How long people stay on state UI benefits. For involuntary unemployment insurance (IUI), this is the public "
+        "guide to how long claims last (severity).",
         "Source: DOL state UI claims (ETA 539 weekly report and Thursday news release; FRED CCSA for preliminary "
         "weeks). Seasonally adjusted continuing claims as a percent of covered workers, weekly, from 1971; "
         "matches DOL's insured unemployment rate.",
@@ -199,18 +213,24 @@ def cc_rate_chart(claims: pd.DataFrame, wide=False) -> dict:
 # ===========================================================================
 # Tiles: latest value, changes, percentile on full history
 # ===========================================================================
-def weekly_tile(name, s: pd.Series, decimals, unit, change_unit, since_label, note="") -> dict:
-    """Tile for a weekly series: change vs. last week and vs. the same week a year ago."""
+def weekly_tile(name, s: pd.Series, decimals, unit, change_unit, since_label, note="", is_rate=False) -> dict:
+    """Tile for a weekly series: change vs. last week and vs. the same week a year ago.
+
+    is_rate: a claims rate. Covered employment jumped in 1978 (UI coverage expansion), so when the percentile
+    or "lowest / highest since" text reaches back before 1978 it says so (review WP9 C5)."""
     latest_date, latest = s.index[-1], s.iloc[-1]
     year_date, year_val = value_on_or_before(s, latest_date - timedelta(days=364))
     fmt = (lambda v: fmt_claims(v)) if decimals == 0 else (lambda v: f"{v:.{decimals}f}")
+    percentile = percentile_text(s, latest, since_label)
+    if is_rate and s.index[0].year < 1978:
+        percentile += " (rates before 1978 are not strictly comparable)"
     return {
         "name": name,
         "value": fmt(latest) + unit,
         "as_of": f"Week ending {fmt_date(latest_date)}" + (f" · {note}" if note else ""),
         "changes": [f"{fmt_change(latest - s.iloc[-2], decimals, change_unit)} vs. prior week",
                     f"{fmt_change(latest - year_val, decimals, change_unit)} vs. a year ago"],
-        "percentile": percentile_text(s, latest, since_label),
+        "percentile": percentile,
     }
 
 
@@ -238,17 +258,18 @@ def build_tiles(claims: pd.DataFrame) -> list[dict]:
     tiles.append(weekly_tile("SA initial claims, 4-week average", ic4, 0, "", "", ic4.index[0].year,
                              prelim_label(src) if is_preliminary(src) else ""))
 
-    # 3. SA initial claims rate, per 10,000 covered workers (DOL, from 1971)
-    w = claims.dropna(subset=["ic_rate_sa_per10k"]).set_index("week_ended")
-    tiles.append(weekly_tile("SA initial claims rate", w["ic_rate_sa_per10k"], 1, " per 10k", "",
+    # 3. SA initial claims rate, 4-week average, per 10,000 covered workers (DOL, from 1971). Review WP9 C5:
+    #    the 4-week average, like the rate chart's bold line; changes and percentile on the same series.
+    w = claims.dropna(subset=["ic_rate_sa_4wk_per10k"]).set_index("week_ended")
+    tiles.append(weekly_tile("New claims rate, 4-week average", w["ic_rate_sa_4wk_per10k"], 1, " per 10k", "",
                              w.index[0].year, prelim_label(w["source_initial"].iloc[-1])
-                             if is_preliminary(w["source_initial"].iloc[-1]) else ""))
+                             if is_preliminary(w["source_initial"].iloc[-1]) else "", is_rate=True))
 
-    # 4. SA continuing claims rate, percent (DOL, from 1971)
-    c = claims.dropna(subset=["cc_rate_sa"]).set_index("week_ended")
-    tiles.append(weekly_tile("SA continuing claims rate", c["cc_rate_sa"], 1, "%", " pt", c.index[0].year,
-                             prelim_label(c["source_continued"].iloc[-1])
-                             if is_preliminary(c["source_continued"].iloc[-1]) else ""))
+    # 4. SA continuing claims rate, 4-week average, percent (DOL, from 1971)
+    c = claims.dropna(subset=["cc_rate_sa_4wk"]).set_index("week_ended")
+    tiles.append(weekly_tile("Continuing claims rate, 4-week average", c["cc_rate_sa_4wk"], 1, "%", " pt",
+                             c.index[0].year, prelim_label(c["source_continued"].iloc[-1])
+                             if is_preliminary(c["source_continued"].iloc[-1]) else "", is_rate=True))
 
     # 5. Sahm indicator vs. the 0.50 recession threshold (no percentile)
     sahm = fred("SAHMREALTIME")
@@ -293,8 +314,7 @@ def score_sentence(live: dict | None) -> str | None:
     a, b = s["previous"]["display"]["text"], s["display"]["6"]["text"]
     colour = signal(s["colour"])["label"].lower()
     if s.get("first_live_run"):
-        return (f"The early-warning score is {b} in its first live run (last week's tested-on-history score: {a}); "
-                f"its colour is {colour}.")
+        return f"The early-warning score is {b}, {colour}, in its first live run."    # review WP9 C2
     label = s.get("compare_label", "vs. last week")
     if label != "vs. last week":                   # the previous run was not a week earlier
         return (f"The early-warning score is {b} ({fmt_change(s['change_pt'], 1, ' pt')} {label}); "

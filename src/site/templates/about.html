@@ -4,9 +4,13 @@
 {% block content %}
 <div class="page-intro">
   <h1>About Unemployment Watch</h1>
-  <p>An early-warning view of US unemployment built from public and free-to-use data. It follows two things:
+  <p>An early-warning view of US unemployment built from public data (one series is shown under its publisher's
+    citation terms). It follows two things:
     <strong>new job losses</strong> (how often people start claiming state UI benefits) and <strong>how long
     unemployment lasts</strong> (how long they keep claiming). It refreshes itself every weekday morning.</p>
+  <p class="intended-use">Intended use: a regular briefing on labour-market conditions that affect unemployment, from
+    public data. The early-warning score and forecast ranges are experimental model output with a short live record.
+    They are a monitoring aid, not a basis on their own for pricing, reserving or risk limits.</p>
 </div>
 
 <nav class="card toc" aria-label="On this page">
@@ -28,6 +32,12 @@
     <dt>Continuing claims</dt>
     <dd>People still claiming benefits; reported for the week before the initial claims week, so they run a week behind.
       DOL and FRED call them “continued claims”.</dd>
+    <dt>State UI claims as a proxy</dt>
+    <dd>Initial claims are applications for state unemployment benefits; continuing claims are the number of people
+      receiving them. Both depend on state eligibility rules, waiting periods and benefit limits. Continuing claims
+      rise when more people start claiming as well as when people stay on benefits longer. For any private
+      unemployment insurance, they are indicators of direction and timing, not measures of that insurance's own
+      claims.</dd>
     <dt>ETA 539</dt>
     <dd>DOL's weekly claims report: national and state initial and continuing claims, covered employment and the
       insured unemployment rate. Published every Thursday with the news release; the official figures follow.</dd>

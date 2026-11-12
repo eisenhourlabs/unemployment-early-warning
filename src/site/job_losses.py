@@ -15,7 +15,8 @@ from common import (WHATIF_FOOTER, add_whatif, bars_with_average, claims_weekly,
 from overview import ic_rate_chart
 
 INTRO = ("How many people are losing jobs. State UI initial claims are the fastest signal, published every "
-         "Thursday; payrolls, JOLTS and the household survey confirm it monthly.")
+         "Thursday; payrolls, JOLTS and the household survey confirm it monthly. Claims are applications under "
+         "state rules: a guide to direction and timing.")
 
 
 def initial_claims_sources(claims: pd.DataFrame) -> pd.Series:
@@ -94,7 +95,8 @@ def build(built: datetime) -> dict:
     payroll_change = fred("PAYEMS").diff().dropna()
     charts.append(bars_with_average(
         "payrolls", "Payroll change",
-        "Net jobs added or lost each month: the broadest monthly measure of hiring minus job losses.",
+        "Net jobs added or lost each month: the broadest monthly measure of hiring minus job losses. Payroll "
+        "change is net (hiring minus separations), so layoffs can rise while payrolls still grow.",
         "Source: BLS Current Employment Statistics via FRED (PAYEMS). Monthly change in total nonfarm "
         "payrolls, thousands of jobs, seasonally adjusted.",
         payroll_change, "Monthly change", "3-month average", "Thousands of jobs", "%{y:+,.0f}k",

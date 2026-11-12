@@ -14,7 +14,8 @@ from overview import cc_rate_chart
 
 INTRO = ("How long unemployment lasts. State UI continuing claims show it weekly; exhaustion and benefit duration "
          "come monthly and quarterly from DOL's state UI reports; the household survey and JOLTS hiring add the "
-         "wider picture.")
+         "wider picture. Continuing claims count people on benefits; they rise with more new claims as well as "
+         "with longer spells.")
 
 
 def us_rows(filename: str, date_col: str) -> pd.DataFrame:
@@ -84,7 +85,7 @@ def build(built: datetime) -> dict:
     monthly = us_rows("exhaustion_duration_monthly.csv", "month_ended")
     charts.append(line_chart(
         "exhaustion-rate", "Exhaustion rate (12-month)",
-        "Share of claimants who use up all their state benefits before finding work.",
+        "Share of claimants who use up all their state benefits. It does not show whether they then found work.",
         "DOL standard definition · NSA, 12-month average. Source: DOL ETA 5159 (state UI claims and payments), our calculation: 12-month average final payments ÷ "
         "12-month average first payments 6 months earlier. Percent, US. US = sum of all states (can differ "
         "slightly from DOL's published US figure: 0.08 pp in 2026 Q2). Monthly, dated at month end.",
@@ -96,7 +97,8 @@ def build(built: datetime) -> dict:
     unreported = ar218_not_reported()
     charts.append(line_with_comparison(
         "benefit-duration", "Average benefit duration",
-        "Weeks of state UI benefits paid per claimant, against weeks entitled. For involuntary unemployment "
+        "Weeks of state UI benefits paid per claimant, against weeks entitled. It covers people receiving state "
+        "benefits, not all unemployed people. For involuntary unemployment "
         "insurance (IUI), the closest public match to benefit months.",
         "DOL standard definition · NSA, 12-month average. Source: DOL ETA 5159 and ETA 218, our calculation. Bold: 12-month weeks compensated ÷ 12-month first "
         "payments, all claimants, monthly. Grey: average potential (entitled) duration of new claimants, "

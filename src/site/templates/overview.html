@@ -34,8 +34,9 @@
     <div class="score-chart">
       <h3>{{ charts.score.title }}</h3>
       <div class="chart chart-small" id="chart-{{ charts.score.id }}" role="img" aria-label="{{ charts.score.title }} chart"></div>
-      <p class="chart-footer">Dotted: weekly scores re-computed for each past Thursday with only the data known that
-        day and that year's model (tested on history). Solid: live runs. Strip: the colour shown, with its rule (amber from 20%
+      <p class="chart-footer">Dotted (tested on history): weekly scores re-computed for each past Thursday with that
+        year's model and the data published by that day, except claims, which are today's revised figures. On claims
+        as first published the 2022 readings would have been much higher. Solid: live runs. Strip: the colour shown, with its rule (amber from 20%
         until below 15%; red from 50% until below 40%).</p>
     </div>
     {%- endif %}

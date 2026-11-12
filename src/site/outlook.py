@@ -116,7 +116,8 @@ def history_chart(live: dict, built: datetime) -> dict | None:
                  s["colour"]])
     return card("score-history-long", "Early-warning score since 1980",
                 "Each month scored by a model fitted only on earlier data (re-fitted every January), so the line shows "
-                "what the score would have said at the time.",
+                "what the score would have said at the time, apart from later revisions to the claims figures "
+                "(largest in 2022).",
                 "Line: chance of a claims jump or unemployment rise within 6 months. 1980–1999 (light): tested with partly "
                 "revised data. 2000 on: out of sample. Dot: this week's live run. Shading: blue = events "
                 "linked to a recession, orange = scares; hatched = 2020 (the pandemic was not foreseeable from these "

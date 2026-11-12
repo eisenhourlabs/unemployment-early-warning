@@ -212,10 +212,13 @@ def build(built: datetime) -> dict:
         "sentiment", "Consumer sentiment",
         "Worried consumers spend less, and their worries often include their own jobs.",
         f"FRED publishes this series with about a one-month delay (latest: {fmt_month(fred('UMCSENT').index[-1])}). "
-        "Source: Surveys of Consumers, University of Michigan: Consumer Sentiment © [UMCSENT], retrieved from FRED, "
-        "Federal Reserve Bank of St. Louis (https://fred.stlouisfed.org/series/UMCSENT/). Copyright Surveys of "
-        "Consumers, University of Michigan; reprinted with permission. Index, 1966 Q1 = 100, not seasonally "
-        "adjusted, monthly.",
+        # Review WP9 C11: the "reprinted with permission" wording is FRED's, not this site's; the FRED citation
+        # asks for an access date, which is the build date.
+        "Source: Surveys of Consumers, University of Michigan, University of Michigan: Consumer Sentiment © "
+        "[UMCSENT], retrieved from FRED, Federal Reserve Bank of St. Louis "
+        f"(https://fred.stlouisfed.org/series/UMCSENT/), accessed {fmt_date(built)}. Copyright Surveys of "
+        "Consumers, University of Michigan. Shown as a chart with this citation; the data are not offered for "
+        "download here. Index, 1966 Q1 = 100, not seasonally adjusted, monthly.",
         fred("UMCSENT"), "Consumer sentiment", "Index (1966 Q1 = 100)", "%{y:.1f}", "consumer_sentiment_index",
         downloadable=False))
 
