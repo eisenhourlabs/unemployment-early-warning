@@ -58,6 +58,7 @@ from features import features_at, YIELD_LAG         # noqa: E402
 from nowcast import reference_saturday              # noqa: E402
 import realtime                                     # noqa: E402  (claims_table, estimates switch: stage 4c)
 from realtime import as_known_on                    # noqa: E402
+from fomc_marker import fomc_next                   # noqa: E402  (review WP3: next year's FOMC marker)
 
 MODEL = ROOT / "data" / "model"
 PROCESSED = ROOT / "data" / "processed"
@@ -468,9 +469,13 @@ def fomc(asof: pd.Timestamp, ur_fan: dict) -> dict | None:
         m = pd.Timestamp(f"{year}-{mth:02d}-01")
         k = (m.year - L.year) * 12 + m.month - L.month
         q4.append(float(ur[m]) if k <= 0 and m in ur.index else float(np.interp(k, ks, meds)))
-    return {"year": year, "value": float(s[pd.Timestamp(f"{year}-01-01")]), "series": "UNRATEMD",
-            "released": f"{released:%Y-%m-%d}" if released is not None else None,
-            "our_q4_median": float(np.mean(q4)), "marker_date": f"{year}-11-15"}
+    out = {"year": year, "value": float(s[pd.Timestamp(f"{year}-01-01")]), "series": "UNRATEMD",
+           "released": f"{released:%Y-%m-%d}" if released is not None else None,
+           "our_q4_median": float(np.mean(q4)), "marker_date": f"{year}-11-15"}
+    nxt = fomc_next(s, year, ur_fan)              # review WP3: next year's Q4 beside our 12-month middle value
+    if nxt:
+        out["next"] = nxt
+    return out
 
 
 # ===================================================================================================

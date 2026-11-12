@@ -63,6 +63,8 @@ def fred(series_id: str) -> pd.Series:
 # ---------------------------------------------------------------------------
 sys.path.insert(0, str(ROOT / "src" / "fetchers"))
 import dol_state_fallback as fallback  # noqa: E402
+sys.path.append(str(ROOT / "src" / "model"))          # appended: site modules keep priority
+from fomc_marker import fomc_next  # noqa: E402  (review WP3; pandas only)
 
 ESTIMATE_SOURCE = "estimate (release delayed)"
 ESTIMATED_FRED = {"ICSA": ("ic", None), "IC4WSA": ("ic", 4), "CCSA": ("cc", None), "CC4WSA": ("cc", 4)}
@@ -168,6 +170,21 @@ def reword_live(live: dict) -> None:
         t["rule"] = t["rule"].replace(OLD_RULE_TAIL, NEW_RULE_TAIL)
 
 
+def add_fomc_next(live: dict) -> None:
+    """In place (review WP3): a live_latest.json written before fomc.next existed gets it from the same function
+    live.py now uses (src/model/fomc_marker.py), on the UNRATEMD file on disk. The next live run writes it itself."""
+    fm = live.get("fomc")
+    if not fm or "next" in fm or "ur" not in (live.get("fans") or {}):
+        return
+    try:
+        s = pd.read_csv(PROCESSED / "UNRATEMD.csv", parse_dates=["date"]).set_index("date")["value"]
+    except (OSError, KeyError, ValueError):
+        return
+    nxt = fomc_next(s, int(fm["year"]), live["fans"]["ur"])
+    if nxt:
+        fm["next"] = nxt
+
+
 def model_output(built) -> dict:
     """The live model result set (data/model/live_latest.json, from src/model/live.py), with a status note.
 
@@ -180,6 +197,7 @@ def model_output(built) -> dict:
     except (OSError, ValueError):
         return {"live": None, "note": "Early-warning score not available: the model output is missing."}
     reword_live(live)
+    add_fomc_next(live)
     from zoneinfo import ZoneInfo
     today = pd.Timestamp(pd.Timestamp(built).tz_convert(ZoneInfo("America/Chicago")).date())
     asof = pd.Timestamp(live["asof"])
