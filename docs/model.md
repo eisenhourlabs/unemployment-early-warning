@@ -1509,7 +1509,7 @@ Share of months followed within 12 months by each outcome (falling / green / amb
 Rule (both rule windows, both outcomes: red >= 0.50, falling <= 0.10, rising band to band): **passes**. 96% of months
 fall in the same band on real-time as on WP5's revised data; from 2010 first-published claims put every month in the
 same band as real-time current-vintage claims. Reported, not part of the rule: the 1968–1999 median-weeks red share
-(0.515) clears 0.50 narrowly and green barely exceeds falling there (0.03 vs. 0.03 for the long-term share); 2010–2026
+(0.515) clears 0.50 narrowly and green barely exceeds falling there (0.030 vs. 0.028 for the long-term share); 2010–2026
 has only 10 amber / red months (no pattern can be read from it); the green band's whole-sample 1 in 6 combines about
 1 in 30 before 2000 with about 1 in 3 since.
 
