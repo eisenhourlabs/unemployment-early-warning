@@ -197,8 +197,8 @@ DOL:national_weekly.csv:ic_sa,DOL,1,weekly,1971-01-02,2026-11-07,6,14,0,,1.01,,o
 DOL:national_weekly.csv:cc_sa,DOL,1,weekly,1971-01-02,2026-10-31,13,21,0,,-0.76,,ok,,OK
 DOL:claims_rates_weekly.csv:ic_rate_sa,DOL,1,weekly,1971-01-02,2026-11-07,6,14,0,,1.0,,n/a,,OK
 DOL:claims_rates_weekly.csv:cc_rate_sa,DOL,1,weekly,1971-01-02,2026-10-31,13,21,0,,-0.74,,n/a,,OK
-DOL:ar539.csv:ic_state_ui,DOL,4,weekly,1995-01-07,2026-10-31,13,14,0,,,3/53 (2026-11-07),ok,incomplete: 3 of 53 areas in 2026-11-07 (limit 50),WARN
-DOL:ar5159.csv:fp_state_ui_total,DOL,2,monthly,1995-01-31,2026-09-30,44,75,0,,,27/53 (2026-10-31),ok,,OK
+DOL:ar539.csv:ic_state_ui,DOL,4,weekly,1995-01-07,2026-10-31,13,14,0,,,49/53 (2026-11-07),ok,incomplete: 49 of 53 areas in 2026-11-07 (limit 50),WARN
+DOL:ar5159.csv:fp_state_ui_total,DOL,2,monthly,1995-01-31,2026-09-30,44,75,0,,,39/53 (2026-10-31),ok,,OK
 DOL:ar218.csv:actual_avg_weeks,DOL,2,quarterly,1995-03-31,2026-06-30,136,200,0,,,52/53 (2026-09-30),ok,,OK
 DOL:exhaustion_duration_monthly.csv:exhaustion_rate_12m,DOL,2,monthly,1996-06-30,2026-09-30,44,100,0,,-2.06,,n/a,,OK
 DOL:exhaustion_duration_monthly.csv:avg_duration_12m,DOL,2,monthly,1995-12-31,2026-09-30,44,100,0,,-1.52,,n/a,,OK
