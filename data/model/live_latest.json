@@ -1,6 +1,6 @@
 {
  "asof": "2026-11-12",
- "run_at": "2026-11-12 21:11 UTC",
+ "run_at": "2026-11-13 12:01 UTC",
  "model_year": 2026,
  "provisional": false,
  "estimated_claims": [],
@@ -307,7 +307,7 @@
    }
   ],
   "overall": "green",
-  "rule": "Red if trigger 1, 2 or 4 is red; amber if one of 1, 2, 4 is amber or red and another panel trigger is amber or red; otherwise green."
+  "rule": "Red if the Sahm indicator, new claims or continuing claims is red. Amber if one of those three is amber or red and another trigger (including the yield curve or financial conditions) is amber or red. Otherwise green."
  },
  "fans": {
   "ur": {
@@ -327,7 +327,8 @@
      "q90": 4.202926992536122,
      "deterioration_weight": 0.004709445865340238,
      "recession_share": 0.5714285714285714,
-     "baseline_median": 3.9619337293361228
+     "baseline_median": 3.9619337293361228,
+     "p_rise_050": 0.00125
     },
     {
      "horizon": 6,
@@ -340,20 +341,22 @@
      "q90": 4.149441637618057,
      "deterioration_weight": 0.021931103394392443,
      "recession_share": 0.5714285714285714,
-     "baseline_median": 3.8489957414180576
+     "baseline_median": 3.8489957414180576,
+     "p_rise_050": 0.0045
     },
     {
      "horizon": 12,
      "horizon_months": 12,
      "target_period": "2027-10-01",
      "q10": 3.1765622271653955,
-     "q25": 3.440881157683773,
+     "q25": 3.4408811576837723,
      "median": 3.6967430373837726,
      "q75": 4.087869605583773,
      "q90": 4.84482550246,
      "deterioration_weight": 0.33978364129248173,
      "recession_share": 0.5714285714285714,
-     "baseline_median": 3.6058390165837726
+     "baseline_median": 3.6058390165837726,
+     "p_rise_050": 0.1265
     }
    ]
   },
@@ -371,10 +374,11 @@
      "q25": 1.045557276921839,
      "median": 1.0730414726552897,
      "q75": 1.1031886091001182,
-     "q90": 1.132909761366312,
+     "q90": 1.1329097613663122,
      "deterioration_weight": 0.004709445865340238,
      "recession_share": 0.5384615384615384,
-     "baseline_median": 1.0758308582249179
+     "baseline_median": 1.0758308582249179,
+     "p_rise_20pct": 0.0
     },
     {
      "horizon": 26,
@@ -387,7 +391,8 @@
      "q90": 1.1425724716753387,
      "deterioration_weight": 0.021931103394392443,
      "recession_share": 0.5384615384615384,
-     "baseline_median": 1.0495939428864702
+     "baseline_median": 1.0495939428864702,
+     "p_rise_20pct": 0.00175
     }
    ]
   }
@@ -666,7 +671,7 @@
      },
      {
       "period": "2027-02-13",
-      "level": 0.14651048801567024
+      "level": 0.14651048801567026
      },
      {
       "period": "2027-02-20",
@@ -846,7 +851,7 @@
      },
      {
       "period": "2027-12-25",
-      "level": 0.17965435124499657
+      "level": 0.1796543512449966
      },
      {
       "period": "2028-01-01",
@@ -1022,7 +1027,7 @@
      },
      {
       "period": "2028-10-28",
-      "level": 0.1697842548989396
+      "level": 0.16978425489893964
      },
      {
       "period": "2028-11-04",
@@ -1072,7 +1077,7 @@
      },
      {
       "period": "2027-01-16",
-      "level": 0.13828106900420345
+      "level": 0.13828106900420348
      },
      {
       "period": "2027-01-23",
@@ -1164,7 +1169,7 @@
      },
      {
       "period": "2027-06-26",
-      "level": 0.16328497594298674
+      "level": 0.16328497594298677
      },
      {
       "period": "2027-07-03",
@@ -1300,11 +1305,11 @@
      },
      {
       "period": "2028-02-19",
-      "level": 0.23156008637988193
+      "level": 0.23156008637988196
      },
      {
       "period": "2028-02-26",
-      "level": 0.2297918817990203
+      "level": 0.22979188179902033
      },
      {
       "period": "2028-03-04",
@@ -1332,7 +1337,7 @@
      },
      {
       "period": "2028-04-15",
-      "level": 0.22100066751549402
+      "level": 0.22100066751549405
      },
      {
       "period": "2028-04-22",
@@ -1352,11 +1357,11 @@
      },
      {
       "period": "2028-05-20",
-      "level": 0.21117592520863748
+      "level": 0.2111759252086375
      },
      {
       "period": "2028-05-27",
-      "level": 0.21136270736378035
+      "level": 0.21136270736378038
      },
      {
       "period": "2028-06-03",
@@ -1468,7 +1473,7 @@
      },
      {
       "period": "2026-11-14",
-      "level": 1.111409472679625
+      "level": 1.1114094726796253
      },
      {
       "period": "2026-11-21",
@@ -1772,7 +1777,7 @@
      },
      {
       "period": "2028-04-29",
-      "level": 1.8984808748603517
+      "level": 1.8984808748603519
      },
      {
       "period": "2028-05-06",
@@ -1824,7 +1829,7 @@
      },
      {
       "period": "2028-07-29",
-      "level": 1.810624508925098
+      "level": 1.8106245089250983
      },
      {
       "period": "2028-08-05",
@@ -1902,7 +1907,7 @@
      },
      {
       "period": "2026-12-05",
-      "level": 1.133278627938528
+      "level": 1.1332786279385283
      },
      {
       "period": "2026-12-12",
@@ -1966,7 +1971,7 @@
      },
      {
       "period": "2027-03-27",
-      "level": 1.203466678894428
+      "level": 1.2034666788944282
      },
      {
       "period": "2027-04-03",
@@ -2082,7 +2087,7 @@
      },
      {
       "period": "2027-10-16",
-      "level": 1.839140502209999
+      "level": 1.8391405022099991
      },
      {
       "period": "2027-10-23",
@@ -2321,6 +2326,22 @@
   "series": "UNRATEMD",
   "released": "2026-09-16",
   "our_q4_median": 4.0491730832120405,
-  "marker_date": "2026-11-15"
+  "marker_date": "2026-11-15",
+  "next": {
+   "year": 2027,
+   "value": 4.1,
+   "marker_date": "2027-11-15",
+   "our_12m_median": 3.6967430373837726,
+   "our_12m_period": "2027-10-01",
+   "gap": 0.403256962616227
+  }
+ },
+ "event_state": {
+  "under_way": false,
+  "provisional_start": null,
+  "months_since_start": 0,
+  "leg": null,
+  "last_on": "2024-10",
+  "confirmed": false
  }
 }

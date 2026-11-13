@@ -316,6 +316,27 @@ def asof_line(live: dict) -> str:
             f"{fmt_month(i['unemployment_month'])}")
 
 
+# Review WP8 test T1: the chance of a rise of 0.5 point or more in the unemployment rate (fan draws, live.py
+# p_rise_050), shown only at the horizons that passed the pre-registered reliability rule
+# (docs/model_tests_tail_probability.md; data/model/forecast_tail_reliability.csv, column "show").
+TAIL_PHRASES = [(0.10, "under 1 in 10"), (0.17, "about 1 in 8"), (0.30, "about 1 in 4"), (0.50, "about 1 in 3 to 1 in 2")]
+
+
+def tail_phrase(p: float) -> str:
+    """Words for a stated chance (cut points 0.10, 0.17, 0.30, 0.50; never 'more likely than not')."""
+    return next((words for cut, words in TAIL_PHRASES if p < cut), "above 50%")
+
+
+def tail_shown() -> dict[int, float]:
+    """{horizon in months: usual (base) rate} for the unemployment-rate horizons whose tail chance passed T1."""
+    path = MODEL / "forecast_tail_reliability.csv"
+    if not path.exists():
+        return {}
+    t = pd.read_csv(path)
+    t = t[(t.target == "ur") & (t.bin == "base_rate") & t["show"].astype(bool)]
+    return {int(r.horizon): float(r.observed) for r in t.itertuples()}
+
+
 # Duration watch (review WP5 / WP7): the band of continuing claims vs. a year ago (trigger 4's value v).
 # A falling reading shows green with the word "Falling" (Troy's decision 6).
 def duration_watch(v: float) -> dict:

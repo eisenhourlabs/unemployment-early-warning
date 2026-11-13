@@ -12,7 +12,7 @@ import pandas as pd
 import plotly.graph_objects as go
 
 from common import (ACCENT, FAINT, GREYS, MODEL, add_colour_band, event_banner, asof_line, base_layout, card, dates, fmt_date,
-                    fmt_month, fred, model_csv, model_output, plain, signal)
+                    fmt_month, fred, model_csv, model_output, plain, signal, tail_phrase, tail_shown)
 
 CENTRAL = ZoneInfo("America/Chicago")
 MINUS = "−"
@@ -230,14 +230,18 @@ def forecast_rows(live: dict) -> list[dict]:
     f = live["fans"]["ur"]
     fm = live.get("fomc")
     nx = (fm or {}).get("next")
+    shown_tail = tail_shown()          # review WP8 T1: horizons whose chance of a 0.5 pt rise passed its test
     for h in f["horizons"]:
         label = f"{h['horizon']} months ({fmt_month(h['target_period'])})" + (", lower confidence" if h["horizon"] == 12 else "")
         # Review WP3 (F1): at 12 months the middle value is shown muted (no middle line on the chart there) and the
         # FOMC median for next year's Q4 is the benchmark
         twelve = h["horizon"] == 12
+        p = h.get("p_rise_050")
+        tail = ({"tail": tail_phrase(p), "tail_base": f"usual: {shown_tail[h['horizon']] * 100:.0f}%"}
+                if h["horizon"] in shown_tail and p is not None else {"tail": "—"})
         rows.append({"target": "", "horizon": label, "median": f"{h['median']:.1f}%", "median_muted": twelve,
                      "b50": f"{h['q25']:.1f}–{h['q75']:.1f}%", "b80": f"{h['q10']:.1f}–{h['q90']:.1f}%",
-                     "bench": f"FOMC Q4 {nx['year']}: {nx['value']:.1f}%" if twelve and nx else ""})
+                     "bench": f"FOMC Q4 {nx['year']}: {nx['value']:.1f}%" if twelve and nx else "", **tail})
     if fm:
         rows.append({"target": "", "horizon": f"Q4 {fm['year']} average", "median": f"{fm['our_q4_median']:.2f}%",
                      "b50": "", "b80": "",
@@ -491,6 +495,7 @@ def build(built: datetime) -> dict:
         "horizons": horizons_table(live),
         "triggers": triggers_table(live),
         "forecasts": forecast_rows(live),
+        "tail_horizons": sorted(tail_shown()),          # review WP8 T1
         "backtest": backtest(),
         "weights": weights_table(live),
         "benchmark": benchmark_sentence(),

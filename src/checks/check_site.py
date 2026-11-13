@@ -620,6 +620,19 @@ def check_phase3(browser, base) -> None:
     check(any("nowcast" in r and "9 times in 10" in r for r in fc_rows), "Outlook: forecast table has the nowcast row")
     check(any("12 months" in r and "FOMC Q4 2027" in r for r in fc_rows), "Outlook: 12-month row benchmarks FOMC Q4 2027")
     import csv
+    # Review WP8 T1: the chance of a 0.5 pt rise only at the unemployment-rate horizons that passed the test, in words
+    with open(ROOT / "data" / "model" / "forecast_tail_reliability.csv", encoding="utf-8") as f:
+        tail_ok = {int(r["horizon"]): float(r["observed"]) for r in csv.DictReader(f)
+                   if r["target"] == "ur" and r["bin"] == "base_rate" and r["show"] == "True"}
+    heads = [h.strip() for h in page.locator("#fc-title ~ .table-scroll thead th").all_inner_texts()]
+    check(("Chance of a rise of 0.5 pt or more" in heads) == bool(tail_ok),
+          f"Outlook: tail-chance column present only if a horizon passed T1 ({sorted(tail_ok)})")
+    phrases = ("under 1 in 10", "about 1 in 8", "about 1 in 4", "about 1 in 3 to 1 in 2", "above 50%")
+    for hz in (3, 6, 12):
+        row = next((r for r in fc_rows if r.startswith(f"{hz} months")), "")
+        has = any(p in row for p in phrases) and "usual:" in row
+        check(has == (hz in tail_ok) and (hz not in tail_ok or f"usual: {tail_ok[hz] * 100:.0f}%" in row),
+              f"Outlook: {hz}-month row {'shows' if hz in tail_ok else 'has no'} tail chance ({row[:120]!r})")
     with open(ROOT / "data" / "model" / "score_skill_summary.csv", encoding="utf-8") as f:
         rv = next(r for r in csv.DictReader(f) if r["basis"] == "revised")
     cells = [[c.strip() for c in r] for r in page.eval_on_selector_all(

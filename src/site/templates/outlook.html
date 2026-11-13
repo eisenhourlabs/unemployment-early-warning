@@ -116,11 +116,11 @@
     horizons that passed the test (bands about right and more accurate than assuming no change).</p>
   <div class="table-scroll">
   <table class="model-table">
-    <thead><tr><th>Target</th><th>Horizon</th><th class="num">Middle</th><th class="num">50% range</th><th class="num">80% range</th><th>Benchmark</th></tr></thead>
+    <thead><tr><th>Target</th><th>Horizon</th><th class="num">Middle</th><th class="num">50% range</th><th class="num">80% range</th>{% if tail_horizons %}<th>Chance of a rise of 0.5 pt or more</th>{% endif %}<th>Benchmark</th></tr></thead>
     <tbody>
       {%- for r in forecasts %}
       <tr><td>{{ r.target }}</td><td>{{ r.horizon }}</td><td class="num{% if r.median_muted %} muted{% endif %}">{{ r.median }}</td><td class="num">{{ r.b50 }}</td>
-        <td class="num">{{ r.b80 }}</td><td class="small">{{ r.bench }}</td></tr>
+        <td class="num">{{ r.b80 }}</td>{% if tail_horizons %}<td class="tail-chance">{% if r.tail_base %}{{ r.tail }} <span class="muted small">({{ r.tail_base }})</span>{% else %}{{ r.tail or "" }}{% endif %}</td>{% endif %}<td class="small">{{ r.bench }}</td></tr>
       {%- endfor %}
     </tbody>
   </table>
@@ -129,7 +129,11 @@
     value; the value of these ranges is their width and their tilt toward downturns. Since 2022 the middle line has run
     0.1–0.3 pt below what happened. Not shown: initial-claims forecasts (no more accurate than assuming no change in
     testing) and 52-week continuing-claims ranges (too narrow in testing). FOMC median: FRED series
-    <a href="https://fred.stlouisfed.org/series/UNRATEMD">UNRATEMD</a>, for comparison only.</p>
+    <a href="https://fred.stlouisfed.org/series/UNRATEMD">UNRATEMD</a>, for comparison only.{% if tail_horizons %}
+    Chance of a rise of 0.5 pt or more: the share of the forecast's simulated outcomes at least half a point above the
+    latest rate, shown at {{ tail_horizons | join(" and ") }} months, where in testing (2000–2026, excluding 2020) the
+    stated chances matched how often it happened; "usual" = how often it happened across all those forecasts. Not shown
+    at other horizons: there the stated chances did not match closely enough in testing.{% endif %}</p>
 </section>
 
 <section class="card outlook-section" id="track" aria-labelledby="tk-title">

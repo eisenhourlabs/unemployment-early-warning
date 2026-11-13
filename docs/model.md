@@ -1449,3 +1449,41 @@ shown on the site (`common.apply_fan_gate`); the frozen 2026 model still compute
 coverage during an event, unemployment 3 / 6 / 12 months: 73% / 67% / 72% (before WP4: 74% / 66% / 60%); continuing
 claims 13 / 26 weeks: 71% / 56%. Inside 2008–09: unemployment 80% coverage 69% / 72% / 83%, middle line too low by
 0.25 / 0.49 / 0.57 point (before: about 62% / 58% / 50%, 0.43 / 0.76 / 1.16).
+
+## 11. Pre-registered tests (review WP8, 2026-11)
+
+Four tests from the independent review, each with its document committed before its code and its code committed before
+it was run (the commit history shows the order). Rules copied from the review's work package without change; a failed
+test changes nothing on the site; anything adopted that changes the model or the fans enters only through the January
+2027 re-fit pull request.
+
+### 11.1 T1: chance of a large rise in unemployment (finding F5)
+
+Pre-registration: `docs/model_tests_tail_probability.md`. From the same 4,000 draws as the fan bands,
+`p_rise_050` = share of draws at least 0.5 point above the level at the origin (unemployment rate) and `p_rise_20pct`
+= share at least 20% above it (continuing claims rate); `src/model/tail_prob.py`. Re-running
+`forecast.py --from 1985 --live` with the new columns left **every existing column of forecast_backtest.csv
+identical to main** (exact comparison). Reliability: `forecast_regimes.py` -> `data/model/forecast_tail_reliability.csv`;
+origins 2000-01 on, month starts, outcome known, 2020 window excluded.
+
+Rule: show a target-horizon only if (a) the observed share rises from each bin to the next and (b) every bin with 20+
+origins has |observed − mean stated| <= 0.15.
+
+| Unemployment rate | Bin | Origins | Mean stated | Observed |
+| --- | --- | --- | --- | --- |
+| 3 months | 0–10% / 10–25% / 25–50% / 50%+ | 245 / 21 / 31 / 5 | 0.01 / 0.15 / 0.36 / 0.56 | 0.00 / 0.24 / 0.39 / 0.80 |
+| 6 months | | 205 / 51 / 13 / 27 | 0.02 / 0.18 / 0.31 / 0.70 | 0.00 / 0.20 / 0.54 / 0.59 |
+| 12 months | | 123 / 73 / 62 / 26 | 0.06 / 0.16 / 0.34 / 0.88 | 0.01 / 0.05 / 0.42 / **0.69** |
+
+Base rates (share of origins followed by a 0.5 pt rise): 7% / 11% / 17% (the review's prototype: 12% at 6 months,
+17% at 12). **Result: passes at 3 and 6 months; fails at 12 months** (the 50%+ bin, 26 origins, is 0.19 too high:
+stated 0.88, observed 0.69), against the expectation (pass at 6 and 12). Continuing claims (13 / 26 / 52 weeks):
+**fails** (a) at every horizon (13 weeks: 0.00 / 0.27 / 0.22, no 50%+ origins; 26 weeks: 0.00 / 0.25 / 0.50 / 0.50;
+52 weeks: 0.01 / 0.24 / 0.56 / 0.33); not proposed for display anyway.
+The rule compared the 1e-9-tolerant threshold (a rise of exactly 0.5 counts). Limitation: the fans exist only on
+claims as held today (no first-published fan backtest).
+
+Display (with Troy's approval; display only, no re-fit): Outlook forecast table, column "Chance of a rise of 0.5 pt or
+more" on the 3- and 6-month unemployment rows, in words (cut points 0.10 / 0.17 / 0.30 / 0.50) with the usual rate in
+grey. The Overview sentence of WP7 cell 3 is a 12-month figure and is **not** shown. Live values (Nov 12 run):
+3 months 0.1%, 6 months 0.5% ("under 1 in 10"); 12 months 12.7% (not shown).
