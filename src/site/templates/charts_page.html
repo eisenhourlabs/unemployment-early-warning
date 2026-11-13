@@ -34,23 +34,22 @@
 {%- if summary %}
 <section class="card summary" aria-labelledby="summary-title">
   <h2 id="summary-title">Summary</h2>
-  <p class="why">Sorted with the indicators moving toward layoff risk first (largest move relative to its usual
-    3-month moves first), then unchanged, then those moving away from risk. Signal: the warning-trigger colour where
-    the indicator is one of the triggers (<a href="outlook.html#triggers">all triggers on the Outlook page</a>).</p>
+  <p class="why">Sorted by how unusual each reading is on the risky side, most unusual first. Signal: the
+    warning-trigger colour where the indicator is one of the triggers (<a href="outlook.html#triggers">all triggers
+    on the Outlook page</a>).</p>
   <p class="chart-caveat">In our own tests most of these gave little or no extra warning beyond jobless claims.</p>
   <div class="table-scroll">
   <table>
-    <thead><tr><th>Indicator</th><th>Latest</th><th>As of</th><th>3-month change</th><th>Direction</th><th>Percentile</th><th>Typical lead</th><th>Signal</th></tr></thead>
+    <thead><tr><th>Indicator</th><th>Latest</th><th>As of</th><th>Reading vs. history</th><th>3-month change</th><th>Lead in our tests</th><th>Signal</th></tr></thead>
     <tbody>
       {%- for r in summary %}
-      <tr>
+      <tr data-series="{{ r.id }}"{% if r.risk_pct is not none %} data-risk-pct="{{ '%.4f' % r.risk_pct }}"{% endif %}>
         <td>{% if r.link %}<a href="{% if ".html" in r.link %}{{ r.link }}{% else %}#card-{{ r.link }}{% endif %}">{{ r.name }}</a>{% else %}{{ r.name }}{% endif %}
           <span class="muted units">{{ r.units }}</span></td>
         <td class="num">{{ r.latest }}</td>
         <td>{{ r.as_of }}</td>
+        <td class="reading">{{ r.reading }}{% if r.late_start %}<sup>*</sup>{% endif %}{% if r.yield_curve %}<sup>†</sup>{% endif %}</td>
         <td class="num"><span class="arrow" aria-label="{{ r.direction }}">{{ r.arrow }}</span> {{ r.change }}</td>
-        <td>{{ r.risk }}{% if r.yield_curve %}<sup>†</sup>{% endif %}</td>
-        <td>{{ r.percentile }}{% if r.late_start %}<sup>*</sup>{% endif %}</td>
         <td>{{ r.lead }}</td>
         <td class="signal-cell">
           {%- if r.signal and r.signal.signal %}<span class="signal signal-sm signal-{{ r.signal.signal.colour }}"><span aria-hidden="true">{{ r.signal.signal.icon }}</span> {{ r.signal.signal.label }}</span>
@@ -63,11 +62,14 @@
     </tbody>
   </table>
   </div>
-  <p class="chart-footer">Percentiles: share of monthly / weekly / daily values since 1990 at or below the latest.
-    <sup>*</sup> Series that start later use their own start (shown). <sup>†</sup> Yield curve: the Direction column
-    treats a falling curve as toward risk; the confirmation trigger (Signal) is amber while the curve has been inverted for 3+
-    months and red for the 12 months after such an inversion ends, because in past cycles recessions often began after
-    the curve had turned back up.</p>
+  <p class="chart-footer">Reading vs. history: where the latest value sits among all values since 1990, counted
+    from the safe end (100 = the riskiest reading since 1990). The 3-month change is shown for information; in our
+    checks short-term changes say little about what follows.
+    <sup>*</sup> Series that start later use their own start (shown). <sup>†</sup> Yield curve: the reading is ranked
+    on the lowest monthly average of the past 18 months (the form the early-warning score uses), so the row does not
+    drop the moment the curve turns back up; the confirmation trigger (Signal) is amber while the curve has been
+    inverted for 3+ months and red for the 12 months after such an inversion ends, because in past cycles recessions
+    often began after the curve had turned back up.</p>
 </section>
 {%- endif %}
 <div class="grid">

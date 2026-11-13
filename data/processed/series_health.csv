@@ -11,6 +11,7 @@ CC4WSA,FRED,1,weekly,1967-01-28,2026-10-31,12,21,0,,-0.24,,ok,,OK
 IURNSA,FRED,1,weekly,1990-01-06,2026-10-31,12,21,0,,0.0,,ok,,OK
 PAYEMS,FRED,1,monthly,1948-01-01,2026-10-01,42,70,0,,0.97,,ok,,OK
 UEMPLT5,FRED,1,monthly,1948-01-01,2026-10-01,42,70,0,,0.23,,ok,,OK
+UNEMPLOY,FRED,1,monthly,1948-01-01,2026-10-01,42,70,0,,-0.49,,n/a,,OK
 UEMPMED,FRED,1,monthly,1967-07-01,2026-10-01,42,70,0,,0.51,,ok,,OK
 LNS13025703,FRED,1,monthly,1948-01-01,2026-10-01,42,70,0,,0.2,,ok,,OK
 JTSLDR,FRED,1,monthly,2000-12-01,2026-09-01,72,100,0,,-0.67,,ok,,OK
@@ -184,6 +185,10 @@ WVUR,FRED,4,monthly,1990-01-01,2026-09-01,72,85,0,,0.0,,ok,,OK
 WIUR,FRED,4,monthly,1990-01-01,2026-09-01,72,85,0,,0.0,,ok,,OK
 WYUR,FRED,4,monthly,1990-01-01,2026-09-01,72,85,0,,0.0,,ok,,OK
 UNRATEMD,FRED,4,monthly,,,,70,,,,,ok,not checked: FOMC median projection: a few year-end values (reference marker only),SKIP
+LNS13026638,FRED,1,monthly,1994-01-01,2026-10-01,42,70,0,,-0.56,,ok,,OK
+LNS13023653,FRED,1,monthly,1967-01-01,2026-10-01,42,70,0,,-1.21,,ok,,OK
+LNS12032194,FRED,2,monthly,1955-05-01,2026-10-01,42,70,0,,1.83,,ok,,OK
+DRTSCILM,FRED,2,quarterly,1990-04-01,2026-10-01,42,130,0,,,,ok,,OK
 DOL:national_weekly_eta539.csv:ic_nsa,DOL,1,weekly,1971-01-02,2026-10-17,26,42,0,,-1.0,,ok,,OK
 DOL:national_weekly_eta539.csv:ic_sa,DOL,1,weekly,1971-01-02,2026-10-17,26,42,0,,-0.56,,ok,,OK
 DOL:national_weekly_eta539.csv:cc_nsa,DOL,1,weekly,1971-01-02,2026-10-17,26,42,0,,0.47,,ok,,OK

@@ -1109,6 +1109,51 @@ def check_wp4(browser, base) -> None:
     page.context.close()
 
 
+WP6_ORDER = ["yield-curve", "temp-help", "factory-hours", "part-time-economic", "permits", "regional-surveys",
+             "financial-conditions", "bank-standards", "sentiment"]
+
+
+def check_wp6(browser, base) -> None:
+    """Review WP6: Leading page chart order, table columns and sort, sentiment last, merged NFCI chart, Job Losses
+    'job-losers' card."""
+    print("\n=== Review WP6: Leading page ===")
+    page = browser.new_context(viewport={"width": 1280, "height": 900}).new_page()
+    page.goto(base + "leading.html")
+    page.wait_for_selector("body[data-ready=true]")
+    cards = page.eval_on_selector_all("main .chart-card", "els => els.map(e => e.id.replace('card-', ''))")
+    check(cards == WP6_ORDER, f"Leading: 9 chart cards in the WP6 order {cards}")
+    head = page.eval_on_selector_all(".summary thead th", "els => els.map(e => e.innerText.trim())")
+    check("Reading vs. history" in head and "Lead in our tests" in head and "Direction" not in head
+          and "Percentile" not in head, f"Leading: table header {head}")
+    rows = page.eval_on_selector_all(".summary tbody tr", """rows => rows.map(r => ({id: r.dataset.series,
+        pct: r.dataset.riskPct === undefined ? null : parseFloat(r.dataset.riskPct),
+        link: (r.querySelector('td a') || {}).getAttribute ? r.querySelector('td a').getAttribute('href') : '',
+        text: r.innerText}))""")
+    ranked = [r["pct"] for r in rows if r["pct"] is not None]
+    check(ranked and rows[0]["pct"] == max(ranked), f"Leading: first row has the highest risk_pct ({rows[0]['id']})")
+    check(ranked == sorted(ranked, reverse=True), "Leading: ranked rows sorted by risk_pct, highest first")
+    last = rows[-1]
+    check(last["id"] == "UMCSENT" and "Shown for reference: not ranked" in last["text"] and "none found" in last["text"],
+          f"Leading: sentiment row last, 'not ranked', lead 'none found' ({last['id']})")
+    nf = [r["link"] for r in rows if r["id"] in ("NFCI", "NFCICREDIT")]
+    check(nf == ["#card-financial-conditions"] * 2, f"Leading: both NFCI rows link to the merged chart {nf}")
+    html = (SITE / "leading.html").read_text(encoding="utf-8")
+    check("3-9 mo" not in html and "toward risk" not in html, "Leading: no '3-9 mo' or 'toward risk'")
+    check("Sorted by how unusual each reading is on the risky side, most unusual first." in " ".join(html.split()),
+          "Leading: sort sentence above the table")
+    n_dl = page.locator("[data-csv-menu='sentiment'], [data-png='sentiment']").count()
+    check(n_dl == 0, f"Leading: sentiment chart offers no download ({n_dl})")
+    pdata = json.loads(page.locator("#page-data").text_content())
+    fc = next(c for c in pdata["charts"] if c["id"] == "financial-conditions")
+    check(fc["table"]["columns"] == ["date", "nfci", "nfci_credit_subindex"], f"Leading: merged NFCI chart columns {fc['table']['columns']}")
+    pm = next(c for c in pdata["charts"] if c["id"] == "permits")
+    check(pm["table"]["columns"] == ["date", "permits_pct_change_vs_year_ago"], f"Leading: permits download column {pm['table']['columns']}")
+    page.goto(base + "job-losses.html")
+    page.wait_for_selector("body[data-ready=true]")
+    check(page.locator("#card-job-losers").count() == 1, "Job Losses: 'job-losers' card present")
+    page.context.close()
+
+
 def TODAY_OF(page) -> str:
     return json.loads(page.locator("#page-data").text_content())["today"]
 
@@ -1133,6 +1178,7 @@ def main() -> int:
             check_wp7(browser, base)
             check_wp5(browser, base)
             check_wp4(browser, base)
+            check_wp6(browser, base)
         for i, href in enumerate(links):
             if href == "data.html":
                 check_data_page(browser, base + href, base)

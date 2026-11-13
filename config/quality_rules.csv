@@ -14,6 +14,7 @@ max_age_days,??UR,85,State unemployment rates (LAUS) come out about 3 weeks afte
 max_age_days,JTS*,100,JOLTS is published about 5-6 weeks after the month and dated the 1st
 max_age_days,UMCSENT,100,FRED posts U. Michigan sentiment with about a one-month delay
 max_age_days,PERMIT,85,Census building permits come out mid-month for the prior month (about 78 days old just before the next release)
+max_age_days,DRTSCILM,130,Senior Loan Officer Survey: quarterly; dated the first day of the quarter; published about 5 weeks after it starts (review WP6)
 max_age_days,CFLMI*,45,Chicago Fed LMI (local-only since Phase 4): monthly dated by BLS reference week; twice-monthly releases
 max_age_days,RPLS*,45,Revelio RPLS (Phase 4 stage 4d): monthly; brief allows 45 days
 max_age_days,DOL:national_weekly_eta539.csv:*,42,ETA 539 national report ran 4 weeks behind on 2026-11-07 (latest 2026-10-10); revisit after a few weeks of observation
@@ -29,6 +30,9 @@ known_gap,UEMPLT5,2025-10-01,As UNRATE (household survey)
 known_gap,UEMPMED,2025-10-01,As UNRATE (household survey)
 known_gap,LNS13025703,2025-10-01,As UNRATE (household survey)
 known_gap,UNEMPLOY,2025-10-01,As UNRATE (household survey)
+known_gap,LNS13026638,2025-10-01,As UNRATE (household survey)
+known_gap,LNS13023653,2025-10-01,As UNRATE (household survey)
+known_gap,LNS12032194,2025-10-01,As UNRATE (household survey)
 known_gap,SAHMREALTIME,2025-10-01,Built from UNRATE
 known_gap,??UR,2025-10-01,No October 2025 state unemployment rates (LAUS; shutdown)
 known_gap,CFLMIPROB*,2025-10-01,Chicago Fed probabilities not published for October 2025 (shutdown)

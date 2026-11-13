@@ -1,56 +1,60 @@
-series_id,name,source,fetcher,frequency,tier,role,dashboard_page,typical_lead,risk_direction,license,history_start,notes,status
-UNRATE,Unemployment rate (U-3),BLS,fred,monthly,1,target,overview,coincident,,public,1948-01-01,Headline forecast target,active
-U6RATE,U-6 underemployment rate,BLS,fred,monthly,1,coincident,duration,coincident,,public,,,active
-ICSA,Initial claims (SA),DOL,fred,weekly,1,leading,job_losses,0-3 mo,,public,1967-01-01,Cross-checked against DOL ETA 539 (src/checks/dol_checks.py),active
-ICNSA,Initial claims (NSA),DOL,fred,weekly,1,leading,job_losses,0-3 mo,,public,,,active
-IC4WSA,Initial claims 4-week average,DOL,fred,weekly,1,leading,overview,0-3 mo,,public,1967-01-01,,active
-CCSA,Continuing claims (SA),DOL,fred,weekly,1,coincident,duration,coincident,,public,1967-01-01,Proxy for IUI claim duration,active
-CCNSA,Continuing claims (NSA),DOL,fred,weekly,1,coincident,duration,coincident,,public,,,active
-IURSA,Insured unemployment rate,DOL,fred,weekly,1,coincident,duration,coincident,,public,,,active
-CC4WSA,Continuing claims 4-week average,DOL,fred,weekly,1,coincident,duration,coincident,,public,1967-01-01,Used for preliminary weeks in the DOL merged weekly table,active
-IURNSA,Insured unemployment rate (NSA),DOL,fred,weekly,1,coincident,duration,coincident,,public,,Used for preliminary weeks in the DOL merged weekly table,active
-PAYEMS,Nonfarm payrolls,BLS,fred,monthly,1,coincident,job_losses,coincident,,public,1948-01-01,,active
-UEMPLT5,Unemployed less than 5 weeks,BLS,fred,monthly,1,leading,job_losses,1-3 mo,,public,1948-01-01,,active
-UNEMPLOY,Unemployment level,BLS,fred,monthly,1,coincident,duration,coincident,,public,1948-01-01,"Denominator for the job-finding rate and job openings per unemployed (ID verified on FRED 2026-11-11: Unemployment Level, thousands of persons, SA)",active
-UEMPMED,Median weeks unemployed,BLS,fred,monthly,1,lagging,duration,lagging,,public,1948-01-01,,active
-LNS13025703,Share unemployed 27+ weeks,BLS,fred,monthly,1,lagging,duration,lagging,,public,1948-01-01,ID verified 2026-11-07 (Of total unemployed: percent unemployed 27 weeks & over; SA),active
-JTSLDR,JOLTS layoffs and discharges rate,BLS,fred,monthly,1,leading,job_losses,1-6 mo,,public,,,active
-JTSHIR,JOLTS hires rate,BLS,fred,monthly,1,leading,duration,1-6 mo,,public,,,active
-JTSQUR,JOLTS quits rate,BLS,fred,monthly,1,leading,leading,1-6 mo,down,public,,,active
-JTSJOL,JOLTS job openings,BLS,fred,monthly,1,leading,leading,1-6 mo,down,public,,,active
-SAHMREALTIME,Sahm rule recession indicator (real-time),St. Louis Fed,fred,monthly,1,trigger,overview,trigger,,public,1959-01-01,Red at 0.50,active
-USREC,NBER recession indicator (1 = recession month),NBER via FRED,fred,monthly,4,reference,all,,,public,1854-12-01,Recession shading on every chart; NBER announces dates months after the fact,active
-TEMPHELPS,Temporary help services employment,BLS,fred,monthly,2,leading,leading,3-9 mo,down,public,,,active
-AWHMAN,Avg weekly hours manufacturing,BLS,fred,monthly,2,leading,leading,3-6 mo,down,public,,,active
-T10Y3M,Yield curve 10y minus 3m,Treasury,fred,daily,2,leading,leading,9-18 mo,down,public,,,active
-PERMIT,Building permits,Census,fred,monthly,2,leading,leading,6-12 mo,down,public,,,active
-GACDFSA066MSFRBPHI,Philly Fed manufacturing general activity,Philadelphia Fed,fred,monthly,2,leading,leading,2-6 mo,down,public,,ISM proxy; ID verified 2026-11-07 (current general activity diffusion index; SA),active
-GACDISA066MSFRBNY,Empire State manufacturing general activity,New York Fed,fred,monthly,2,leading,leading,2-6 mo,down,public,,ISM proxy; ID verified 2026-11-07 (SA current general business conditions),active
-UMCSENT,Consumer sentiment,U. Michigan,fred,monthly,2,leading,leading,3-6 mo,down,citation-required,,"Copyright Surveys of Consumers, University of Michigan; FRED citation required. Charted with citation; not offered as a download (decision 2026-11-07)",active
-BAMLH0A0HYM2,High-yield credit spread,ICE BofA,fred,daily,2,leading,leading,3-9 mo,up,restricted,,ICE terms on FRED prohibit publishing or redistributing this data without ICE's written approval; FRED also limits it to 3 years. Replaced on the site by NFCICREDIT (decision 2026-11-07),future
-NFCICREDIT,NFCI credit subindex (credit conditions),Chicago Fed,fred,weekly,2,leading,leading,3-9 mo,up,public,,Replaces the high-yield spread on the site (ICE licence); positive = tighter than average,active
-NFCI,National Financial Conditions Index,Chicago Fed,fred,weekly,2,leading,leading,3-9 mo,up,public,,,active
-CHI_LMI,Chicago Fed Labor Market Indicators (UR nowcast + flows),Chicago Fed,local-only,twice-monthly,3,nowcast,overview,nowcast,,restricted,,"Local-only (Phase 4 P3): fetched on Troy's PC by src/fetchers/chicagofed_fetcher.py, not in the cloud run, files git-ignored. Legal notice: republication needs written permission; no request will be made (O7). Never on the site or in the model",active
-RPLS,Revelio Public Labor Statistics,Revelio Labs,revelio,monthly,3,backup,job_losses,coincident,,restricted,,"Not used (stage 4d, 2026-11-09): Revelio's Terms of Service (reveliolabs.com/terms, last updated 2023-03-17) forbid posting its content on another website without written consent and forbid automated downloading; no RPLS exception",future
-ADPMNUSNERSA,ADP private payrolls,ADP,fred,monthly,3,backup,job_losses,coincident,,public,,ID verified 2026-11-07 (total nonfarm private payroll employment; SA; from 2010); charted on Job Losses from stage 4d (vs. BLS private payrolls USPRIV) as the alternative employment read when BLS is delayed,active
-USPRIV,Private nonfarm payrolls (BLS),BLS,fred,monthly,3,coincident,job_losses,coincident,,public,,Stage 4d: comparison line for ADP private payrolls (same coverage: private nonfarm),active
-GTRENDS,Google Trends job-loss searches,Google,pytrends,weekly,3,leading,job_losses,0-2 mo,,restricted,,Not used: no licensed automated access (the official API is a gated alpha; no scraping). Terms: file for unemployment / unemployment benefits / layoffs / severance,future
-WARN,WARN layoff notices,State agencies,pending,weekly,3,leading,job_losses,1-3 mo,,check-terms,,"Deferred (stage 4d): RPLS layoff-notice series not allowed; WARN Firehose needs an API key in Troy's name (terms not found); preferred route: Cleveland Fed Advance Layoff Notice Data (Krolikowski & Lunsford, openICPSR 155161, CC BY 4.0, updated twice a month) but its download needs a personal openICPSR login",future
-CHALLENGER,Challenger job cuts,Challenger Gray & Christmas,manual,monthly,3,leading,job_losses,1-3 mo,,restricted,,Dropped from Phase 4 (O4): no public reuse terms and no manual monthly entry,future
-STATE_ICLAIMS,State initial claims (e.g. TXICLAIMS),DOL,fred,weekly,4,leading,states,0-3 mo,,public,,Pattern {ST}ICLAIMS,active
-STATE_CCLAIMS,State continuing claims (e.g. TXCCLAIMS),DOL,fred,weekly,4,coincident,states,coincident,,public,,Pattern {ST}CCLAIMS,active
-STATE_UR,State unemployment rate (e.g. TXUR),BLS LAUS,fred,monthly,4,coincident,states,coincident,,public,,Pattern {ST}UR,active
-DOL_ETA539_NATIONAL,National weekly claims ETA 539 (official; IC/CC NSA SF SA; IUR; covered employment),DOL,dol_eta539,weekly,1,coincident,job_losses,0-3 mo,,public,,oui.doleta.gov claims.asp National XML; from 1995; latest figures only (no vintages),active
-DOL_AR539,State weekly claims (ETA 539 detail),DOL,dol_csv,weekly,4,coincident,states,0-3 mo,,public,,oui.doleta.gov/unemploy/csv/ar539.csv; columns mapped in config/dol_columns.csv,active
-DOL_AR5159,State monthly first payments / weeks compensated / exhaustions (ETA 5159),DOL,dol_csv,monthly,2,lagging,duration,lagging,,public,,oui.doleta.gov/unemploy/csv/ar5159.csv; columns mapped in config/dol_columns.csv,active
-DOL_AR218,State quarterly benefit rights and duration (ETA 218),DOL,dol_csv,quarterly,2,lagging,duration,lagging,,public,,oui.doleta.gov/unemploy/csv/ar218.csv; columns mapped in config/dol_columns.csv,active
-DOL_NATIONAL_WEEKLY,Merged national weekly table (ETA 539 + preliminary news-release weeks via FRED),DOL,dol_derived,weekly,1,coincident,job_losses,0-3 mo,,public,,Built by src/fetchers/dol_recent_weeks.py; source columns mark preliminary weeks,active
-DOL_CLAIMS_RATES,SA/NSA initial and continuing claims rates (claims / covered employment),DOL (derived),dol_derived,weekly,1,coincident,overview,0-3 mo,,public,,Built by src/transforms/dol_rates.py; from 1995,active
-DOL_EXHAUSTION_DURATION,12-month exhaustion rate and average benefit duration (national + state),DOL (derived),dol_derived,monthly,2,lagging,duration,lagging,,public,,Built by src/transforms/dol_rates.py from ETA 5159 and ETA 218,active
-DRCCLACBS,Credit card delinquency rate,Federal Reserve,fred,quarterly,5,coincident,credit_stress,coincident,,public,,,future
-NYFED_HHDC,Transition into serious delinquency,NY Fed,nyfed_excel,quarterly,5,leading,credit_stress,leading,,public,,Household Debt and Credit report,future
-PSAVERT,Personal saving rate,BEA,fred,monthly,5,leading,credit_stress,leading,,public,,,future
-DSPIC96,Real disposable personal income,BEA,fred,monthly,5,coincident,credit_stress,coincident,,public,,,future
-DRTSCLCC,Net % banks tightening card standards,Federal Reserve SLOOS,fred,quarterly,5,leading,credit_stress,2-4 qtrs,,public,,,future
-UNRATEMD,"FOMC median projection, unemployment rate (Q4 average)",Federal Reserve Board (FOMC Summary of Economic Projections),fred,annual,4,benchmark,overview,,,reference-only,2015-01-01,"Median of FOMC participants' projections for the Q4-average unemployment rate, updated with each SEP (four a year). Shown as a marker on the unemployment-rate chart and in the Outlook forecast table, with its release date; not offered as a download (Phase 3e design brief)",active
-STATE_DIFFUSION,State claims diffusion index (share of covered jobs in states with initial claims up 20%+ vs. a year earlier),DOL (derived),derived,weekly,4,leading,states,not yet tested,up,public,,"Built by src/transforms/state_measures.py from ar539 (50 states + DC); headline = covered-employment weighted; model candidate C1 (Phase 4 stage 4e). Active since stage 4b (States page; Leading table row as context, no colour)",active
+series_id,name,source,fetcher,frequency,tier,role,dashboard_page,typical_lead,tested_lead,risk_direction,license,history_start,notes,status
+UNRATE,Unemployment rate (U-3),BLS,fred,monthly,1,target,overview,coincident,,,public,1948-01-01,Headline forecast target,active
+U6RATE,U-6 underemployment rate,BLS,fred,monthly,1,coincident,duration,coincident,,,public,,,active
+ICSA,Initial claims (SA),DOL,fred,weekly,1,leading,job_losses,0-3 mo,,,public,1967-01-01,Cross-checked against DOL ETA 539 (src/checks/dol_checks.py),active
+ICNSA,Initial claims (NSA),DOL,fred,weekly,1,leading,job_losses,0-3 mo,,,public,,,active
+IC4WSA,Initial claims 4-week average,DOL,fred,weekly,1,leading,overview,0-3 mo,,,public,1967-01-01,,active
+CCSA,Continuing claims (SA),DOL,fred,weekly,1,coincident,duration,coincident,,,public,1967-01-01,Proxy for IUI claim duration,active
+CCNSA,Continuing claims (NSA),DOL,fred,weekly,1,coincident,duration,coincident,,,public,,,active
+IURSA,Insured unemployment rate,DOL,fred,weekly,1,coincident,duration,coincident,,,public,,,active
+CC4WSA,Continuing claims 4-week average,DOL,fred,weekly,1,coincident,duration,coincident,,,public,1967-01-01,Used for preliminary weeks in the DOL merged weekly table,active
+IURNSA,Insured unemployment rate (NSA),DOL,fred,weekly,1,coincident,duration,coincident,,,public,,Used for preliminary weeks in the DOL merged weekly table,active
+PAYEMS,Nonfarm payrolls,BLS,fred,monthly,1,coincident,job_losses,coincident,,,public,1948-01-01,,active
+UEMPLT5,Unemployed less than 5 weeks,BLS,fred,monthly,1,leading,job_losses,1-3 mo,,,public,1948-01-01,,active
+UNEMPLOY,Unemployment level,BLS,fred,monthly,1,coincident,duration,coincident,,,public,1948-01-01,"Denominator for the job-finding rate and job openings per unemployed (ID verified on FRED 2026-11-11: Unemployment Level, thousands of persons, SA)",active
+UEMPMED,Median weeks unemployed,BLS,fred,monthly,1,lagging,duration,lagging,,,public,1948-01-01,,active
+LNS13025703,Share unemployed 27+ weeks,BLS,fred,monthly,1,lagging,duration,lagging,,,public,1948-01-01,ID verified 2026-11-07 (Of total unemployed: percent unemployed 27 weeks & over; SA),active
+JTSLDR,JOLTS layoffs and discharges rate,BLS,fred,monthly,1,leading,job_losses,1-6 mo,,,public,,,active
+JTSHIR,JOLTS hires rate,BLS,fred,monthly,1,leading,duration,1-6 mo,,,public,,,active
+JTSQUR,JOLTS quits rate,BLS,fred,monthly,1,leading,leading,1-6 mo,,down,public,,,active
+JTSJOL,JOLTS job openings,BLS,fred,monthly,1,leading,leading,1-6 mo,,down,public,,,active
+SAHMREALTIME,Sahm rule recession indicator (real-time),St. Louis Fed,fred,monthly,1,trigger,overview,trigger,,,public,1959-01-01,Red at 0.50,active
+USREC,NBER recession indicator (1 = recession month),NBER via FRED,fred,monthly,4,reference,all,,,,public,1854-12-01,Recession shading on every chart; NBER announces dates months after the fact,active
+TEMPHELPS,Temporary help services employment,BLS,fred,monthly,2,leading,leading,3-9 mo,0–1 month in 3 recessions (revised data),down,public,,,active
+AWHMAN,Avg weekly hours manufacturing,BLS,fred,monthly,2,leading,leading,3-6 mo,,down,public,,,active
+T10Y3M,Yield curve 10y minus 3m,Treasury,fred,daily,2,leading,leading,9-18 mo,about 3 months; often more than a year,down,public,,,active
+PERMIT,Building permits,Census,fred,monthly,2,leading,leading,6-12 mo,,down,public,,,active
+GACDFSA066MSFRBPHI,Philly Fed manufacturing general activity,Philadelphia Fed,fred,monthly,2,leading,leading,2-6 mo,about 2 months; often late,down,public,,ISM proxy; ID verified 2026-11-07 (current general activity diffusion index; SA),active
+GACDISA066MSFRBNY,Empire State manufacturing general activity,New York Fed,fred,monthly,2,leading,leading,2-6 mo,about 2 months; often late,down,public,,ISM proxy; ID verified 2026-11-07 (SA current general business conditions),active
+UMCSENT,Consumer sentiment,U. Michigan,fred,monthly,2,leading,leading,3-6 mo,,down,citation-required,,"Copyright Surveys of Consumers, University of Michigan; FRED citation required. Charted with citation; not offered as a download (decision 2026-11-07)",active
+BAMLH0A0HYM2,High-yield credit spread,ICE BofA,fred,daily,2,leading,leading,3-9 mo,,up,restricted,,ICE terms on FRED prohibit publishing or redistributing this data without ICE's written approval; FRED also limits it to 3 years. Replaced on the site by NFCICREDIT (decision 2026-11-07),future
+NFCICREDIT,NFCI credit subindex (credit conditions),Chicago Fed,fred,weekly,2,leading,leading,3-9 mo,,up,public,,Replaces the high-yield spread on the site (ICE licence); positive = tighter than average,active
+NFCI,National Financial Conditions Index,Chicago Fed,fred,weekly,2,leading,leading,3-9 mo,"about 6 months, on revised data only",up,public,,,active
+CHI_LMI,Chicago Fed Labor Market Indicators (UR nowcast + flows),Chicago Fed,local-only,twice-monthly,3,nowcast,overview,nowcast,,,restricted,,"Local-only (Phase 4 P3): fetched on Troy's PC by src/fetchers/chicagofed_fetcher.py, not in the cloud run, files git-ignored. Legal notice: republication needs written permission; no request will be made (O7). Never on the site or in the model",active
+RPLS,Revelio Public Labor Statistics,Revelio Labs,revelio,monthly,3,backup,job_losses,coincident,,,restricted,,"Not used (stage 4d, 2026-11-09): Revelio's Terms of Service (reveliolabs.com/terms, last updated 2023-03-17) forbid posting its content on another website without written consent and forbid automated downloading; no RPLS exception",future
+ADPMNUSNERSA,ADP private payrolls,ADP,fred,monthly,3,backup,job_losses,coincident,,,public,,ID verified 2026-11-07 (total nonfarm private payroll employment; SA; from 2010); charted on Job Losses from stage 4d (vs. BLS private payrolls USPRIV) as the alternative employment read when BLS is delayed,active
+USPRIV,Private nonfarm payrolls (BLS),BLS,fred,monthly,3,coincident,job_losses,coincident,,,public,,Stage 4d: comparison line for ADP private payrolls (same coverage: private nonfarm),active
+GTRENDS,Google Trends job-loss searches,Google,pytrends,weekly,3,leading,job_losses,0-2 mo,,,restricted,,Not used: no licensed automated access (the official API is a gated alpha; no scraping). Terms: file for unemployment / unemployment benefits / layoffs / severance,future
+WARN,WARN layoff notices,State agencies,pending,weekly,3,leading,job_losses,1-3 mo,,,check-terms,,"Deferred (stage 4d): RPLS layoff-notice series not allowed; WARN Firehose needs an API key in Troy's name (terms not found); preferred route: Cleveland Fed Advance Layoff Notice Data (Krolikowski & Lunsford, openICPSR 155161, CC BY 4.0, updated twice a month) but its download needs a personal openICPSR login",future
+CHALLENGER,Challenger job cuts,Challenger Gray & Christmas,manual,monthly,3,leading,job_losses,1-3 mo,,,restricted,,Dropped from Phase 4 (O4): no public reuse terms and no manual monthly entry,future
+STATE_ICLAIMS,State initial claims (e.g. TXICLAIMS),DOL,fred,weekly,4,leading,states,0-3 mo,,,public,,Pattern {ST}ICLAIMS,active
+STATE_CCLAIMS,State continuing claims (e.g. TXCCLAIMS),DOL,fred,weekly,4,coincident,states,coincident,,,public,,Pattern {ST}CCLAIMS,active
+STATE_UR,State unemployment rate (e.g. TXUR),BLS LAUS,fred,monthly,4,coincident,states,coincident,,,public,,Pattern {ST}UR,active
+DOL_ETA539_NATIONAL,National weekly claims ETA 539 (official; IC/CC NSA SF SA; IUR; covered employment),DOL,dol_eta539,weekly,1,coincident,job_losses,0-3 mo,,,public,,oui.doleta.gov claims.asp National XML; from 1995; latest figures only (no vintages),active
+DOL_AR539,State weekly claims (ETA 539 detail),DOL,dol_csv,weekly,4,coincident,states,0-3 mo,,,public,,oui.doleta.gov/unemploy/csv/ar539.csv; columns mapped in config/dol_columns.csv,active
+DOL_AR5159,State monthly first payments / weeks compensated / exhaustions (ETA 5159),DOL,dol_csv,monthly,2,lagging,duration,lagging,,,public,,oui.doleta.gov/unemploy/csv/ar5159.csv; columns mapped in config/dol_columns.csv,active
+DOL_AR218,State quarterly benefit rights and duration (ETA 218),DOL,dol_csv,quarterly,2,lagging,duration,lagging,,,public,,oui.doleta.gov/unemploy/csv/ar218.csv; columns mapped in config/dol_columns.csv,active
+DOL_NATIONAL_WEEKLY,Merged national weekly table (ETA 539 + preliminary news-release weeks via FRED),DOL,dol_derived,weekly,1,coincident,job_losses,0-3 mo,,,public,,Built by src/fetchers/dol_recent_weeks.py; source columns mark preliminary weeks,active
+DOL_CLAIMS_RATES,SA/NSA initial and continuing claims rates (claims / covered employment),DOL (derived),dol_derived,weekly,1,coincident,overview,0-3 mo,,,public,,Built by src/transforms/dol_rates.py; from 1995,active
+DOL_EXHAUSTION_DURATION,12-month exhaustion rate and average benefit duration (national + state),DOL (derived),dol_derived,monthly,2,lagging,duration,lagging,,,public,,Built by src/transforms/dol_rates.py from ETA 5159 and ETA 218,active
+DRCCLACBS,Credit card delinquency rate,Federal Reserve,fred,quarterly,5,coincident,credit_stress,coincident,,,public,,,future
+NYFED_HHDC,Transition into serious delinquency,NY Fed,nyfed_excel,quarterly,5,leading,credit_stress,leading,,,public,,Household Debt and Credit report,future
+PSAVERT,Personal saving rate,BEA,fred,monthly,5,leading,credit_stress,leading,,,public,,,future
+DSPIC96,Real disposable personal income,BEA,fred,monthly,5,coincident,credit_stress,coincident,,,public,,,future
+DRTSCLCC,Net % banks tightening card standards,Federal Reserve SLOOS,fred,quarterly,5,leading,credit_stress,2-4 qtrs,,,public,,,future
+UNRATEMD,"FOMC median projection, unemployment rate (Q4 average)",Federal Reserve Board (FOMC Summary of Economic Projections),fred,annual,4,benchmark,overview,,,,reference-only,2015-01-01,"Median of FOMC participants' projections for the Q4-average unemployment rate, updated with each SEP (four a year). Shown as a marker on the unemployment-rate chart and in the Outlook forecast table, with its release date; not offered as a download (Phase 3e design brief)",active
+STATE_DIFFUSION,State claims diffusion index (share of covered jobs in states with initial claims up 20%+ vs. a year earlier),DOL (derived),derived,weekly,4,leading,states,not yet tested,tested: adds nothing beyond national claims,up,public,,"Built by src/transforms/state_measures.py from ar539 (50 states + DC); headline = covered-employment weighted; model candidate C1 (Phase 4 stage 4e). Active since stage 4b (States page; Leading table row as context, no colour)",active
+LNS13026638,Unemployed: permanent job losers,BLS,fred,monthly,1,leading,job_losses,not tested,,up,public,1994-01-01,FRED title: Unemployment Level - Permanent Job Losers; verified 2026-11-11,active
+LNS13023653,Unemployed: job losers on temporary layoff,BLS,fred,monthly,1,coincident,job_losses,coincident,,,public,1967-01-01,FRED title: Unemployment Level - Job Losers on Layoff; comparison line; verified 2026-11-11,active
+LNS12032194,Part-time for economic reasons,BLS,fred,monthly,2,leading,leading,not tested,,up,public,1955-05-01,"FRED title: Employment Level - Part-Time for Economic Reasons, All Industries; verified 2026-11-11",active
+DRTSCILM,Banks tightening standards for business loans (net %),Federal Reserve Board,fred,quarterly,2,leading,leading,not tested,,up,public,1990-04-01,"Senior Loan Officer Opinion Survey; FRED title: Net Percentage of Domestic Banks Tightening Standards for Commercial and Industrial Loans to Large and Middle-Market Firms; business credit, not the deferred consumer-credit tier; verified 2026-11-11",active

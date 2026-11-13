@@ -4186,3 +4186,7 @@ run_utc,series_id,status
 2026-11-12T21:08:05+00:00,"CALENDAR:Jobs report (unemployment rate, payrolls)",ok
 2026-11-12T21:08:05+00:00,"CALENDAR:JOLTS (job openings, hires, layoffs)",ok
 2026-11-12T21:08:05+00:00,CALENDAR:Chicago Fed Labor Market Indicators,ok
+2026-11-13T02:12:17+00:00,LNS13026638,updated
+2026-11-13T02:12:17+00:00,LNS13023653,updated
+2026-11-13T02:12:17+00:00,LNS12032194,updated
+2026-11-13T02:12:17+00:00,DRTSCILM,updated

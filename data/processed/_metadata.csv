@@ -67,6 +67,7 @@ DCUR,Unemployment Rate in the District of Columbia,Percent,Monthly,Seasonally Ad
 DECCLAIMS,Continued Claims (Insured Unemployment) in Delaware,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:54-06,1990-01-06,2026-10-24,4404.0
 DEICLAIMS,Initial Claims in Delaware,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:39:01-06,1990-01-06,2026-10-31,540.0
 DEUR,Unemployment Rate in Delaware,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:44:57-05,1990-01-01,2026-09-01,4.6
+DRTSCILM,Net Percentage of Domestic Banks Tightening Standards for Commercial and Industrial Loans to Large and Middle-Market Firms,Percent,Quarterly,Not Seasonally Adjusted,2026-11-02 13:02:14-06,1990-04-01,2026-10-01,1.7
 FLCCLAIMS,Continued Claims (Insured Unemployment) in Florida,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:54-06,1990-01-06,2026-10-24,28428.0
 FLICLAIMS,Initial Claims in Florida,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:58-06,1990-01-06,2026-10-31,4476.0
 FLUR,Unemployment Rate in Florida,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:44:51-05,1990-01-01,2026-09-01,4.4
@@ -108,7 +109,10 @@ KYUR,Unemployment Rate in Kentucky,Percent,Monthly,Seasonally Adjusted,2026-10-2
 LACCLAIMS,Continued Claims (Insured Unemployment) in Louisiana,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:59-06,1990-01-06,2026-10-24,4964.0
 LAICLAIMS,Initial Claims in Louisiana,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:53-06,1990-01-06,2026-10-31,1099.0
 LAUR,Unemployment Rate in Louisiana,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:46:49-05,1990-01-01,2026-09-01,4.0
+LNS12032194,"Employment Level - Part-Time for Economic Reasons, All Industries",Thousands of Persons,Monthly,Seasonally Adjusted,2026-11-06 09:41:45-06,1955-05-01,2026-10-01,4840.0
+LNS13023653,Unemployment Level - Job Losers on Layoff,Thousands of Persons,Monthly,Seasonally Adjusted,2026-11-06 09:42:03-06,1967-01-01,2026-10-01,766.0
 LNS13025703,"Of Total Unemployed, Percent Unemployed 27 Weeks & over",Percent,Monthly,Seasonally Adjusted,2026-11-06 09:42:45-06,1948-01-01,2026-10-01,27.6
+LNS13026638,Unemployment Level - Permanent Job Losers,Thousands of Persons,Monthly,Seasonally Adjusted,2026-11-06 09:42:42-06,1994-01-01,2026-10-01,1733.0
 MACCLAIMS,Continued Claims (Insured Unemployment) in Massachusetts,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:58-06,1990-01-06,2026-10-24,62990.0
 MAICLAIMS,Initial Claims in Massachusetts,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:58-06,1990-01-06,2026-10-31,4561.0
 MAUR,Unemployment Rate in Massachusetts,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:41:13-05,1990-01-01,2026-09-01,4.3

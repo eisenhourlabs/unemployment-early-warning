@@ -835,10 +835,11 @@ def weekly_claims_chart(id, title, why, footer, d: pd.DataFrame, weekly_col, avg
 
 
 def lines_chart(id, title, why, footer, lines: list[tuple], y_title, hover, csv_names, zero_line=False,
-                freq="MS") -> dict:
+                freq="MS", monthly=True) -> dict:
     """Two or more series in the same units, e.g. the Philadelphia and New York Fed surveys.
     lines: [(series, name, short label), ...]; the first is drawn in the accent color, the rest in greys.
-    Each line is labelled at its end as well as in the legend."""
+    Each line is labelled at its end as well as in the legend.
+    monthly=False (weekly series, e.g. NFCI): weekly dates in the tooltip and the "Last data" note (review WP6)."""
     fig = go.Figure()
     ends, table = [], {}
     for i, (s, name, label) in enumerate(lines):
@@ -853,12 +854,12 @@ def lines_chart(id, title, why, footer, lines: list[tuple], y_title, hover, csv_
         add_zero_line(fig)
     first = min(t.index[0] for t in table.values())
     add_recession_shading(fig, first)
-    base_layout(fig, y_title, "%b %Y")
+    base_layout(fig, y_title, "%b %Y" if monthly else "Week ending %b %-d, %Y")
     fig.update_layout(margin=dict(l=60, r=70, t=8, b=36))
     all_values = pd.concat(table.values())
     add_end_labels(fig, ends, all_values.min(), all_values.max())
     latest = max(t.dropna().index[-1] for t in table.values())
-    footer += f" Grey bands: NBER recessions. Last data: {fmt_month(latest)}."
+    footer += f" Grey bands: NBER recessions. Last data: {fmt_month(latest) if monthly else fmt_date(latest)}."
     df = pd.DataFrame(table).dropna(how="all")
     rows = [[d.strftime("%Y-%m-%d")] + plain(r) for d, r in zip(df.index, df.values)]
     return card(id, title, why, footer, fig, csv_names, rows, zero=zero_line)

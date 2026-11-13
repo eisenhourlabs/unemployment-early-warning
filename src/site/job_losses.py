@@ -1,6 +1,6 @@
 """
-Job Losses page (frequency: how many people are losing jobs). Eight charts, in the design's order
-(the eighth, ADP vs. BLS private payrolls, is the Phase 4 stage 4d context chart).
+Job Losses page (frequency: how many people are losing jobs). Nine charts, in the design's order
+(ADP vs. BLS private payrolls is the Phase 4 stage 4d context chart; unemployed by reason was added in review WP6).
 Called by build_site.py.
 """
 
@@ -121,6 +121,17 @@ def build(built: datetime) -> dict:
         "Source: BLS Current Population Survey via FRED (UEMPLT5). Number unemployed less than 5 weeks, "
         "thousands, seasonally adjusted, monthly. Gap: no October 2025 survey (government shutdown).",
         fred("UEMPLT5"), "Unemployed < 5 weeks", "Thousands of people", "%{y:,.0f}k", "unemployed_lt5wk_thousands"))
+
+    # 7b. Unemployed by reason: permanent job losers vs. temporary layoff (review WP6, I7)
+    charts.append(lines_chart(
+        "job-losers", "Unemployed by reason: permanent vs. temporary layoff",
+        "Permanent layoffs become long claims; temporary layoffs usually end in recall. A rise in the permanent "
+        "line is the more serious sign for claim frequency and severity.",
+        "Source: BLS Current Population Survey via FRED (LNS13026638, LNS13023653). Thousands of persons, "
+        "seasonally adjusted, monthly; permanent job losers from 1994. Gap: no October 2025 survey.",
+        [(fred("LNS13026638"), "Permanent job losers", "Permanent"),
+         (fred("LNS13023653"), "On temporary layoff", "Temporary")],
+        "Thousands of people", "%{y:,.0f}k", ["date", "permanent_job_losers_thousands", "temporary_layoff_thousands"]))
 
     # 8. Alternative employment read (Phase 4 stage 4d): ADP private payrolls vs. BLS private payrolls, monthly change.
     # Planned as Revelio RPLS; its Terms of Service do not allow it, so ADP (public via FRED) takes its place.

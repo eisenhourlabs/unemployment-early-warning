@@ -485,8 +485,10 @@ def build(out, built: datetime) -> dict:
     by_freq = {"daily": wide(fred, frames, "daily"),
                "weekly": wide(fred, frames, "weekly", "Saturday"),          # claims weeks end on Saturday
                "weekly_friday": wide(fred, frames, "weekly", "Friday"),     # NFCI weeks end on Friday
-               "monthly": wide(fred, frames, "monthly")}
-    sheet_names = {"daily": "Daily", "weekly": "Weekly (Sat)", "weekly_friday": "Weekly (Fri)", "monthly": "Monthly"}
+               "monthly": wide(fred, frames, "monthly"),
+               "quarterly": wide(fred, frames, "quarterly")}             # bank lending standards (review WP6)
+    sheet_names = {"daily": "Daily", "weekly": "Weekly (Sat)", "weekly_friday": "Weekly (Fri)", "monthly": "Monthly",
+                   "quarterly": "Quarterly"}
     by_freq["weekly"].to_csv(bdir / "weekly_series.csv", index=False)
     by_freq["weekly_friday"].to_csv(bdir / "weekly_friday_series.csv", index=False)
     by_freq["monthly"].to_csv(bdir / "monthly_series.csv", index=False)
@@ -511,7 +513,7 @@ def build(out, built: datetime) -> dict:
         {"name": "All monthly series", "detail": "Side by side, one column each",
          "csv": "data/bundles/monthly_series.csv", "xlsx": ""},
         {"name": "Everything workbook", "detail": "One sheet per frequency (daily, weekly ending Saturday, weekly "
-         "ending Friday, monthly) plus a data dictionary",
+         "ending Friday, monthly, quarterly) plus a data dictionary",
          "csv": "", "xlsx": "data/bundles/everything.xlsx"},
     ]
     rows = [{k: e[k] for k in ("kind", "id", "name", "source", "source_url", "frequency", "units", "sa", "page",
