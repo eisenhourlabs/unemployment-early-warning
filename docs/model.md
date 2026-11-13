@@ -1543,3 +1543,23 @@ RMSE ratio change < 0.02 (yes: +0.003 / +0.007 / +0.011), shown fans pass the ga
 the WP3 wording stay. Reported, not used to change the rule: the miss is narrow (0.004 and 0.002 above the ceiling),
 and the pooled residuals over-correct in 1985–1999 (every outcome inside the 80% range), so the change widens the
 ranges more than the shortfall needs; a smaller widening would be a new test, pre-registered again.
+
+### 11.4 T4: a score for material events (finding M2 part 3)
+
+Pre-registration: `docs/model_tests_material_target.md`; script `src/model/material_target.py` ->
+`data/model/material_target_results.csv`. Target: an event with a peak unemployment rise of 1.0 point or more (#1, 2, 4,
+5, 8, 9, 12; #13 kept with its 2020 window excluded) starts within 12 months; the score.py model unchanged (8 inputs,
+weights >= 0, same cross-validation), re-fitted each January from 1980. Skill vs. the training base rate; 90% interval
+by 2-year block bootstrap (5,000 draws, seed 20261111).
+
+| Claims basis | Window | Months (followed by a material event) | Brier / base | Skill | 90% interval | AUC |
+| --- | --- | --- | --- | --- | --- | --- |
+| **First published from 2010** | **1980–2026** | 417 (48) | 0.123 / 0.125 | **+0.020** | −0.90 to +0.61 | 0.88 |
+| First published from 2010 | 2000–2026 | 238 (28) | 0.168 / 0.112 | −0.495 | −3.16 to +0.58 | 0.83 |
+| Revised | **1980–2026** | 417 (48) | 0.123 / 0.125 | **+0.023** | −0.89 to +0.61 | 0.88 |
+| Revised | 2000–2026 | 238 (28) | 0.167 / 0.112 | −0.489 | −3.15 to +0.58 | 0.83 |
+
+Rule (skill >= +0.05 and 5th percentile > 0 on 1980–2026, on both bases): **fails on all four conditions; not adopted**,
+as expected. The model ranks months well (AUC 0.83–0.88) but its probabilities are far too high outside the two
+material events since 2000, so it loses to the base rate there. Nothing is shown; the WP2 historical split ("about 1
+red month in 5 was followed by an event tied to a recession") stays the product.
