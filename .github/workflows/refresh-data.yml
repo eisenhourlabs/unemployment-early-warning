@@ -67,6 +67,10 @@ jobs:
         id: state_measures
         if: ${{ !cancelled() }}
         run: python src/transforms/state_measures.py
+      - name: Labour flows (job-finding rate, openings per unemployed, continuing claims per new claim)
+        id: labor_flows
+        if: ${{ !cancelled() }}
+        run: python src/transforms/labor_flows.py
       - name: Shutdown fallback (estimates claims from state filings only if DOL's weekly release is overdue)
         id: fallback
         if: ${{ !cancelled() }}

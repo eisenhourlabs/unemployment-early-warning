@@ -73,13 +73,14 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 | `src/checks/data_quality.py` | Stale / gaps / outlier / fetch checks for every series -> `data/processed/series_health.csv`; fails only on a stale or missing Tier 1 series |
 | `config/quality_rules.csv`, `config/quality_dol_columns.csv` | Data-quality settings: allowed ages, known gaps, skips, outlier window and threshold; which DOL columns to check |
 | `src/transforms/dol_rates.py` | Claims rates, 12-month exhaustion rate, average duration |
+| `src/transforms/labor_flows.py` | Job-finding rate, job openings per unemployed, continuing claims per new claim -> `data/processed/labor_flows_monthly.csv` (review WP5; refresh workflow) |
 | `src/transforms/state_measures.py` | State rates, year-on-year changes, diffusion index, weighted vs. national -> `data/processed/states/` |
 | `src/checks/dol_checks.py` | DOL vs FRED (fails run above 1%); SA continuing claims rate vs DOL IUR (report only) |
 | `data/processed/dol/` | DOL outputs (latest figures only) |
 | `docs/data_revisions.md` | Automatic log of DOL revisions |
 | `docs/dashboard_requirements.md` | What the Phase 2 dashboard must show |
 | `src/alerts/alerts.py` | Alerts (off; repository variable ALERTS_ENABLED): colour change (called by live.py) and failed refresh (`--refresh-failed`); while off they print the text in the log |
-| `src/model/` | Phase 3 modeling: `build_claims_history.py` (claims table from 1967), `alfred_fetcher.py` (past vintages), `realtime.py` (`as_known_on(series, date)` + Sahm check), `events.py` (event definition and list), `plot_events.py` (review chart), `current_fetcher.py` (long histories of never-revised series), `triggers.py` (8 Layer 1 triggers monthly, real-time), `backtest_triggers.py` (leads, false alarms, adds-warning), `plot_triggers.py` (status chart), `features.py` (score inputs), `score.py` (early-warning score: fit, out-of-sample test, sensitivity runs), `score_uncertainty.py` (skill range by block bootstrap, AUC, hit rates by colour, longest amber/red run, on revised and first-published claims), `plot_score.py` (score charts), `score_followups.py` (3d Part A: drivers, NSA claims test, calibration, colour stability, 3/12-month scores), `forecast.py` (fans: baseline + event-path mixture, backtest, stress paths), `forecast_regimes.py` (fan coverage before / during events), `fomc_marker.py` (next year's FOMC marker, used by live.py and the site), `nowcast.py` (next UR release), `benchmarks.py` (FOMC SEP / SPF comparison), `plot_forecast.py` (forecast charts), `part0.py` (3e Part 0: coherence, live as-of inputs, bias report), `freeze_model.py` (writes the frozen model each January), `fallback_validation.py` (4c: replay + Monte Carlo -> `reports/fallback_validation.md`), `live.py` (one "as of" result set from the frozen model) |
+| `src/model/` | Phase 3 modeling: `build_claims_history.py` (claims table from 1967), `alfred_fetcher.py` (past vintages), `realtime.py` (`as_known_on(series, date)` + Sahm check), `events.py` (event definition and list), `plot_events.py` (review chart), `current_fetcher.py` (long histories of never-revised series), `triggers.py` (8 Layer 1 triggers monthly, real-time), `backtest_triggers.py` (leads, false alarms, adds-warning), `plot_triggers.py` (status chart), `features.py` (score inputs), `score.py` (early-warning score: fit, out-of-sample test, sensitivity runs), `score_uncertainty.py` (skill range by block bootstrap, AUC, hit rates by colour, longest amber/red run, on revised and first-published claims), `plot_score.py` (score charts), `score_followups.py` (3d Part A: drivers, NSA claims test, calibration, colour stability, 3/12-month scores), `forecast.py` (fans: baseline + event-path mixture, backtest, stress paths), `forecast_regimes.py` (fan coverage before / during events), `fomc_marker.py` (next year's FOMC marker, used by live.py and the site), `nowcast.py` (next UR release), `benchmarks.py` (FOMC SEP / SPF comparison), `plot_forecast.py` (forecast charts), `part0.py` (3e Part 0: coherence, live as-of inputs, bias report), `freeze_model.py` (writes the frozen model each January), `fallback_validation.py` (4c: replay + Monte Carlo -> `reports/fallback_validation.md`), `live.py` (one "as of" result set from the frozen model), `severity_watch.py` (Duration watch backtest, review WP5) |
 | `config/model_series.csv`, `config/event_notes.csv`, `config/triggers.csv` | Modeling series: ALFRED / first-release / current vintage, release lag; Troy's event rulings and notes; Layer 1 trigger thresholds |
 | `data/model/` | Modeling data: `claims_weekly.csv`, `alfred/` (vintages + coverage), `current/` (GS10, TB3MS, T10Y3MM full history), `events.csv`, `event_flags_monthly.csv`, `claims_leg_weekly.csv`, `triggers_monthly.csv`, `trigger_episodes.csv`, `trigger_leads.csv`, `trigger_summary.csv`, `status_comparison.csv`, `features_monthly.csv`, `score_*.csv` (incl. `score_skill_summary.csv`), `forecast_*.csv` (incl. `forecast_evaluation_regimes.csv`), `stress_paths.csv`, `nowcast.csv`, `benchmark_summary.csv`, `frozen/model_<year>.json` (frozen model), `live_latest.json` + `score_display_weekly.csv` / `score_display_monthly.csv` (what the site reads), `live_history.csv` (one row per live run) + `live_fans_history.csv` (each run's fans) |
 | `docs/model.md`, `reports/` | Phase 3 method and results (grows each stage); review charts (not on the site) |
@@ -113,7 +114,8 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   `python src\fetchers\dol_national.py`, `python src\fetchers\dol_state.py`,
   `python src\fetchers\dol_recent_weeks.py`, `python src\transforms\dol_rates.py`, `python src\checks\dol_checks.py`
 - Chicago Fed (local only, never commit its files): `python src\fetchers\chicagofed_fetcher.py`
-- State measures (after the DOL pipeline): `python src\transforms\state_measures.py`
+- State measures (after the DOL pipeline): `python src\transforms\state_measures.py`; labour flows: `python src\transforms\labor_flows.py`
+- Duration watch backtest (January re-fit, after triggers.py): `python src\model\severity_watch.py`
 - After refreshing the private branch counts: `python src\transforms\make_state_weights.py`
 - Series health (run last): `python src\checks\data_quality.py`
 - Release calendar: `python src\fetchers\release_calendar.py`
@@ -333,6 +335,10 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   folding "Source and method", Outlook history split at events, "Three things to know", "How to use the colours") built on
   branch review-wp7 (pushed; NOT merged; site unchanged). tests/test_stand_panel.py; 57 unit tests OK; browser check 1024 pass.
   Troy asked for WP7, WP5, WP4, WP6 in one go without stopping; each on its own branch, stacked, none merged before the meeting.
+
+- 2026-11-12: WP5 (Duration watch card, severity_watch.py backtest, UNEMPLOY catalog row, labor_flows.py, three new
+  Duration charts, labour-flows download, docs/model.md section 9) built on branch review-wp5 (stacked on review-wp7; NOT
+  merged). 64 unit tests OK; browser check 1096 pass; series health 200 OK.
 
 ## Next steps, in order
 Phase 4 and its review (Gates 1-4) are complete, merged and live; Troy ratified all delegated Phase 4 decisions on

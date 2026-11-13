@@ -78,6 +78,7 @@ jobs:
         run: |
           python src/model/triggers.py
           python src/model/backtest_triggers.py
+          python src/model/severity_watch.py
           python src/model/features.py
       - name: Score and follow-ups (out-of-sample backtest)
         run: |

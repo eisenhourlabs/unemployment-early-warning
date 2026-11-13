@@ -28,6 +28,7 @@ known_gap,U6RATE,2025-10-01,As UNRATE (household survey)
 known_gap,UEMPLT5,2025-10-01,As UNRATE (household survey)
 known_gap,UEMPMED,2025-10-01,As UNRATE (household survey)
 known_gap,LNS13025703,2025-10-01,As UNRATE (household survey)
+known_gap,UNEMPLOY,2025-10-01,As UNRATE (household survey)
 known_gap,SAHMREALTIME,2025-10-01,Built from UNRATE
 known_gap,??UR,2025-10-01,No October 2025 state unemployment rates (LAUS; shutdown)
 known_gap,CFLMIPROB*,2025-10-01,Chicago Fed probabilities not published for October 2025 (shutdown)

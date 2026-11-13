@@ -327,7 +327,7 @@ def check_data_page(browser, url, base):
     bad_xlsx = []
     for href in [l for l in links if l.endswith(".xlsx")]:
         names = load_workbook(SITE / href, read_only=True).sheetnames
-        want = (["Data", "Columns", "About"] if ("/dol/" in href or "/states/" in href or "dol_weekly" in href)
+        want = (["Data", "Columns", "About"] if ("/dol/" in href or "/states/" in href or "/derived/" in href or "dol_weekly" in href)
                 else ["Daily", "Weekly (Sat)", "Weekly (Fri)", "Monthly", "Dictionary"] if "everything" in href else ["Data", "About"])
         if names != want:
             bad_xlsx.append(f"{href}: {names}")
@@ -345,7 +345,7 @@ def check_data_page(browser, url, base):
     n_dol = dol_rows.count()
     linked = page.locator("table.files tbody tr[data-kind='DOL'] a[href='data/data_dictionary.csv']").count()
     check(n_dol > 0 and linked == n_dol, f"all {n_dol} DOL rows link to the data dictionary ({linked} linked)")
-    dol_files = {Path(l).name for l in links if ("/dol/" in l or "/states/" in l) and l.endswith(".csv")}
+    dol_files = {Path(l).name for l in links if ("/dol/" in l or "/states/" in l or "/derived/" in l) and l.endswith(".csv")}
     missing = sorted(dol_files - set(dd["file"])) if len(dd) else sorted(dol_files)
     blank = int(dd["definition"].isna().sum() + dd["units"].isna().sum()) if len(dd) else -1
     check(not missing and blank == 0, f"dictionary covers every DOL file, no blank definitions or units {missing}")
@@ -1055,6 +1055,38 @@ def check_wp7(browser, base) -> None:
     page.context.close()
 
 
+def check_wp5(browser, base) -> None:
+    """Review WP5: Duration watch card, three new Duration charts (data = source file), labour-flows download."""
+    import pandas as pd
+    print("\n=== Review WP5: Duration watch and labour flows ===")
+    page = browser.new_context(viewport={"width": 1280, "height": 900}).new_page()
+    page.goto(base + "duration.html")
+    page.wait_for_selector("body[data-ready=true]")
+    card = page.locator("#card-duration-watch")
+    check(card.count() == 1 and "Duration watch" in card.inner_text(), "Duration: 'Duration watch' card present")
+    badge = card.locator(".signal").inner_text().strip() if card.count() else ""
+    check(any(w in badge for w in ("Falling", "Steady", "Rising")), f"Duration watch: badge with a band word ({badge!r})")
+    check("staying on benefits longer" not in page.inner_text("main"), "Duration: never says 'staying on benefits longer'")
+    pdata = json.loads(page.locator("#page-data").text_content())
+    ids = [c["id"] for c in pdata["charts"]]
+    check(len(ids) == 10, f"Duration: 10 charts ({len(ids)})")
+    flows = pd.read_csv(ROOT / "data" / "processed" / "labor_flows_monthly.csv")
+    for cid, col in (("claims-stock-flow", "cc_per_new_claim"), ("job-finding", "job_finding_rate_3m"),
+                     ("vacancies-per-unemployed", "vacancies_per_unemployed")):
+        spec = next((c for c in pdata["charts"] if c["id"] == cid), None)
+        if spec is None:
+            check(False, f"Duration: chart {cid} present")
+            continue
+        got = {r[0]: r[1] for r in spec["table"]["rows"] if r[1] is not None}
+        want = {m: round(v, 6) for m, v in zip(flows.month, flows[col]) if pd.notna(v)}
+        same = all(abs(got.get(m, 1e9) - v) < 1e-6 for m, v in want.items() if m >= min(got))
+        check(same and len(got) > 50, f"Duration: {cid} data = labor_flows_monthly.csv {col} ({len(got)} months)")
+    page.goto(base + "data.html")
+    check("labor_flows_monthly" in page.content(), "Data page lists labor_flows_monthly")
+    check("UNEMPLOY" in page.content(), "Data page lists UNEMPLOY")
+    page.context.close()
+
+
 def TODAY_OF(page) -> str:
     return json.loads(page.locator("#page-data").text_content())["today"]
 
@@ -1077,6 +1109,7 @@ def main() -> int:
         if "outlook.html" in links:
             check_phase3(browser, base)
             check_wp7(browser, base)
+            check_wp5(browser, base)
         for i, href in enumerate(links):
             if href == "data.html":
                 check_data_page(browser, base + href, base)

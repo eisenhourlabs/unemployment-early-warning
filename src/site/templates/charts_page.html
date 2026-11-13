@@ -7,6 +7,30 @@
   <h1>{{ heading }}</h1>
   <p>{{ intro }}</p>
 </div>
+{%- if watch %}
+<section class="card watch-card" id="card-duration-watch" aria-labelledby="duration-watch-title">
+  <div class="score-head">
+    <h2 id="duration-watch-title">Duration watch</h2>
+    <p class="score-asof">{{ watch.asof }}</p>
+  </div>
+  <p class="score-line"><span class="signal signal-{{ watch.signal.colour }}"><span aria-hidden="true">{{ watch.signal.icon }}</span> {{ watch.signal.label }}</span></p>
+  <p class="watch-headline">{{ watch.headline }}</p>
+  <p class="why">{{ watch.why }}</p>
+  {%- if watch.table %}
+  <div class="table-scroll">
+  <table class="model-table compact">
+    <thead><tr><th>Continuing claims vs. a year ago</th><th class="num">Months since 1968</th><th class="num">Long-term share up 3+ points within a year</th><th class="num">Median weeks up 1.5+ within a year</th></tr></thead>
+    <tbody>
+      {%- for r in watch.table %}
+      <tr{% if r.current %} class="current"{% endif %}><td>{{ r.band }}</td><td class="num">{{ r.months }}</td><td class="num">{{ r.lt }}</td><td class="num">{{ r.median }}</td></tr>
+      {%- endfor %}
+    </tbody>
+  </table>
+  </div>
+  {%- endif %}
+  <p class="chart-footer">{{ watch.footer }}</p>
+</section>
+{%- endif %}
 {%- if summary %}
 <section class="card summary" aria-labelledby="summary-title">
   <h2 id="summary-title">Summary</h2>

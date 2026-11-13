@@ -333,3 +333,6 @@ details.chart-source { margin-top: 6px; }
 details.chart-source summary { cursor: pointer; color: var(--text-2); font-size: 0.82rem; }
 .three-things { margin: 0.4rem 0 0; padding-left: 1.3rem; }
 .three-things li { margin-bottom: 0.3rem; max-width: 85ch; }
+.watch-card { margin-bottom: 16px; }
+.watch-headline { margin: 8px 0 4px; font-size: 0.98rem; max-width: 85ch; }
+tr.current td { font-weight: 700; }

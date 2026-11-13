@@ -99,6 +99,10 @@ STATE_CITATION = ("U.S. Department of Labor, Employment and Training Administrat
                   "(ar539, ETA 5159), https://oui.doleta.gov/unemploy/DataDownloads.asp; state unemployment rates: "
                   "U.S. Bureau of Labor Statistics (LAUS) via FRED, Federal Reserve Bank of St. Louis. Calculated by "
                   "Unemployment Watch: see the Columns sheet.")
+# Review WP5: labour flows (Duration page), calculated by src/transforms/labor_flows.py from public BLS and DOL series.
+FLOWS_CITATION = ("U.S. Bureau of Labor Statistics, Current Population Survey (UNEMPLOY, UEMPLT5) and JOLTS (JTSJOL); "
+                  "U.S. Department of Labor, Employment and Training Administration (CCSA, ICSA); all retrieved from "
+                  "FRED, Federal Reserve Bank of St. Louis. Calculated by Unemployment Watch: see the Columns sheet.")
 DOL_PAGE = "https://oui.doleta.gov/unemploy/DataDownloads.asp"
 SITE_URL = "https://eisenhourlabs.github.io/unemployment-early-warning/"   # where GitHub Pages publishes the site
 DOL_CLAIMS_PAGE = "https://oui.doleta.gov/unemploy/claims.asp"
@@ -184,6 +188,17 @@ def dol_entries() -> list[dict]:
             "page": "states", "state": "", "updated": last_check,
             "csv": f"data/states/{stem}.csv", "xlsx": f"data/states/{stem}.xlsx",
             "path": PROCESSED / "states" / f"{stem}.csv", "report": "", "citation": STATE_CITATION,
+        })
+    if (PROCESSED / "labor_flows_monthly.csv").exists():
+        entries.append({
+            "kind": "DOL", "id": "labor_flows_monthly",
+            "name": "Labour flows: job-finding rate, job openings per unemployed, continuing claims per new claim",
+            "title": "Labour flows (job-finding rate, openings per unemployed, continuing claims per new claim)",
+            "source": "BLS and DOL (derived)", "source_url": "https://fred.stlouisfed.org/series/UNEMPLOY",
+            "frequency": "monthly", "units": "Various (see data dictionary)", "sa": "SA", "page": "duration",
+            "state": "", "updated": last_check, "csv": "data/derived/labor_flows_monthly.csv",
+            "xlsx": "data/derived/labor_flows_monthly.xlsx", "path": PROCESSED / "labor_flows_monthly.csv",
+            "report": "", "citation": FLOWS_CITATION,
         })
     return entries
 

@@ -11,6 +11,7 @@ CC4WSA,Continuing claims 4-week average,DOL,fred,weekly,1,coincident,duration,co
 IURNSA,Insured unemployment rate (NSA),DOL,fred,weekly,1,coincident,duration,coincident,,public,,Used for preliminary weeks in the DOL merged weekly table,active
 PAYEMS,Nonfarm payrolls,BLS,fred,monthly,1,coincident,job_losses,coincident,,public,1948-01-01,,active
 UEMPLT5,Unemployed less than 5 weeks,BLS,fred,monthly,1,leading,job_losses,1-3 mo,,public,1948-01-01,,active
+UNEMPLOY,Unemployment level,BLS,fred,monthly,1,coincident,duration,coincident,,public,1948-01-01,"Denominator for the job-finding rate and job openings per unemployed (ID verified on FRED 2026-11-11: Unemployment Level, thousands of persons, SA)",active
 UEMPMED,Median weeks unemployed,BLS,fred,monthly,1,lagging,duration,lagging,,public,1948-01-01,,active
 LNS13025703,Share unemployed 27+ weeks,BLS,fred,monthly,1,lagging,duration,lagging,,public,1948-01-01,ID verified 2026-11-07 (Of total unemployed: percent unemployed 27 weeks & over; SA),active
 JTSLDR,JOLTS layoffs and discharges rate,BLS,fred,monthly,1,leading,job_losses,1-6 mo,,public,,,active

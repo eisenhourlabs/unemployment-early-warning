@@ -1361,3 +1361,41 @@ What this says:
 
 **Consequences:** the diffusion row on the Leading page stays "context" with no colour; the States page keeps the
 neutral "why it matters" line on the breadth chart (no lead was found); nothing goes into the January 2027 re-fit.
+
+## 9. Severity watch (review WP5, 2026-11)
+
+A descriptive rule for claim severity, not a probability model. `src/model/severity_watch.py` (January re-fit chain,
+after `triggers.py`) -> `data/model/severity_watch.csv`, `severity_watch_monthly.csv`.
+
+**Rule.** cc_yoy = 4-week average of SA continuing claims (CCSA, last week ending in the month) / the same 12 months
+earlier - 1, the value behind confirmation trigger 4. Bands: falling (< 0), green / "Steady" (0 to < +10%), amber /
+"Rising" (+10% to < +20%), red / "Rising fast" (+20% or more).
+
+**How often each band was followed within 12 months by** (months 1968-01 on, 2019-04 to 2021-12 left out; DOL outcomes
+from 1996):
+
+| Band | Months (1968–) | Long-term share up 3+ pt | Median weeks up 1.5+ | Months (1996–) | DOL avg duration up 0.75+ wk | DOL exhaustion rate up 3+ pt |
+| --- | --- | --- | --- | --- | --- | --- |
+| falling | 392 | 0.01 | 0.02 | 214 | 0.00 | 0.03 |
+| green | 113 | 0.17 | 0.10 | 56 / 50 | 0.05 | 0.14 |
+| amber | 43 | 0.58 | 0.51 | 12 | 0.08 | 0.58 |
+| red | 113 | 0.83 | 0.57 | 43 | 0.95 | 0.86 |
+| base rate | 661 | 0.22 | 0.16 | 325 / 319 | 0.14 | 0.18 |
+
+The review's prototype counted the bands from 1969 (382 falling, 111 green) but its base rate from 1968 (661 months);
+the shares are the same to two decimals either way. Here both start in 1968, so the bands add up to the base.
+
+**Screen of the labour-flow measures** (AUC for the same outcomes, same months; no adoption rule, these are charts of
+definitional measures):
+
+| Measure | Long-term share up | Median weeks up |
+| --- | --- | --- |
+| Continuing claims vs. a year ago (cc_yoy) | 0.94 | 0.87 |
+| Minus the 12-month change in the job-finding rate (3-month average) | 0.89 | 0.80 |
+| Minus the 12-month % change in job openings per unemployed (from 2000) | 0.96 | 0.91 |
+
+**Limits.** Today's revised data; in sample (the thresholds are trigger 4's, chosen in stage 3b on the same
+history); overlapping 12-month windows, so the months are far from independent: about 20 separate episodes for the
+household-survey outcomes and only 3 to 4 for the DOL outcomes. Continuing claims also rise with more new claims, so the
+watch is an early read on duration, not a direct measure. Until the real-time check (WP8 test T2) has passed, the site
+shows words ("occasionally", "usually", "in most cases") and not these shares.

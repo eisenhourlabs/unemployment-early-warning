@@ -149,7 +149,7 @@ def trigger_rule(r: dict) -> str:
     return {
         "sahm": f"Amber at {a:.2f}, red at {red:.2f} point",
         "claims_vs_low": f"Amber at +{a * 100:.0f}%, red at +{red * 100:.0f}%",
-        "cont_claims_yoy": f"Amber at +{a * 100:.0f}%, red at +{red * 100:.0f}%",
+        "cont_claims_yoy": f"Amber at +{a * 100:.0f}%, red at +{red * 100:.0f}%; also the Duration watch",
         "yield_curve": f"Amber while inverted {a:.0f}+ months in a row; red for {red:.0f} months after such an inversion ends",
         "nfci": f"Amber above {a:.0f}, red above {red:.1f}",
         "temp_help": f"Amber below 0, red below {red * 100:.0f}%",

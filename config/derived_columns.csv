@@ -73,3 +73,8 @@ weighted_monthly,national_ur_gap_pp,"national_ur_3m_avg minus national_ur_3m_avg
 weighted_contributions_weekly,state,State code (weighted states only),config/state_weights.csv
 weighted_contributions_weekly,week_ended,Week ending (Saturday),src/transforms/state_measures.py
 weighted_contributions_weekly,contribution_pct,"Contribution to weighted_ic_yoy_pct, in percentage points: weight x (claims rate now - a year earlier) / weighted claims rate a year earlier x 100",src/transforms/state_measures.py
+labor_flows_monthly,month,"Month (first day of the month; the job-finding rate is dated at the later of its two months)",src/transforms/labor_flows.py
+labor_flows_monthly,job_finding_rate,"Job-finding rate, percent: share of the unemployed who leave unemployment within a month (includes leaving the labour force); dated the later month",1 - (UNEMPLOY next month - UEMPLT5 next month) / UNEMPLOY this month (Shimer); src/transforms/labor_flows.py
+labor_flows_monthly,job_finding_rate_3m,"Job-finding rate, 3-month average, percent",Mean of job_finding_rate over 3 months; src/transforms/labor_flows.py
+labor_flows_monthly,vacancies_per_unemployed,Job openings per unemployed person (from Dec 2000),JTSJOL / UNEMPLOY; src/transforms/labor_flows.py
+labor_flows_monthly,cc_per_new_claim,Continuing claims per new claim: weeks' worth of new claims still on the rolls,4-week average of CCSA / average ICSA of the 26 weeks ending one week earlier; last week of each month; src/transforms/labor_flows.py

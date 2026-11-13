@@ -1,15 +1,17 @@
 """
-Duration page (severity: how long unemployment lasts). Seven charts.
+Duration page (severity: how long unemployment lasts). The Duration watch card (review WP5) and ten charts.
 Called by build_site.py.
 """
 
+import json
 from datetime import datetime
 
 import pandas as pd
 import plotly.graph_objects as go
 
-from common import (DOL, MODEL, WHATIF_FOOTER, add_fan, add_whatif, claims_weekly, fmt_date, fred, line_chart,
-                    line_with_comparison, model_output, weekly_claims_chart, with_outlook)
+from common import (DOL, MODEL, PROCESSED, WHATIF_FOOTER, add_fan, add_marker, add_whatif, claims_weekly,
+                    duration_watch, fmt_date, fred, line_chart, line_with_comparison, model_output, signal,
+                    weekly_claims_chart, with_outlook)
 from overview import cc_rate_chart
 
 INTRO = ("How long unemployment lasts. State UI continuing claims show it weekly; exhaustion and benefit duration "
@@ -60,6 +62,62 @@ def cc_outlook(c: dict, live: dict) -> dict:
                         + WHATIF_FOOTER)
 
 
+# ===========================================================================
+# Duration watch (review WP5, Part C): an early read on claim severity from continuing claims vs. a year ago
+# ===========================================================================
+# The spec's wording in square brackets (no percentages) until WP8 test T2 has passed; then the table shows too.
+T2_PASSED = False
+WATCH_HEADLINE = {
+    "falling": "Continuing claims are {x}% below a year ago. In the past, durations have almost never lengthened in "
+               "the following year from here.",
+    "green": "Continuing claims are {x}% above a year ago. Durations have occasionally lengthened within a year from "
+             "here.",
+    "amber": "Continuing claims are {x}% above a year ago. Long-term unemployment has usually risen sharply within a "
+             "year from here.",
+    "red": "Continuing claims are {x}% above a year ago. Long-term unemployment has risen sharply within a year in "
+           "most cases from here, and benefit durations have lengthened for one to two years after layoffs peaked.",
+}
+WATCH_WHY = ("For involuntary unemployment insurance, this is the early read on claim severity: the official duration "
+             "measures below move 6 to 18 months later.")
+WATCH_FOOTER = ("Rule: 4-week average of SA continuing claims vs. the same weeks a year earlier; amber from +10%, red "
+                "from +20% (the same thresholds as confirmation trigger 4 on the Outlook page). \u2018Risen sharply\u2019 = "
+                "share of unemployed out of work 27+ weeks up 3 points or more within 12 months; 1968–2026 excluding "
+                "2019–21; today's revised data. Continuing claims rise when more people start claiming as well as "
+                "when people stay on benefits longer, so this is an early read on duration, not a direct measure of "
+                "it. Not a forecast.")
+BAND_LABELS = {"falling": "Falling (below a year ago)", "green": "Steady (0 to +10%)", "amber": "Rising (+10% to +20%)",
+               "red": "Rising fast (+20% or more)"}
+
+
+def watch_card(live: dict | None) -> dict | None:
+    """The Duration watch card from trigger 4's live value (None without model output)."""
+    if live is None:
+        return None
+    row = next((r for r in live["triggers"]["rows"] if r["id"] == "cont_claims_yoy"), None)
+    if row is None or row.get("value") is None:
+        return None
+    v = float(row["value"])
+    dw = duration_watch(v)
+    out = {"signal": {**signal(dw["colour"]), "label": dw["word"]},
+           "headline": WATCH_HEADLINE[dw["band"]].format(x=round(abs(v) * 100)),
+           "why": WATCH_WHY, "footer": WATCH_FOOTER, "table": None,
+           "asof": f"Continuing claims through the week ending {fmt_date(live['inputs']['continuing_claims_week'])}"}
+    if T2_PASSED:      # the backtest table, once the real-time check (WP8 T2) has passed
+        sw = pd.read_csv(MODEL / "severity_watch.csv")
+        pick = lambda o, b: sw[(sw.outcome == o) & (sw.band == b)].iloc[0]
+        out["table"] = [{"band": BAND_LABELS[b], "months": int(pick("lt_share_up", b).months),
+                         "lt": f"{pick('lt_share_up', b).share_followed * 100:.0f}%",
+                         "median": f"{pick('median_up', b).share_followed * 100:.0f}%", "current": b == dw["band"]}
+                        for b in ("falling", "green", "amber", "red")]
+    return out
+
+
+def flows() -> pd.DataFrame | None:
+    """data/processed/labor_flows_monthly.csv (src/transforms/labor_flows.py), or None if not built."""
+    path = PROCESSED / "labor_flows_monthly.csv"
+    return pd.read_csv(path, parse_dates=["month"]).set_index("month") if path.exists() else None
+
+
 def build(built: datetime) -> dict:
     claims = claims_weekly()
     live = model_output(built)["live"]
@@ -88,6 +146,18 @@ def build(built: datetime) -> dict:
         "Source: DOL state UI claims via FRED (CCSA, CC4WSA). Seasonally adjusted, number of people claiming, weekly.",
         level, "cc_sa", "cc_sa_4wk", "source", "Continuing claims (SA)", "%{y:,.0f}",
         ["week_ended", "cc_sa", "cc_sa_4wk", "source"]))
+
+    # 2b. Continuing claims per new claim (review WP5: stock-flow ratio)
+    fl = flows()
+    if fl is not None:
+        charts.append(line_chart(
+            "claims-stock-flow", "Continuing claims per new claim",
+            "How many weeks\u2019 worth of new claims are still on the rolls. It rises when people stay on benefits "
+            "longer, months before the exhaustion rate does.",
+            "Our calculation from DOL claims via FRED (CCSA, ICSA): 4-week average continuing claims ÷ average weekly "
+            "initial claims of the prior 26 weeks. Monthly (last week of each month).",
+            fl["cc_per_new_claim"], "Continuing claims per new claim", "Weeks of new claims", "%{y:.1f}",
+            "cc_per_new_claim"))
 
     # 3. Exhaustion rate, 12-month (our calculation from DOL's monthly ETA 5159 report)
     monthly = us_rows("exhaustion_duration_monthly.csv", "month_ended")
@@ -134,12 +204,35 @@ def build(built: datetime) -> dict:
         fred("LNS13025703"), "Share unemployed 27+ weeks", "Percent of unemployed", "%{y:.1f}%",
         "share_unemployed_27wk_plus_pct"))
 
+    # 6b. Job-finding rate and 6c. job openings per unemployed (review WP5, I2)
+    if fl is not None:
+        jf = line_chart(
+            "job-finding", "Job-finding rate",
+            "Share of the unemployed who leave unemployment within a month. When it falls, claims last longer; it is "
+            "the most direct public measure of how fast people get back to work.",
+            "Source: BLS Current Population Survey via FRED (UNEMPLOY, UEMPLT5), our calculation: 1 − (unemployed next "
+            "month − newly unemployed next month) ÷ unemployed this month; 3-month average, percent. Leaving "
+            "unemployment includes leaving the labour force. Vertical line at January 1994: survey redesign; levels "
+            "before and after are not strictly comparable. Gap: no October 2025 survey.",
+            fl["job_finding_rate_3m"], "Job-finding rate, 3-month average", "Percent of unemployed", "%{y:.1f}%",
+            "job_finding_rate_3m_pct")
+        fig = go.Figure(jf["figure"])
+        add_marker(fig, "1994-01-01", "Survey redesign (1994)")
+        jf["figure"] = json.loads(fig.to_json())
+        charts.append(jf)
+        charts.append(line_chart(
+            "vacancies-per-unemployed", "Job openings per unemployed person",
+            "Fewer openings per job seeker means longer searches.",
+            "Source: BLS JOLTS and Current Population Survey via FRED (JTSJOL, UNEMPLOY), our calculation; from Dec 2000.",
+            fl["vacancies_per_unemployed"].loc["2000-12-01":], "Job openings per unemployed person",
+            "Openings per unemployed", "%{y:.2f}", "openings_per_unemployed"))
+
     # 7. JOLTS hires rate
     charts.append(line_chart(
         "jolts-hires", "JOLTS hires rate",
-        "Low hiring means people who lose jobs take longer to find new ones.",
+        "Hiring as a share of all jobs; see the job-finding rate above for the unemployed specifically.",
         "Source: BLS Job Openings and Labor Turnover Survey via FRED (JTSHIR). Hires as a percent of total "
         "employment, seasonally adjusted, monthly; JOLTS starts Dec 2000.",
         fred("JTSHIR"), "Hires rate", "Percent of employment", "%{y:.1f}%", "hires_rate_pct"))
 
-    return {"intro": INTRO, "charts": charts}
+    return {"intro": INTRO, "charts": charts, "watch": watch_card(live)}
