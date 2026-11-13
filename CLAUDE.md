@@ -369,7 +369,7 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   Outlook forecast-table column on the 3- and 6-month rows only, no Overview sentence. T2 Duration watch on real-time
   claims: passes -> fractions and band table shown (common.T2_PASSED). T3 wider in-progress ranges: not adopted (overall
   80% coverage 0.854 / 0.852 at 3 / 12 months). T4 material-event score: not adopted (skill +0.02). Model unchanged;
-  nothing for the January 2027 re-fit. Waiting for Troy's approval of the T1 / T2 display changes.
+  nothing for the January 2027 re-fit. Troy approved the T1 / T2 display (2026-11-13; no follow-up test for T3); merged into main.
 
 ## Next steps, in order
 Phase 4 and its review (Gates 1-4) are complete, merged and live; Troy ratified all delegated Phase 4 decisions on

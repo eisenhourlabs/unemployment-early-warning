@@ -1483,7 +1483,7 @@ stated 0.88, observed 0.69), against the expectation (pass at 6 and 12). Continu
 The rule compared the 1e-9-tolerant threshold (a rise of exactly 0.5 counts). Limitation: the fans exist only on
 claims as held today (no first-published fan backtest).
 
-Display (with Troy's approval; display only, no re-fit): Outlook forecast table, column "Chance of a rise of 0.5 pt or
+Display (approved by Troy 2026-11-13; display only, no re-fit): Outlook forecast table, column "Chance of a rise of 0.5 pt or
 more" on the 3- and 6-month unemployment rows, in words (cut points 0.10 / 0.17 / 0.30 / 0.50) with the usual rate in
 grey. The Overview sentence of WP7 cell 3 is a 12-month figure and is **not** shown. Live values (Nov 12 run):
 3 months 0.1%, 6 months 0.5% ("under 1 in 10"); 12 months 12.7% (not shown).
@@ -1513,7 +1513,7 @@ same band as real-time current-vintage claims. Reported, not part of the rule: t
 has only 10 amber / red months (no pattern can be read from it); the green band's whole-sample 1 in 6 combines about
 1 in 30 before 2000 with about 1 in 3 since.
 
-Display (with Troy's approval; display only): `common.T2_PASSED = True`: the Duration watch card and the Overview
+Display (approved by Troy 2026-11-13; display only): `common.T2_PASSED = True`: the Duration watch card and the Overview
 duration line use the wording with fractions, and the card shows the four-band table (today's revised data, 1968–2026,
 `severity_watch.csv`).
 
