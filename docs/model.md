@@ -1399,3 +1399,36 @@ history); overlapping 12-month windows, so the months are far from independent: 
 household-survey outcomes and only 3 to 4 for the DOL outcomes. Continuing claims also rise with more new claims, so the
 watch is an early read on duration, not a direct measure. Until the real-time check (WP8 test T2) has passed, the site
 shows words ("occasionally", "usually", "in most cases") and not these shares.
+
+## 10. Real-time event dating (review WP4, 2026-11)
+
+**Rule** (`src/model/realtime_events.py`, shared by `live.py` and `forecast.py`): a leg is on at a month end when the
+real-time Sahm indicator is 0.50+ or the initial-claims 4-week average is 25%+ above its lowest 4-week average of the
+previous 52 weeks (data as known then, from `triggers_monthly.csv`; claims current-vintage). An event starts on an
+on-month after 6+ off-months and is under way until 6 off-months in a row. 1980–2026: agrees with `events.csv` in 502
+of 562 months (89%); provisional starts 1981-12, 1989-10, 1990-11, 2000-11, 2008-05, 2020-03, 2023-06, 2024-08.
+
+**Forecast tests re-run** with the in-progress state and its start taken from this rule (training filter and event-path
+library still from `events.csv`). Same data, same configuration (`forecast.py --from 1985 --live`); the old code
+reproduces the committed numbers exactly. 2000–2026 excluding 2020:
+
+| Forecast | RMSE ratio before | after | 50% coverage before | after | 80% coverage before | after | Gate before | after |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Unemployment rate, 3 months | 0.80 | 0.82 | 49% | 49% | 82% | 82% | pass | pass |
+| Unemployment rate, 6 months | 0.74 | 0.81 | 53% | 51% | 79% | 79% | pass | pass |
+| Unemployment rate, 12 months | 0.73 | 0.78 | 52% | 51% | 77% | 79% | pass | pass |
+| Initial claims rate, 13 weeks | 0.97 | 0.89 | 50% | 53% | 80% | 81% | pass | pass |
+| Initial claims rate, 26 weeks | 0.93 | 0.87 | 47% | 47% | 78% | 77% | pass | pass |
+| Initial claims rate, 52 weeks | 0.93 | 0.88 | 47% | 47% | 72% | 74% | pass | pass |
+| Continuing claims rate, 13 weeks | 0.87 | 0.76 | 52% | 51% | 77% | 77% | pass | pass |
+| Continuing claims rate, 26 weeks | 0.84 | 0.83 | 46% | 44% | 74% | **69%** | pass | **fail** |
+| Continuing claims rate, 52 weeks | 0.85 | 0.85 | 35% | 34% | 68% | 67% | fail | fail |
+
+Continuing claims at 26 weeks now fails the gate (80% coverage more than 10 points below target) and is no longer
+shown on the site (`common.apply_fan_gate`); the frozen 2026 model still computes it until the January re-fit.
+
+**Regimes** (`forecast_regimes.py`, event ages now from the real-time start): "during an event" covers more origins
+(73 instead of 50 at 3 months: real-time events last until 6 quiet months and include the 2023 and 2024 scares). 80%
+coverage during an event, unemployment 3 / 6 / 12 months: 73% / 67% / 72% (before WP4: 74% / 66% / 60%); continuing
+claims 13 / 26 weeks: 71% / 56%. Inside 2008–09: unemployment 80% coverage 69% / 72% / 83%, middle line too low by
+0.25 / 0.49 / 0.57 point (before: about 62% / 58% / 50%, 0.43 / 0.76 / 1.16).

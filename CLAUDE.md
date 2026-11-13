@@ -344,7 +344,9 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 
 - 2026-11-12: WP4 (real-time event state: automatic provisional "deterioration under way" flag in live.py, banner on
   Overview / Outlook, fans switch to event mode on it; live scorecard; forecast tests on real-time event dating, re-run)
-  built on branch review-wp4 (stacked on review-wp5; NOT merged). events.csv and event_notes.csv unchanged.
+  built on branch review-wp4 (stacked on review-wp5; NOT merged). events.csv and event_notes.csv unchanged. The re-run
+  made continuing claims at 26 weeks fail the gate (80% coverage 69%): dropped from the site under the rule, pending
+  Troy's review; 2008-09 wording on Outlook restated. The January re-fit should drop 26 weeks from FAN_TARGETS too.
 
 ## Next steps, in order
 Phase 4 and its review (Gates 1-4) are complete, merged and live; Troy ratified all delegated Phase 4 decisions on
