@@ -74,7 +74,7 @@ class RewordLiveTests(unittest.TestCase):
         self.assertEqual(lv["score"]["display"]["3"]["tooltip"], "4.9%")          # numbers below 35%: unchanged
         self.assertIn(common.WORDS_NOTE, lv["score"]["previous"]["display"]["tooltip"])
         self.assertEqual(lv["score"]["compare_label"], "vs. last week's tested-on-history score")
-        self.assertIn("another trigger that counts toward the status", lv["triggers"]["rule"])
+        self.assertEqual(lv["triggers"]["rule"], common.TRIGGER_RULE)   # review WP9 C8 replaced the WP2 wording
         self.assertNotIn("panel", lv["triggers"]["rule"])
 
     def test_twice_is_same_as_once(self):
