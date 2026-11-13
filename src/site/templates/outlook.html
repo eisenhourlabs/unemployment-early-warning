@@ -236,6 +236,9 @@
     </div>
     <p>Inputs with zero weight add nothing beyond the others this year (claims vs. a year ago and continuing claims have
       never carried weight beside the claims-vs.-low measure).</p>
+    {%- if benchmark %}
+    <p class="benchmark">{{ benchmark }}</p>
+    {%- endif %}
   </details>
   <details>
     <summary>How the colour is set</summary>

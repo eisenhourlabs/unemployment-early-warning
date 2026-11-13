@@ -1,0 +1,8 @@
+model,basis,months,brier,brier_base,skill
+claims_only,revised,236,0.11921,0.13166,0.094564
+claims_and_sahm,revised,236,0.11638,0.13166,0.116054
+full,revised,236,0.107958,0.13166,0.180025
+claims_only,first_published,236,0.140545,0.13166,-0.067488
+claims_and_sahm,first_published,236,0.135329,0.13166,-0.027866
+full,first_published,236,0.13308,0.13166,-0.010785
+rule_panel,revised,236,0.129986,0.13166,0.012712

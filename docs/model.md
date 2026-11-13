@@ -711,6 +711,23 @@ By period (revised claims, scored months):
 | 2010–2019 | 111 | 0 | +0.73 |
 | 2021–2026 | 56 | 12 | −0.03 |
 
+#### Simple-rule benchmarks (review WP9 C12, 2026-11)
+
+`src/model/score_simple_benchmarks.py` -> `data/model/score_simple_benchmarks.csv` (also in the January re-fit).
+Each model is scored exactly as the final score: re-fitted every January from 1980 on what was known then, ridge
+logistic with weights ≥ 0, the same target; skill vs. the long-run base rate on the 236 usable months from 2000. The
+rule panel row is the confirmation-trigger status used as a forecast (from `score_results.csv`, model `layer1`).
+
+| Model | Skill, revised claims | Skill, claims as first published (2010 on) |
+| --- | --- | --- |
+| New claims vs. their 52-week low, alone | +0.095 | −0.067 |
+| New claims vs. low + Sahm indicator | +0.116 | −0.028 |
+| Confirmation-trigger rule panel | +0.013 | — |
+| Full model (8 inputs) | +0.180 | −0.011 |
+
+Most of the information comes from the claims-vs.-low input: alone it gives about half the full model's skill on
+revised claims. All the figures reproduce the review's (claims and Sahm on first-published claims was not given there).
+
 #### Frozen specification (2026-11)
 
 - Inputs: the 8 measures in `src/model/score.py` `MAIN` (sahm, claims_low, claims_yoy, cont_yoy, temp_help,

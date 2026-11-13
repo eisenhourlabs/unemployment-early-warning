@@ -84,6 +84,7 @@ jobs:
         run: |
           python src/model/score.py
           python src/model/score_uncertainty.py
+          python src/model/score_simple_benchmarks.py
           python src/model/score_followups.py
           python src/model/part0.py prep
       - name: Forecast fans and nowcast (backtest)

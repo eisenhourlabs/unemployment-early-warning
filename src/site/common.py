@@ -415,6 +415,28 @@ def add_whatif(fig: go.Figure, stress: dict, mult: float, fmt: str, unit: str) -
     return last
 
 
+WHATIF_TABLE_NOTE = ("Each path takes what the series did after the last month before that downturn began and applies "
+                     "it to today's level (unemployment: the same change in points; claims: the same percentage "
+                     "change). A what-if, not a forecast.")
+
+
+def whatif_table(stress: dict, steps: list[int], step_word: str, mult: float, decimals: int, unit: str) -> dict:
+    """Review WP9 C7: the what-if paths as a small table (hidden until the reader ticks "Show what-if paths").
+    One row per path ("2001-type", "2008-type"): today, the value `steps` periods ahead (months for the
+    unemployment rate, weeks for the claims rates) and the peak with how long after today it comes.
+    stress: live_latest.json stress.{ur|ic|cc}; mult: display multiplier (initial claims rate: % -> per 10,000)."""
+    fmt = lambda v: f"{v * mult:.{decimals}f}{unit}"
+    rows = []
+    for label, pts in stress["scenarios"].items():
+        levels = [p["level"] for p in pts]
+        peak = max(range(len(levels)), key=lambda i: levels[i])
+        rows.append({"name": label.split(" ")[0],
+                     "cells": [fmt(levels[0])] + [fmt(levels[s]) if s < len(levels) else "—" for s in steps],
+                     "peak": f"{fmt(levels[peak])} after {peak} {step_word}"})
+    return {"head": ["Today"] + [f"+{s} {step_word}" for s in steps] + ["Peak"], "rows": rows,
+            "note": WHATIF_TABLE_NOTE}
+
+
 def with_outlook(c: dict, fig: go.Figure, ahead: str | None, whatif_ahead: str | None, notes: list[str],
                  footer: str) -> dict:
     """Put a chart's Phase 3 elements back into its card (figure, x-axis reach, what-if toggle, notes, footer).

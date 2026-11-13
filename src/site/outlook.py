@@ -412,6 +412,29 @@ def live_record() -> str:
             f"within 6 months), {n('amber')} amber ({k('amber')}), {n('red')} red ({k('red')}).")
 
 
+def benchmark_sentence() -> str | None:
+    """Review WP9 C12: how much of the score's tested skill one input gives (data/model/score_simple_benchmarks.csv,
+    written by src/model/score_simple_benchmarks.py; revised claims, 2000-2026). The approved words "about half" and
+    "almost none" are used only while the file supports them (claims-only skill 35-65% of the full model's; rule panel
+    below +0.05); otherwise the sentence gives the numbers without those words."""
+    try:
+        b = pd.read_csv(MODEL / "score_simple_benchmarks.csv")
+    except OSError:
+        return None
+    rv = b[b.basis == "revised"].set_index("model").skill
+    if not {"claims_only", "full", "rule_panel"} <= set(rv.index):
+        return None
+    x, y, rule = rv["claims_only"], rv["full"], rv["rule_panel"]
+    rule_words = "almost none" if rule < 0.05 else f"a skill of {signed(rule, 2)}"
+    if y > 0 and 0.35 <= x / y <= 0.65:      # the approved wording
+        return (f"Most of the score's information comes from one input. Tested the same way, new claims against their "
+                f"past-year low alone gives about half the full model's skill ({signed(x, 2)} against "
+                f"{signed(y, 2)}); the confirmation triggers used as a forecast give {rule_words}.")
+    return (f"Tested the same way, new claims against their past-year low alone gives a skill of {signed(x, 2)}, "
+            f"against {signed(y, 2)} for the full model; the confirmation triggers used as a forecast give "
+            f"{rule_words}.")
+
+
 def weights_table(live: dict) -> dict:
     s = live["score"]
     rows = []
@@ -443,6 +466,7 @@ def build(built: datetime) -> dict:
         "forecasts": forecast_rows(live),
         "backtest": backtest(),
         "weights": weights_table(live),
+        "benchmark": benchmark_sentence(),
         "model_year": live["model_year"],
         "first_live": f"{first_live:%B %Y}",
         "thresholds": s["thresholds"],
