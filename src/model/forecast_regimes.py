@@ -104,10 +104,14 @@ def measures(g: pd.DataFrame) -> dict:
             "below_q10": float((g.realized < g.q10).mean())}
 
 
-def evaluate(bt: pd.DataFrame, ev: pd.DataFrame, state: pd.DataFrame | None = None) -> pd.DataFrame:
-    """The table, from a backtest frame (origin parsed as dates) and the event list."""
-    bt = bt[(bt.origin >= "2000-01-01") & (bt.origin.dt.day == 1) & bt.realized.notna()
+def evaluate(bt: pd.DataFrame, ev: pd.DataFrame, state: pd.DataFrame | None = None, start: str = "2000-01-01",
+             end: str | None = None) -> pd.DataFrame:
+    """The table, from a backtest frame (origin parsed as dates) and the event list. start / end (review WP8 T3):
+    the window of origins (default 2000-01 on, as on the site)."""
+    bt = bt[(bt.origin >= start) & (bt.origin.dt.day == 1) & bt.realized.notna()
             & ~bt.covid_window.astype(bool)]
+    if end is not None:
+        bt = bt[bt.origin <= end]
     bt = add_regime(bt, ev, state)
     rows = []
     for (target, horizon), g in bt.groupby(["target", "horizon"], sort=False):

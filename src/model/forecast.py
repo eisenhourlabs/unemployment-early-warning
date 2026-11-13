@@ -60,6 +60,9 @@ BACKTEST_FROM = "2000-01-01"       # first origin scored (evaluation always uses
 #   --from YEAR   also produce fans from YEAR (pre-2000 fans are used only to choose the blend weight in part0.py)
 #   --option gap  add a lightly penalized gap term (level minus its 36-month average); outputs get a "_gap" suffix
 #   --live        add the live origin from data/model/live_asof.csv (inputs as of the refresh date)
+#   --option ipnoise  review WP8 test T3 (docs/model_tests_in_progress_noise.md): in the in-progress branch the noise is
+#                 resampled from the residuals of past in-progress forecasts (earlier events, outcome known at the
+#                 origin), or the quiet residuals x 1.5 if there are fewer than 30; outputs get an "_ipnoise" suffix
 ARGS = sys.argv[1:]
 if "--from" in ARGS:
     BACKTEST_FROM = f"{ARGS[ARGS.index('--from') + 1]}-01-01"
@@ -71,6 +74,8 @@ GAP_SCALE = 5.0    # the gap column is multiplied by 5 after standardizing: ridg
 # usual probability-weighted mixture applies (stage 3d review: avoids leaning on recession paths during short scares,
 # which rarely last 3 months).
 IN_PROGRESS_MIN_MONTHS = 3
+IP_POOL_MIN = 30           # review WP8 T3: fewest pooled in-progress residuals to use; else quiet residuals x IP_FALLBACK
+IP_FALLBACK = 1.5
 COVID = (pd.Timestamp("2020-03-01"), pd.Timestamp("2021-03-01"))   # 2020: reported separately, never fitted
 RNG = np.random.default_rng(20261108)
 
@@ -222,6 +227,25 @@ def realtime_in_progress(m: pd.Timestamp):
     return True, s.start.iloc[-1]
 
 
+def in_progress_det(ser: "Series", paths: dict, m: pd.Timestamp, L: pd.Timestamp, h: int, cur_start: pd.Timestamp):
+    """Review WP8 T3: the candidate event-path changes the in-progress branch uses at origin m (the same rule as the
+    inline code in main(); main() checks they agree at every backtest origin)."""
+    age_m = (m.year - cur_start.year) * 12 + m.month - cur_start.month
+    if ser.freq == "M":
+        base_period = cur_start - pd.DateOffset(months=1)
+        k_l = (L.year - base_period.year) * 12 + L.month - base_period.month
+    else:
+        before = ser.final.index[ser.final.index < cur_start]
+        k_l = int((L - before[-1]).days // 7)
+    cands = [p for e, p in paths.items() if p["start"] < cur_start and p["length_months"] >= age_m + 1
+             and len(p["path"]) > k_l + h and not np.isnan(p["path"][k_l + h])
+             and ser.step(p["base"], k_l + h) <= L]
+    if not cands:
+        cands = [p for e, p in paths.items() if p["start"] < cur_start and p["group"] == "recession"
+                 and len(p["path"]) > k_l + h and not np.isnan(p["path"][k_l + h])]
+    return np.array([p["path"][k_l + h] - p["path"][k_l] for p in cands]) if cands else np.zeros(1)
+
+
 def main() -> None:
     F, P, ev, ur_final, weekly = load()
     live_asof = None
@@ -267,6 +291,23 @@ def main() -> None:
                 starts = ((ev.start > m) & (ev.start <= m + pd.DateOffset(months=hm))).any()
                 covid = (m <= COVID[1]) and (m + pd.DateOffset(months=hm) >= COVID[0] - pd.DateOffset(months=1))
                 return in_prog, starts, covid
+
+            # Review WP8 T3: every origin inside a (real-time) event of age >= 3 months, outside the 2020 window,
+            # with its target period and the median of the event-path changes used there.
+            ip_past = []
+            if OPTION == "ipnoise":
+                for o, (d_o, L_o, y0_o, _) in facts.items():
+                    if o == live_asof:
+                        continue
+                    ip_o, st_o = realtime_in_progress(o)
+                    if not ip_o or regime(o)[2]:
+                        continue
+                    if (o.year - st_o.year) * 12 + o.month - st_o.month + 1 < IN_PROGRESS_MIN_MONTHS:
+                        continue
+                    if ser.freq == "W" and not (ser.final.index < st_o).any():
+                        continue        # claims rates start in 1971: no week before a 1970 start, so no forecast there
+                    ip_past.append({"origin": o, "start": st_o, "target": ser.step(L_o, h), "y0": y0_o,
+                                    "det_median": float(np.median(in_progress_det(ser, paths, o, L_o, h, st_o)))})
 
             for year in range(pd.Timestamp(BACKTEST_FROM).year, last_month.year + 1):
                 refit = pd.Timestamp(f"{year}-01-01")
@@ -328,10 +369,14 @@ def main() -> None:
                             cands = [p for e, p in paths.items() if p["start"] < cur.start and p["group"] == "recession"
                                      and len(p["path"]) > k_l + h and not np.isnan(p["path"][k_l + h])]
                         det = np.array([p["path"][k_l + h] - p["path"][k_l] for p in cands]) if cands else np.zeros(1)
+                        if OPTION == "ipnoise":        # review WP8 T3: the pooled medians use the same rule
+                            assert np.array_equal(det, in_progress_det(ser, paths, m, L, h, cur.start))
                         det_draw = det[RNG.integers(0, len(det), DRAWS)]
                         w, share = 1.0, np.nan
                         is_det = np.ones(DRAWS, bool)
+                        ip_branch = True
                     else:
+                        ip_branch = False
                         usable = [p for p in paths.values() if ser.step(p["base"], h) <= L]
                         rec = [p["path"][:h + 1] for p in usable if p["group"] == "recession"]
                         scr = [p["path"][:h + 1] for p in usable if p["group"] == "scare"]
@@ -345,7 +390,20 @@ def main() -> None:
                             pool = rec if grp_rec[i] else scr
                             path = pool[RNG.integers(0, len(pool))]
                             det_draw[i] = path[h - j[i] + 1]
-                    noise = resid[RNG.integers(0, len(resid), DRAWS)]
+                    pool_n, noise_source = np.nan, "quiet"
+                    if OPTION == "ipnoise" and ip_branch:
+                        # Review WP8 T3: residuals of past in-progress forecasts (earlier events; target period
+                        # published by this origin's date d), realized change as known at d minus the median used then
+                        known_now = ser.known(d)[2]
+                        pool = np.array([ser.change(r["y0"], known_now[r["target"]]) - r["det_median"]
+                                         for r in ip_past if r["start"] < cur_start and r["target"] in known_now.index])
+                        pool_n = len(pool)
+                        if pool_n >= IP_POOL_MIN:
+                            noise, noise_source = pool[RNG.integers(0, pool_n, DRAWS)], "in-progress pool"
+                        else:
+                            noise, noise_source = IP_FALLBACK * resid[RNG.integers(0, len(resid), DRAWS)], "quiet x 1.5"
+                    else:
+                        noise = resid[RNG.integers(0, len(resid), DRAWS)]
                     change = np.where(is_det, det_draw, base_pred) + noise
                     levels = ser.apply(y0, change)
                     q = np.quantile(levels, QUANTILES)
@@ -363,7 +421,8 @@ def main() -> None:
                         "clim_q50": ser.apply(y0, clim_q[2]), "clim_q75": ser.apply(y0, clim_q[3]),
                         "clim_q90": ser.apply(y0, clim_q[4]), "realized": realized,
                         "p_rise_050": p_rise if name == "ur" else np.nan,
-                        "p_rise_20pct": p_rise if name == "cc" else np.nan})
+                        "p_rise_20pct": p_rise if name == "cc" else np.nan,
+                        **({"noise_source": noise_source, "noise_pool_size": pool_n} if OPTION == "ipnoise" else {})})
         print(f"{name}: done")
 
     bt = pd.DataFrame(rows)
