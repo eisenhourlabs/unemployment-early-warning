@@ -44,6 +44,7 @@ from sklearn.linear_model import Ridge
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src" / "model"))
 from realtime import as_known_on    # noqa: E402
+import realtime_events as rte       # noqa: E402  (review WP4: real-time event dating, shared with live.py)
 
 MODEL = ROOT / "data" / "model"
 FEATURES = ["sahm", "claims_low", "claims_yoy", "cont_yoy", "temp_help", "yield_curve", "mfg", "nfci"]
@@ -201,6 +202,24 @@ def fit_baseline(X: pd.DataFrame, y: pd.Series, gap_months: int):
 
 
 # ---------------------------------------------------------------------------------------------------
+# Review WP4 (F4): whether an event is in progress at a forecast origin, and since when, comes from the real-time
+# event state (src/model/realtime_events.py, the same rule as the live flag), on months up to the origin. The
+# training-set filter (quiet origins, the 2020 window) and the event-path library keep using events.csv: at a re-fit
+# the past is known.
+RT_STATE = None
+
+
+def realtime_in_progress(m: pd.Timestamp):
+    """(in progress?, provisional start or None) at origin m (state at the end of m's month, or the latest before)."""
+    global RT_STATE
+    if RT_STATE is None:
+        RT_STATE = rte.state_by_month(rte.month_end_on())
+    s = RT_STATE[RT_STATE.index <= pd.Timestamp(f"{m:%Y-%m}-01")]
+    if s.empty or not s.under_way.iloc[-1]:
+        return False, None
+    return True, s.start.iloc[-1]
+
+
 def main() -> None:
     F, P, ev, ur_final, weekly = load()
     live_asof = None
@@ -283,14 +302,15 @@ def main() -> None:
                         extra["gap"] = gap
                     x = pd.concat([F.loc[m], pd.Series(extra)]).to_frame().T
                     base_pred = float(model.predict(standardize(Xref, x))[0])
-                    in_prog, starts, covid = regime(m)
+                    _, starts, covid = regime(m)
+                    # Review WP4: in progress and its start from the real-time event state, not from events.csv
+                    in_prog, cur_start = realtime_in_progress(m)
                     # Event paths known by this origin (path observed far enough).
                     age_now = 0
                     if in_prog:
-                        cur0 = ev[(ev.start <= m) & (m <= ev.end) & (ev.group != "2020")].iloc[0]
-                        age_now = (m.year - cur0.start.year) * 12 + m.month - cur0.start.month + 1   # months, incl. start
+                        age_now = (m.year - cur_start.year) * 12 + m.month - cur_start.month + 1   # months, incl. start
                     if in_prog and age_now >= IN_PROGRESS_MIN_MONTHS:
-                        cur = ev[(ev.start <= m) & (m <= ev.end) & (ev.group != "2020")].iloc[0]
+                        cur = pd.Series({"start": cur_start})
                         age_m = (m.year - cur.start.year) * 12 + m.month - cur.start.month
                         k_l = (L - (cur.start - pd.DateOffset(months=1))).days // 30 if ser.freq == "M" else None
                         if ser.freq == "M":

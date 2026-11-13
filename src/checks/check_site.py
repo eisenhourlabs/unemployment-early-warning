@@ -610,7 +610,9 @@ def check_phase3(browser, base) -> None:
     check(page.locator("details#stretch-2022-2025").count() == 1, "Outlook: the 2022–2025 note has its anchor")
     # Review WP3: forecast-range wording, the split coverage columns, the nowcast row in the forecast table
     check("weakest when it mattered most" in method, "Outlook methodology: says 'weakest when it mattered most'")
-    check("live ranges will react more slowly than the tests suggest" in method, "Outlook Limits: live-dating item")
+    # Review WP4 Part D: the forecast tests now date events in real time, so WP3's live-dating Limits item is gone
+    check("live ranges will react more slowly than the tests suggest" not in method,
+          "Outlook Limits: no live-dating item (forecast tests use real-time event dating since WP4)")
     fan_heads = [h.strip() for h in page.locator("#track table").last.locator("thead th").all_inner_texts()]
     check("80%, before an event" in fan_heads and "80%, during an event" in fan_heads
           and "80%, around events" not in fan_heads, f"Outlook: backtest table splits coverage {fan_heads}")
@@ -1087,6 +1089,26 @@ def check_wp5(browser, base) -> None:
     page.context.close()
 
 
+def check_wp4(browser, base) -> None:
+    """Review WP4: no 'deterioration under way' banner in a normal build; with UW_PREVIEW_EVENT=YYYY-MM set when the
+    site was built AND when this check runs, the banner shows on Overview and Outlook with that month."""
+    import os
+    from datetime import datetime as _dt
+    print("\n=== Review WP4: event-under-way banner ===")
+    preview = os.environ.get("UW_PREVIEW_EVENT")
+    page = browser.new_context(viewport={"width": 1280, "height": 900}).new_page()
+    for name in ("index.html", "outlook.html"):
+        page.goto(base + name)
+        page.wait_for_selector("body[data-ready=true]")
+        notes = page.locator(".event-note").all_inner_texts()
+        if preview:
+            month = _dt.strptime(preview[:7], "%Y-%m").strftime("%b %Y")
+            check(len(notes) == 1 and f"under way since {month}" in notes[0], f"{name}: banner 'under way since {month}' {notes}")
+        else:
+            check(not notes, f"{name}: no 'deterioration under way' banner in a normal build {notes}")
+    page.context.close()
+
+
 def TODAY_OF(page) -> str:
     return json.loads(page.locator("#page-data").text_content())["today"]
 
@@ -1110,6 +1132,7 @@ def main() -> int:
             check_phase3(browser, base)
             check_wp7(browser, base)
             check_wp5(browser, base)
+            check_wp4(browser, base)
         for i, href in enumerate(links):
             if href == "data.html":
                 check_data_page(browser, base + href, base)

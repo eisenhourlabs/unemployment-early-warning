@@ -395,7 +395,7 @@ def live_record() -> str:
         card["outcome_known"] = card.outcome_known.astype(str).eq("True")
     judged = card[card.outcome_known & ~card.during_event] if len(card) else card
     if judged.empty:
-        first = (pd.Timestamp(card.asof.min()) if len(card) else pd.Timestamp("2026-11-08")) + pd.DateOffset(months=6)
+        first = (pd.Timestamp(card["asof"].min()) if len(card) else pd.Timestamp("2026-11-08")) + pd.DateOffset(months=6)
         return f"No live reading is old enough to judge yet; the first will be in {first:%B %Y}."
     hit = judged.event_started_within_6m.astype(str).eq("True")
     n = lambda c: int((judged.colour == c).sum())
