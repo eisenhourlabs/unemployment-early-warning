@@ -1,0 +1,91 @@
+basis,window,outcome,band,months,share_followed
+"real time (current vintage, 12-day lag)",1968-1999,lt_share_up,falling,215,0.0279
+"real time (current vintage, 12-day lag)",1968-1999,lt_share_up,green,66,0.0303
+"real time (current vintage, 12-day lag)",1968-1999,lt_share_up,amber,34,0.5000
+"real time (current vintage, 12-day lag)",1968-1999,lt_share_up,red,68,0.8235
+"real time (current vintage, 12-day lag)",1968-1999,lt_share_up,base_rate,383,0.2115
+"real time (current vintage, 12-day lag)",1968-1999,median_up,falling,215,0.0279
+"real time (current vintage, 12-day lag)",1968-1999,median_up,green,66,0.0455
+"real time (current vintage, 12-day lag)",1968-1999,median_up,amber,34,0.3824
+"real time (current vintage, 12-day lag)",1968-1999,median_up,red,68,0.5147
+"real time (current vintage, 12-day lag)",1968-1999,median_up,base_rate,383,0.1488
+"real time (current vintage, 12-day lag)",2000-2026,lt_share_up,falling,179,0.0000
+"real time (current vintage, 12-day lag)",2000-2026,lt_share_up,green,43,0.3488
+"real time (current vintage, 12-day lag)",2000-2026,lt_share_up,amber,13,0.7692
+"real time (current vintage, 12-day lag)",2000-2026,lt_share_up,red,42,0.8810
+"real time (current vintage, 12-day lag)",2000-2026,lt_share_up,base_rate,277,0.2238
+"real time (current vintage, 12-day lag)",2000-2026,median_up,falling,179,0.0112
+"real time (current vintage, 12-day lag)",2000-2026,median_up,green,43,0.2326
+"real time (current vintage, 12-day lag)",2000-2026,median_up,amber,13,0.5385
+"real time (current vintage, 12-day lag)",2000-2026,median_up,red,42,0.6905
+"real time (current vintage, 12-day lag)",2000-2026,median_up,base_rate,277,0.1733
+"real time (current vintage, 12-day lag)",2010-2026,lt_share_up,falling,124,0.0000
+"real time (current vintage, 12-day lag)",2010-2026,lt_share_up,green,23,0.4783
+"real time (current vintage, 12-day lag)",2010-2026,lt_share_up,amber,3,0.0000
+"real time (current vintage, 12-day lag)",2010-2026,lt_share_up,red,7,0.4286
+"real time (current vintage, 12-day lag)",2010-2026,lt_share_up,base_rate,157,0.0892
+"real time (current vintage, 12-day lag)",2010-2026,median_up,falling,124,0.0081
+"real time (current vintage, 12-day lag)",2010-2026,median_up,green,23,0.2174
+"real time (current vintage, 12-day lag)",2010-2026,median_up,amber,3,0.0000
+"real time (current vintage, 12-day lag)",2010-2026,median_up,red,7,0.2857
+"real time (current vintage, 12-day lag)",2010-2026,median_up,base_rate,157,0.0510
+"real time (current vintage, 12-day lag)",1968-2026,lt_share_up,falling,394,0.0152
+"real time (current vintage, 12-day lag)",1968-2026,lt_share_up,green,109,0.1560
+"real time (current vintage, 12-day lag)",1968-2026,lt_share_up,amber,47,0.5745
+"real time (current vintage, 12-day lag)",1968-2026,lt_share_up,red,110,0.8455
+"real time (current vintage, 12-day lag)",1968-2026,lt_share_up,base_rate,660,0.2167
+"real time (current vintage, 12-day lag)",1968-2026,median_up,falling,394,0.0203
+"real time (current vintage, 12-day lag)",1968-2026,median_up,green,109,0.1193
+"real time (current vintage, 12-day lag)",1968-2026,median_up,amber,47,0.4255
+"real time (current vintage, 12-day lag)",1968-2026,median_up,red,110,0.5818
+"real time (current vintage, 12-day lag)",1968-2026,median_up,base_rate,660,0.1591
+first published (2010 on),2010-2026,lt_share_up,falling,124,0.0000
+first published (2010 on),2010-2026,lt_share_up,green,23,0.4783
+first published (2010 on),2010-2026,lt_share_up,amber,3,0.0000
+first published (2010 on),2010-2026,lt_share_up,red,7,0.4286
+first published (2010 on),2010-2026,lt_share_up,base_rate,157,0.0892
+first published (2010 on),2010-2026,median_up,falling,124,0.0081
+first published (2010 on),2010-2026,median_up,green,23,0.2174
+first published (2010 on),2010-2026,median_up,amber,3,0.0000
+first published (2010 on),2010-2026,median_up,red,7,0.2857
+first published (2010 on),2010-2026,median_up,base_rate,157,0.0510
+"revised, WP5 (no lag)",1968-1999,lt_share_up,falling,214,0.0234
+"revised, WP5 (no lag)",1968-1999,lt_share_up,green,69,0.0435
+"revised, WP5 (no lag)",1968-1999,lt_share_up,amber,31,0.5161
+"revised, WP5 (no lag)",1968-1999,lt_share_up,red,70,0.8143
+"revised, WP5 (no lag)",1968-1999,lt_share_up,base_rate,384,0.2109
+"revised, WP5 (no lag)",1968-1999,median_up,falling,214,0.0234
+"revised, WP5 (no lag)",1968-1999,median_up,green,69,0.0435
+"revised, WP5 (no lag)",1968-1999,median_up,amber,31,0.4516
+"revised, WP5 (no lag)",1968-1999,median_up,red,70,0.5000
+"revised, WP5 (no lag)",1968-1999,median_up,base_rate,384,0.1484
+"revised, WP5 (no lag)",2000-2026,lt_share_up,falling,178,0.0000
+"revised, WP5 (no lag)",2000-2026,lt_share_up,green,44,0.3636
+"revised, WP5 (no lag)",2000-2026,lt_share_up,amber,12,0.7500
+"revised, WP5 (no lag)",2000-2026,lt_share_up,red,43,0.8605
+"revised, WP5 (no lag)",2000-2026,lt_share_up,base_rate,277,0.2238
+"revised, WP5 (no lag)",2000-2026,median_up,falling,178,0.0169
+"revised, WP5 (no lag)",2000-2026,median_up,green,44,0.1818
+"revised, WP5 (no lag)",2000-2026,median_up,amber,12,0.6667
+"revised, WP5 (no lag)",2000-2026,median_up,red,43,0.6744
+"revised, WP5 (no lag)",2000-2026,median_up,base_rate,277,0.1733
+"revised, WP5 (no lag)",2010-2026,lt_share_up,falling,124,0.0000
+"revised, WP5 (no lag)",2010-2026,lt_share_up,green,23,0.4783
+"revised, WP5 (no lag)",2010-2026,lt_share_up,amber,2,0.0000
+"revised, WP5 (no lag)",2010-2026,lt_share_up,red,8,0.3750
+"revised, WP5 (no lag)",2010-2026,lt_share_up,base_rate,157,0.0892
+"revised, WP5 (no lag)",2010-2026,median_up,falling,124,0.0161
+"revised, WP5 (no lag)",2010-2026,median_up,green,23,0.1739
+"revised, WP5 (no lag)",2010-2026,median_up,amber,2,0.0000
+"revised, WP5 (no lag)",2010-2026,median_up,red,8,0.2500
+"revised, WP5 (no lag)",2010-2026,median_up,base_rate,157,0.0510
+"revised, WP5 (no lag)",1968-2026,lt_share_up,falling,392,0.0128
+"revised, WP5 (no lag)",1968-2026,lt_share_up,green,113,0.1681
+"revised, WP5 (no lag)",1968-2026,lt_share_up,amber,43,0.5814
+"revised, WP5 (no lag)",1968-2026,lt_share_up,red,113,0.8319
+"revised, WP5 (no lag)",1968-2026,lt_share_up,base_rate,661,0.2163
+"revised, WP5 (no lag)",1968-2026,median_up,falling,392,0.0204
+"revised, WP5 (no lag)",1968-2026,median_up,green,113,0.0973
+"revised, WP5 (no lag)",1968-2026,median_up,amber,43,0.5116
+"revised, WP5 (no lag)",1968-2026,median_up,red,113,0.5664
+"revised, WP5 (no lag)",1968-2026,median_up,base_rate,661,0.1589
