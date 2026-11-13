@@ -261,6 +261,20 @@ def asof_line(live: dict) -> str:
             f"{fmt_month(i['unemployment_month'])}")
 
 
+# Duration watch (review WP5 / WP7): the band of continuing claims vs. a year ago (trigger 4's value v).
+# A falling reading shows green with the word "Falling" (Troy's decision 6).
+def duration_watch(v: float) -> dict:
+    """{'word': 'Falling' | 'Steady' | 'Rising' | 'Rising fast', 'colour': green / amber / red} for a value v
+    (0.10 = continuing claims' 4-week average 10% above the same average 52 weeks earlier)."""
+    if v < 0:
+        return {"word": "Falling", "colour": "green", "band": "falling"}
+    if v < 0.10:
+        return {"word": "Steady", "colour": "green", "band": "green"}
+    if v < 0.20:
+        return {"word": "Rising", "colour": "amber", "band": "amber"}
+    return {"word": "Rising fast", "colour": "red", "band": "red"}
+
+
 def signal(colour: str) -> dict:
     """Label, icon and CSS class for a colour (green / amber / red)."""
     return {"colour": colour, "label": SIGNAL_LABEL.get(colour, "—"), "icon": SIGNAL_ICON.get(colour, "")}
@@ -594,7 +608,7 @@ def add_zero_line(fig: go.Figure) -> None:
 
 
 def card(id, title, why, footer, fig, columns, rows, wide=False, fixed=None, zero=False,
-         downloadable=True) -> dict:
+         downloadable=True, caveat: str | None = None) -> dict:
     """Everything the page needs for one chart card.
 
     fixed: [from, to] if the chart ignores the page time control (the seasonal comparison chart).
@@ -610,7 +624,10 @@ def card(id, title, why, footer, fig, columns, rows, wide=False, fixed=None, zer
             #   ahead        last date the forecast reaches; in today's view the x-axis runs to it
             #   whatif_ahead last date of the what-if paths (x-axis end while the what-if toggle is on)
             #   whatif       True shows the "Show what-if paths" toggle; notes: extra lines under the chart
-            "ahead": None, "whatif_ahead": None, "whatif": False, "notes": [], "fixed_note": None}
+            "ahead": None, "whatif_ahead": None, "whatif": False, "notes": [], "fixed_note": None,
+            # Review WP7 (P3): caveat = one plain sentence shown directly under the chart, in normal text;
+            # the footer then folds into a closed "Source and method" box (see _macros.html chart_card)
+            "caveat": caveat}
 
 
 def split_preliminary(d: pd.DataFrame, source_col: str):
@@ -639,7 +656,7 @@ def last_data_note(d: pd.DataFrame, date_col: str, source_col: str | None = None
 
 def line_chart(id, title, why, footer, s: pd.Series, name, y_title, hover, csv_col,
                monthly=True, zero_line=False, prelim: pd.Series | None = None, wide=False, freq="MS",
-               x_hover: str | None = None, downloadable=True) -> dict:
+               x_hover: str | None = None, downloadable=True, caveat: str | None = None) -> dict:
     """One series as a line, with recession shading.
 
     Monthly series get missing months put back as blanks, so a gap (e.g. no October 2025 survey,
@@ -675,7 +692,8 @@ def line_chart(id, title, why, footer, s: pd.Series, name, y_title, hover, csv_c
     columns = ["date", csv_col] + (["source"] if prelim is not None else [])
     rows = [[x, v] + ([src] if prelim is not None else [])
             for x, v, src in zip(dates(d.date), plain(d.value), d.source)]
-    return card(id, title, why, footer, fig, columns, rows, wide=wide, zero=zero_line, downloadable=downloadable)
+    return card(id, title, why, footer, fig, columns, rows, wide=wide, zero=zero_line, downloadable=downloadable,
+                caveat=caveat)
 
 
 def pre_recession_averages(s: pd.Series) -> list[tuple[str, float]]:
@@ -718,7 +736,7 @@ def add_marker(fig: go.Figure, when: str, text: str) -> None:
 
 def weekly_claims_chart(id, title, why, footer, d: pd.DataFrame, weekly_col, avg_col, source_col,
                         y_title, hover, csv_names, wide=False, refs: list | None = None, ref_fmt=".1f",
-                        markers: list | None = None) -> dict:
+                        markers: list | None = None, caveat: str | None = None) -> dict:
     """Weekly claims measure: 4-week average bold, weekly faint, preliminary (news release) weeks
     dashed with hollow markers. d has columns week_ended, weekly_col, avg_col, source_col.
     refs: [(label, value)] reference levels drawn as dotted lines; markers: [(date, label)] vertical lines."""
@@ -764,7 +782,7 @@ def weekly_claims_chart(id, title, why, footer, d: pd.DataFrame, weekly_col, avg
     # Download table: one row per week (the 4-week average is blank for the first 3 weeks).
     rows = [[x, w, (None if pd.isna(a) else a), s]
             for x, w, a, s in zip(d.x, d[weekly_col], d[avg_col], d[source_col])]
-    return card(id, title, why, footer, fig, csv_names, rows, wide=wide)
+    return card(id, title, why, footer, fig, csv_names, rows, wide=wide, caveat=caveat)
 
 
 def lines_chart(id, title, why, footer, lines: list[tuple], y_title, hover, csv_names, zero_line=False,

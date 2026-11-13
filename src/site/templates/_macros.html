@@ -11,10 +11,18 @@
   <label class="whatif-toggle"><input type="checkbox" data-whatif="{{ c.id }}"> Show what-if paths (not a forecast)</label>
   {%- endif %}
   <div class="chart" id="chart-{{ c.id }}" role="img" aria-label="{{ c.title }} chart"></div>
+  {%- if c.caveat %}
+  <p class="chart-caveat">{{ c.caveat }}</p>
+  {%- endif %}
   {%- for n in c.notes %}
   <p class="chart-note">{{ n }}</p>
   {%- endfor %}
+  {#- Review WP7 (P3): a long footer, or any footer on a chart with a caveat, folds into a closed box -#}
+  {%- if c.caveat or (c.footer.split()|length >= 40) %}
+  <details class="chart-source"><summary>Source and method</summary><p class="chart-footer">{{ c.footer }}</p></details>
+  {%- else %}
   <p class="chart-footer">{{ c.footer }}</p>
+  {%- endif %}
   {%- if c.downloadable %}
   <div class="card-actions">
     <div class="menu">

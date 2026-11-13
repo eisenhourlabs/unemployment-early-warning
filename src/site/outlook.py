@@ -81,14 +81,26 @@ def history_chart(live: dict, built: datetime) -> dict | None:
             fig.add_shape(type="rect", xref="x", yref="paper", x0=f"{start:%Y-%m-%d}", x1=f"{end:%Y-%m-%d}",
                           y0=0.1, y1=1, line_width=0, layer="below", name=f"event-{kind}",
                           fillcolor="rgba(42,120,214,0.13)" if kind == "recession" else "rgba(214,120,42,0.16)")
+    # Review WP7 (P2): months inside an event (start to end month, inclusive) are drawn as a thin grey line: the
+    # score is then no longer a forecast. The blue lines cover only months outside events, with gaps (no bridging).
+    inside = pd.Series(False, index=m.index)
+    for e in ev.itertuples():
+        first = pd.Timestamp(e.start_month + "-01")
+        last = today if e.end_month == "ongoing" else pd.Timestamp(e.end_month + "-01")
+        inside |= (m.month >= first) & (m.month <= last)
+    m["out"] = m.pct.where(~inside)
+    m["during"] = m.pct.where(inside)
     pseudo = m[m.basis == "pseudo out of sample"]
     oos = pd.concat([pseudo.tail(1), m[m.basis == "out of sample"]])        # joined at January 2000
-    fig.add_trace(go.Scatter(x=dates(pseudo.month), y=plain(pseudo.pct), name="1980–1999: tested with partly revised data",
-                             mode="lines", line=dict(color=FAINT, width=1.8), meta={"role": "faint"},
+    fig.add_trace(go.Scatter(x=dates(pseudo.month), y=plain(pseudo.out), name="1980–1999: tested with partly revised data",
+                             mode="lines", line=dict(color=FAINT, width=1.8), meta={"role": "faint"}, connectgaps=False,
                              hovertemplate="%{y:.0f}%<extra>Tested with partly revised data</extra>"))
-    fig.add_trace(go.Scatter(x=dates(oos.month), y=plain(oos.pct), name="2000 on: out of sample",
-                             mode="lines", line=dict(color=ACCENT, width=2), meta={"role": "main"},
+    fig.add_trace(go.Scatter(x=dates(oos.month), y=plain(oos.out), name="2000 on: out of sample",
+                             mode="lines", line=dict(color=ACCENT, width=2), meta={"role": "main"}, connectgaps=False,
                              hovertemplate="%{y:.0f}%<extra>Out of sample</extra>"))
+    fig.add_trace(go.Scatter(x=dates(m.month), y=plain(m.during), name="During an event (not a forecast)",
+                             mode="lines", line=dict(color=GREYS[0], width=1.2), meta={"role": "grey0"},
+                             connectgaps=False, hovertemplate="%{y:.0f}%<extra>During an event</extra>"))
     s = live["score"]
     # Live runs: every archived run (live_history.csv), then this one; the latest gets the large dot
     runs = model_csv("live_history.csv", "asof")
@@ -118,7 +130,10 @@ def history_chart(live: dict, built: datetime) -> dict | None:
                 "Each month scored by a model fitted only on earlier data (re-fitted every January), so the line shows "
                 "what the score would have said at the time, apart from later revisions to the claims figures "
                 "(largest in 2022).",
-                "Line: chance of a claims jump or unemployment rise within 6 months. 1980–1999 (light): tested with partly "
+                "Blue line: chance that a new event starts within 6 months, for months when none was under way. "
+                "Grey line: readings during an event, when the score is no longer a forecast. Warnings have usually "
+                "shown 1 to 3 months before an event started, sometimes not at all (see the event table below). "
+                "1980–1999 (light): tested with partly "
                 "revised data. 2000 on: out of sample. Dot: this week's live run. Shading: blue = events "
                 "linked to a recession, orange = scares; hatched = 2020 (the pandemic was not foreseeable from these "
                 "inputs and is not used to fit). Strip under the chart: the colour shown, with its hysteresis rule. "
@@ -315,6 +330,60 @@ def evidence() -> dict | None:
     return out
 
 
+# Review WP7 (P3, P6): "Three things to know" and "How to use the colours". The approved wording rounds the tested
+# hit rates (data/model/score_skill_summary.csv, claims as revised) to "1 in N". Each phrase is used only while the
+# file still supports it; if a re-fit moves a rate outside its range, the plain percentage is shown instead.
+HIT_PHRASES = {            # colour: (approved phrase, lowest and highest hit rate it fits)
+    "green": ("about 1 time in 15", 1 / 17, 1 / 13.5),
+    "amber": ("about 1 time in 4", 0.21, 0.30),
+    "red": ("about half the time", 0.42, 0.58),
+}
+
+
+def hit_phrase(colour: str, rate: float) -> str:
+    phrase, lo, hi = HIT_PHRASES[colour]
+    return phrase if lo <= rate <= hi else f"in {rate * 100:.0f}% of months"
+
+
+def most_years(start: pd.Timestamp, end: pd.Timestamp) -> str:
+    """'2023–2025' for a run from Nov 2022 to Dec 2025: a first or last year counts only if the run covers more
+    than half of it (shared with the Overview score chart note)."""
+    first = start.year + (start.month > 6)
+    last = end.year - (end.month < 7)
+    return f"{first}–{last}" if last > first else str(first)
+
+
+def colour_guide() -> dict | None:
+    """The two cards' variable parts, from score_skill_summary.csv (None if the file is missing: cards not shown)."""
+    try:
+        r = pd.read_csv(MODEL / "score_skill_summary.csv").set_index("basis").loc["revised"]
+    except (OSError, KeyError):
+        return None
+    green, amber, red = (hit_phrase(c, r[f"hit_{c}"]) for c in ("green", "amber", "red"))
+    start = pd.Timestamp(r.longest_elevated_run_start + "-01")
+    end = pd.Timestamp(r.longest_elevated_run_end + "-01")
+    cap = lambda s: s[0].upper() + s[1:]
+    return {
+        "three": ["It is a stress alert, not a recession forecast: about half of past alerts were short scares.",
+                  f"It sorts months well but is not a precise probability: red has been followed by an event {red}, "
+                  f"green {green}.",
+                  f"It was amber or red for most of {most_years(start, end)} without a recession."],
+        "rows": [
+            ("Early-warning score green", f"An event followed within 6 months {green}", "Routine weekly check"),
+            ("Score amber", cap(amber), "Look at the weekly claims figures each Thursday; re-read the drivers"),
+            ("Score red", f"{cap(red)}; about 1 time in 5 an event tied to a recession",
+             "Treat as “prepare”: review assumptions that depend on stable unemployment; it is not a forecast "
+             "of recession"),
+            ("New claims amber or red (Job Losses)", "The thing the score warns about has begun",
+             "Expect more new unemployment claims within 1 to 3 months"),
+            ("Duration watch amber or red", "Durations have usually lengthened within a year",
+             "Expect longer claims, peaking a year or more after layoffs peak"),
+            ("Confirmation triggers red", "The event has started",
+             "The what-if paths on each chart show how 2001 and 2008 unfolded from today's level"),
+        ],
+    }
+
+
 def weights_table(live: dict) -> dict:
     s = live["score"]
     rows = []
@@ -349,4 +418,5 @@ def build(built: datetime) -> dict:
         "model_year": live["model_year"],
         "first_live": f"{first_live:%B %Y}",
         "thresholds": s["thresholds"],
+        "guide": colour_guide(),
     }

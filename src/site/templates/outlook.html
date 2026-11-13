@@ -25,6 +25,32 @@
   </p>
 </section>
 
+{%- if guide %}
+<section class="card outlook-section" id="three-things" aria-labelledby="three-title">
+  <h2 id="three-title">Three things to know</h2>
+  <ol class="three-things">
+    {%- for s in guide.three %}
+    <li>{{ s }}</li>
+    {%- endfor %}
+  </ol>
+</section>
+
+<section class="card outlook-section" id="colour-guide" aria-labelledby="guide-title">
+  <h2 id="guide-title">How to use the colours</h2>
+  <div class="table-scroll">
+  <table class="model-table">
+    <thead><tr><th>Signal</th><th>What it has meant</th><th>A sensible response</th></tr></thead>
+    <tbody>
+      {%- for r in guide.rows %}
+      <tr><td>{{ r[0] }}</td><td>{{ r[1] }}</td><td>{{ r[2] }}</td></tr>
+      {%- endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p class="chart-footer">General guidance from public data and past patterns; not advice for any particular portfolio.</p>
+</section>
+{%- endif %}
+
 <div class="grid">
   {%- for c in charts %}
   {{ chart_card(c) }}

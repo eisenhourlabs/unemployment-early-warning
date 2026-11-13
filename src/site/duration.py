@@ -72,6 +72,9 @@ def build(built: datetime) -> dict:
     rate["footer"] += (f" Check: within {max_diff:.2f} pp of DOL's published insured unemployment rate in every "
                        f"week since {both.week_ended.dt.year.min()} (DOL rounds to 0.1).")
     charts.append(cc_outlook(rate, live) if live else rate)
+    if live:   # review WP7 (P3): the caveat a reader should see without opening the footer
+        charts[-1]["caveat"] = ("The range has been about right overall and a little too narrow since 2021. It is a "
+                                "range for the next 3 to 6 months, not a view on a downturn.")
 
     # 2. SA continuing claims level: 4-week average bold, weekly faint (FRED, from 1967)
     sources = claims.set_index("week_ended")["source_continued"]

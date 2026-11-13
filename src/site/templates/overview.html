@@ -4,6 +4,35 @@
 {% from "_macros.html" import chart_card %}
 
 {% block content %}
+{%- if stand %}
+<section class="card stand" id="card-stand" aria-labelledby="stand-title">
+  <div class="score-head">
+    <h2 id="stand-title">Where things stand</h2>
+    <p class="score-asof">{{ stand.asof }}</p>
+  </div>
+  <div class="stand-cells">
+    {%- for c in stand.cells %}
+    <div class="stand-cell">
+      <h3>{{ c.heading }} <span class="muted">· {{ c.sub }}</span></h3>
+      <span class="stand-badge signal-{{ c.colour }}"><span aria-hidden="true">{{ c.icon }}</span> {{ c.badge }}</span>
+      <p class="stand-main">{{ c.main }}</p>
+      <p class="stand-small">{% if c.small %}{{ c.small }} {% endif %}<a href="{{ c.link[0] }}">{{ c.link[1] }}</a></p>
+    </div>
+    {%- endfor %}
+  </div>
+  <p class="stand-meaning edge-{{ stand.meaning_colour }}"><strong>What it means.</strong> {{ stand.meaning }}</p>
+  <h3 class="stand-sub">What to watch</h3>
+  <ol class="stand-watch">
+    {%- for w in stand.watch %}
+    <li><strong>{{ w.bold }}</strong>
+      {%- if w.meter is not none %} <span class="meter" role="img" aria-label="{{ w.label }}"><i style="width:{{ [w.meter, 2]|max }}%"></i><b></b></span>{% endif %}
+      {{- w.text }}</li>
+    {%- endfor %}
+  </ol>
+  <p class="stand-small">{{ stand.closing }}</p>
+</section>
+{%- endif %}
+
 <section class="card score-panel" aria-labelledby="score-title">
   <div class="score-head">
     <h2 id="score-title">Early-warning score</h2>
@@ -34,7 +63,7 @@
     <div class="score-chart">
       <h3>{{ charts.score.title }}</h3>
       <div class="chart chart-small" id="chart-{{ charts.score.id }}" role="img" aria-label="{{ charts.score.title }} chart"></div>
-      <p class="chart-footer">Dotted (tested on history): weekly scores re-computed for each past Thursday with that
+      <p class="chart-footer">{% if charts.score.stretch_note %}{{ charts.score.stretch_note }} <a href="outlook.html#stretch-2022-2025">Why →</a> {% endif %}Dotted (tested on history): weekly scores re-computed for each past Thursday with that
         year's model and the data published by that day, except claims, which are today's revised figures. On claims
         as first published the 2022 readings would have been much higher. Solid: live runs. Strip: the colour shown, with its rule (amber from 20%
         until below 15%; red from 50% until below 40%).</p>
@@ -53,19 +82,28 @@
   </ul>
 </section>
 
-<div class="tiles">
-  {%- for t in tiles %}
-  <section class="card tile">
-    <h3>{{ t.name }}</h3>
-    <p class="tile-value">{{ t.value }}</p>
-    <p class="tile-asof">{{ t.as_of }}</p>
-    <ul class="tile-changes">
-      {%- for ch in t.changes %}
-      <li>{{ ch }}</li>
+<div class="tiles overview-tiles">
+  {%- for g in tile_groups %}
+  <div class="tile-group{% if g.tiles|length > 1 %} tile-group-2{% endif %}">
+    <p class="tile-group-label"{% if not g.label %} aria-hidden="true"{% endif %}>{{ g.label or " " }}</p>
+    <div class="tile-row">
+      {%- for t in g.tiles %}
+      <section class="card tile{% if t.edge %} edge-{{ t.edge }}{% endif %}">
+        <h3>{{ t.name }}</h3>
+        <p class="tile-value">{{ t.value }}</p>
+        <p class="tile-asof">{{ t.as_of }}</p>
+        {%- if t.changes %}
+        <ul class="tile-changes">
+          {%- for ch in t.changes %}
+          <li>{{ ch }}</li>
+          {%- endfor %}
+        </ul>
+        {%- endif %}
+        <p class="tile-pct">{{ t.percentile }}</p>
+      </section>
       {%- endfor %}
-    </ul>
-    <p class="tile-pct">{{ t.percentile }}</p>
-  </section>
+    </div>
+  </div>
   {%- endfor %}
 </div>
 <p class="note">Tiles and percentiles use full history whatever the time setting: the share of all past

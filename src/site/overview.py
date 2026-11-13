@@ -10,7 +10,7 @@ from zoneinfo import ZoneInfo
 import pandas as pd
 import plotly.graph_objects as go
 
-from common import (ACCENT, GREYS, MODEL, WHATIF_FOOTER, add_colour_band, add_fan, add_whatif, asof_line, with_outlook, base_layout, card, claims_weekly, dates, model_csv,
+from common import (ACCENT, GREYS, MODEL, WHATIF_FOOTER, add_colour_band, add_fan, add_whatif, asof_line, with_outlook, base_layout, card, claims_weekly, dates, duration_watch, model_csv,
                     model_output, pre_recession_averages, fmt_change, fmt_claims, fmt_date, fmt_month, fred,
                     fred_metadata, is_estimate, is_preliminary, last_time_as_extreme, line_chart, ordinal, percentile_text, plain,
                     prelim_label, signal, streak, value_on_or_before, vs_month, weekly_claims_chart)
@@ -63,6 +63,9 @@ def unemployment_chart(live: dict | None = None) -> dict:
                 hovertemplate=f"FOMC median for Q4 {year}: %{{y:.1f}}% ({released})<extra></extra>",
                 meta={"role": "grey0", **today}))
     whatif_ahead = add_whatif(fig, live["stress"]["ur"], 1, ".1f", "%")
+    # Review WP7 (P3): the caveat a reader should see without opening the footer
+    c["caveat"] = ("Read the shaded range, not a single line. The Fed's median is marked for comparison; forecasters' "
+                   "consensus has been the better guide to the middle.")
     return with_outlook(
         c, fig, ahead, whatif_ahead, ur_notes(live),
         " " + fan_coverage_sentence() + " Since 2022 the middle line has run 0.1–0.3 pt below what happened. The 3, 6 "
@@ -97,6 +100,222 @@ def ur_notes(live: dict) -> list[str]:
         note += (f" The two differ by {abs(nx['gap']):.1f} point at twelve months. Forecasters' consensus has been the "
                  "better guide to the middle; use our range for the spread of outcomes.")
     return [note]
+
+
+# ===========================================================================
+# "Where things stand" panel (review WP7, Part A; wording approved by Troy)
+# ===========================================================================
+# Thresholds of the three confirmation triggers the panel uses (as in config/triggers.csv and live_latest.json).
+CLAIMS_AMBER, CLAIMS_RED = 0.15, 0.25          # new claims 4-week average vs. its lowest of the previous 52 weeks
+CONT_AMBER, CONT_RED = 0.10, 0.20              # continuing claims 4-week average vs. 52 weeks earlier
+SAHM_AMBER = 0.30                              # unemployment's 3-month average above its 12-month low (points)
+
+# Score inputs as the "What to watch" list names them: (name, verb)
+WATCH_NAMES = {
+    "sahm": ("Unemployment's rise from its low", "is"),
+    "claims_low": ("New claims", "are"),
+    "claims_yoy": ("New claims", "are"),
+    "cont_yoy": ("People on benefits", "are"),
+    "temp_help": ("Temporary-help jobs", "are"),
+    "yield_curve": ("The yield curve", "is"),
+    "mfg": ("Regional factory surveys", "are"),
+    "nfci": ("Financial conditions", "are"),
+}
+
+MEANING = {
+    "freq_red": ("A jump in new claims is under way. Expect more new unemployment claims now, and longer claims from "
+                 "six to eighteen months out if it persists."),
+    "freq_amber": ("New claims are rising. If this continues, expect more new unemployment claims within one to three "
+                   "months. Check the weekly figure each Thursday."),
+    "sev_red": ("The number of people on benefits is rising fast. In past downturns claim durations kept lengthening "
+                "for one to two years after layoffs peaked."),
+    "sev_amber": ("More people are on benefits than a year ago. Claim durations have usually lengthened within a year "
+                  "from here."),
+    "score_red": ("The early-warning score is high, but claims have not confirmed it. Readings this high were followed "
+                  "by a claims jump or unemployment rise roughly half the time."),
+    "score_amber": ("Early-warning inputs have turned, but claims themselves have not. About 1 amber month in 4 has been "
+                    "followed by a claims jump or unemployment rise within six months. Watch the weekly claims figures."),
+    "all_green": "Nothing here points to more claims or longer claims in the months ahead. Routine weekly monitoring.",
+}
+
+# Small line under the Duration cell. Bracketed wording (review WP7) until test T2 in WP8 has passed.
+DURATION_SMALL = {
+    "falling": "From here, durations have almost never lengthened within a year. Would turn amber at about {amber} "
+               "million (10% above a year ago).",
+    "green": "From here, durations have lengthened within a year occasionally. Amber at about {amber} million.",
+    "amber": "From here, long-term unemployment has usually risen sharply within a year. Red at about {red} million.",
+    "red": "From here, long-term unemployment has risen sharply within a year in most cases, and durations kept "
+           "rising for one to two years after layoffs peaked.",
+}
+WORST = {"green": 0, "amber": 1, "red": 2}
+
+
+def round_to(x: float, step: int) -> int:
+    return int(round(x / step) * step)
+
+
+def claims_status(v: float) -> dict:
+    """Cell 1: the status word and colour of new claims vs. their low of the past year."""
+    if v >= CLAIMS_RED:
+        return {"word": "High", "colour": "red"}
+    if v >= CLAIMS_AMBER:
+        return {"word": "Rising", "colour": "amber"}
+    return {"word": "Low" if v < 0.05 else "Normal", "colour": "green"}
+
+
+def trigger_value(live: dict, tid: str) -> float:
+    row = next((r for r in live["triggers"]["rows"] if r["id"] == tid), None)
+    return 0.0 if row is None or row.get("value") is None else float(row["value"])
+
+
+def event_under_way(live: dict) -> tuple[bool, str | None]:
+    """Review WP4's provisional 'event under way' flag; an absent key means not under way."""
+    e = live.get("event_state") or {}
+    return bool(e.get("under_way")), e.get("since")
+
+
+def stand_numbers(live: dict, claims: pd.DataFrame, ur: pd.Series) -> dict:
+    """The levels the panel quotes, from the same data the triggers used (cut at the live run's claims weeks):
+    A = initial claims 4-week average, L = its lowest over the previous 52 weeks (current week excluded, as in
+    src/model/triggers.py claims_vs_low_of), s = usual weekly move of A, C / C52 = continuing claims 4-week average
+    now and 52 weeks earlier, ur3 / ur_low = the unemployment rate's 3-month average and its lowest over the
+    previous 12 months."""
+    i = live["inputs"]
+    ic4 = claims.dropna(subset=["ic_sa_4wk"]).set_index("week_ended")["ic_sa_4wk"]
+    ic4 = ic4[ic4.index <= pd.Timestamp(i["initial_claims_week"])]
+    cc4 = claims.dropna(subset=["cc_sa_4wk"]).set_index("week_ended")["cc_sa_4wk"]
+    cc4 = cc4[cc4.index <= pd.Timestamp(i["continuing_claims_week"])]
+    ur = ur[ur.index <= pd.Timestamp(i["unemployment_month"])]
+    ur3 = ur.rolling(3).mean().dropna()
+    return {"A": float(ic4.iloc[-1]), "L": float(ic4.iloc[-53:-1].min()),
+            "s": float(ic4.diff().iloc[-104:].std()),
+            "C": float(cc4.iloc[-1]), "C52": float(cc4.get(cc4.index[-1] - pd.Timedelta(weeks=52), float("nan"))),
+            "cc_week": cc4.index[-1],
+            "ur3": float(ur3.iloc[-1]), "ur_low": float(ur3.iloc[-13:-1].min())}
+
+
+def watch_list(live: dict, n: dict, v_sahm: float, v_ic: float, v_cc: float) -> tuple[list[dict], str]:
+    """'What to watch': at most three items, then the closing small line."""
+    items = []
+    s = live["score"]
+    up = [c for c in s.get("contributions", []) if c.get("contribution", 0) > 0]
+    if up:
+        top = max(up, key=lambda c: c["contribution"])
+        name, verb = WATCH_NAMES.get(top["input"], (top["input"], "is"))
+        drv = next((d["text"] for d in s.get("drivers", []) if d["input"] == top["input"]), None)
+        sentence = (top.get("sentence") or drv or "").split(" (pushes")[0].rstrip(".")
+        if sentence:
+            items.append({"bold": name, "text": f" {verb} the main input pushing risk up: "
+                                                f"{sentence[0].lower() + sentence[1:]}.", "meter": None})
+    usual = max(1000, round_to(n["s"], 1000))
+    sahm_amber = n["ur_low"] + SAHM_AMBER
+    measures = [
+        ("Unemployment rate, 3-month average", max(v_sahm / SAHM_AMBER, 0),
+         f"{n['ur3']:.2f}%", f"Amber at {sahm_amber:.2f}%"
+         + (f", which would take about three monthly readings near {n['ur_low'] + 0.4:.1f}%" if v_sahm <= 0 else "")
+         + "."),
+        ("New claims, 4-week average", max(v_ic / CLAIMS_AMBER, 0),
+         fmt_claims(round_to(n["A"], 250)),
+         f"Amber at about {fmt_claims(round_to((1 + CLAIMS_AMBER) * n['L'], 500))}. "
+         f"A normal week moves the average by about {fmt_claims(usual)}."),
+        ("People on benefits, 4-week average", max(v_cc / CONT_AMBER, 0),
+         f"{n['C'] / 1e6:.2f} million", f"Amber at about {(1 + CONT_AMBER) * n['C52'] / 1e6:.2f} million."),
+    ]
+    order = sorted(range(3), key=lambda k: -measures[k][1])        # stable: ties keep Sahm, new, continuing
+    for k in order:
+        if len(items) >= 3:
+            break
+        name, p, level, after = measures[k]
+        filled = min(p, 1)
+        items.append({"bold": f"{name}: {level}.", "text": " " + after, "meter": round(filled * 100),
+                      "label": f"{round(filled * 100)}% of the way to amber"})
+    ps = [m[1] for m in measures]
+    closing = ""
+    if all(p < 0.5 for p in ps):
+        closing = "No measure is more than half-way to a warning level. "
+    past = [m[0] for m in measures if m[1] >= 1]
+    if past:
+        closing = " ".join(f"{name} is past its warning level." for name in past) + " "
+    closing += ("Levels are worked out from this week's data and move as the past year's low and the year-ago "
+                "figure move.")
+    return items, closing
+
+
+def stand_panel(live: dict | None, claims: pd.DataFrame, ur: pd.Series | None = None) -> dict | None:
+    """Everything the 'Where things stand' panel shows (None when there is no model output: no panel)."""
+    if live is None:
+        return None
+    n = stand_numbers(live, claims, fred("UNRATE") if ur is None else ur)
+    v_sahm, v_ic, v_cc = (trigger_value(live, t) for t in ("sahm", "claims_vs_low", "cont_claims_yoy"))
+    on, since = event_under_way(live)
+
+    # Cell 1: new job losses (frequency)
+    st1 = claims_status(v_ic)
+    x = round(v_ic * 100)
+    a = fmt_claims(round_to(n["A"], 250))
+    if st1["word"] == "Low" and x <= 1:
+        main1 = f"New claims average {a} a week, at their lowest of the past year."
+    else:
+        main1 = f"New claims average {a} a week, {x}% above their lowest of the past year."
+        if st1["colour"] == "amber":
+            main1 += " That is the warning zone."
+        elif st1["colour"] == "red":
+            main1 += (" A claims jump of this size is what the early-warning score warns about; it is now under way.")
+    amber1, red1 = (fmt_claims(round_to((1 + t) * n["L"], 500)) for t in (CLAIMS_AMBER, CLAIMS_RED))
+    small1 = {"green": f"Would turn amber at about {amber1} a week (15% above the past year's low) and red at about "
+                       f"{red1}.",
+              "amber": f"Red at about {red1} a week.", "red": ""}[st1["colour"]]
+
+    # Cell 2: duration (severity)
+    dw = duration_watch(v_cc)
+    y = round(abs(v_cc) * 100)
+    main2 = (f"{n['C'] / 1e6:.2f} million people are on benefits, {y}% {'fewer' if v_cc < 0 else 'more'} than a "
+             "year ago.")
+    small2 = DURATION_SMALL[dw["band"]].format(amber=f"{(1 + CONT_AMBER) * n['C52'] / 1e6:.2f}",
+                                               red=f"{(1 + CONT_RED) * n['C52'] / 1e6:.2f}")
+
+    # Cell 3: next 6 to 12 months (early warning)
+    s = live["score"]
+    d6 = s["display"]["6"]
+    base = round(s["base_rates"]["6"] * 100)
+    if on:
+        when = f"{pd.Timestamp(since + '-01' if len(str(since)) == 7 else since):%b %Y}" if since else "recently"
+        main3 = (f"A deterioration is under way since {when} (provisional). The score now shows the chance of a "
+                 "further, new event.")
+    else:
+        main3 = f"Chance of a claims jump or unemployment rise within 6 months: {d6['text']} (usual: {base}%)."
+    small3 = "A stress alert, not a recession forecast."
+
+    cells = [
+        {"heading": "New job losses", "sub": "how often claims start", "colour": st1["colour"],
+         "badge": st1["word"], "main": main1, "small": small1, "link": ("job-losses.html", "Job Losses →")},
+        {"heading": "Duration", "sub": "how long claims last", "colour": dw["colour"], "badge": dw["word"],
+         "main": main2, "small": small2, "link": ("duration.html", "Duration →")},
+        {"heading": "Next 6 to 12 months", "sub": "early warning", "colour": s["colour"],
+         "badge": f"{signal(s['colour'])['label']} · {d6['text']}", "main": main3, "small": small3,
+         "link": ("outlook.html", "Outlook →")},
+    ]
+    for c in cells:
+        c["icon"] = signal(c["colour"])["icon"]
+
+    # "What it means": frequency and severity rows first; otherwise the score rows; otherwise all green
+    parts = []
+    if st1["colour"] == "red" or on:
+        parts.append(MEANING["freq_red"])
+    elif st1["colour"] == "amber":
+        parts.append(MEANING["freq_amber"])
+    if dw["colour"] == "red":
+        parts.append(MEANING["sev_red"])
+    elif dw["colour"] == "amber":
+        parts.append(MEANING["sev_amber"])
+    if not parts:
+        parts.append(MEANING["score_red"] if s["colour"] == "red" else
+                     MEANING["score_amber"] if s["colour"] == "amber" else MEANING["all_green"])
+    worst = max((c["colour"] for c in cells), key=lambda col: WORST.get(col, 0))
+
+    items, closing = watch_list(live, n, v_sahm, v_ic, v_cc)
+    return {"asof": asof_line(live), "cells": cells, "meaning": " ".join(parts), "meaning_colour": worst,
+            "watch": items, "closing": closing}
 
 
 # ===========================================================================
@@ -178,7 +397,35 @@ def score_mini_chart(live: dict | None, built: datetime) -> dict | None:
                                                      shown.colour)],
              fixed=[x0, x1], downloadable=False)   # downloads: the full history on the Outlook page
     c["fixed_note"] = "Fixed view: the last 2 years, whatever the time setting."
+    c["stretch_note"] = stretch_note(shown[shown.date >= start])
     return c
+
+
+def stretch_note(window: pd.DataFrame) -> str | None:
+    """Review WP7 Part B: when any week in the plotted window BEFORE the current colour run was amber or red, the
+    footer starts with a sentence on the long amber / red stretch without a recession. The years and the
+    unemployment range are those of the longest amber-or-red run in data/model/score_skill_summary.csv (review WP1,
+    the stretch the Outlook link explains), so the sentence and the Outlook note always agree. None otherwise."""
+    if window.empty:
+        return None
+    col = list(window.colour)
+    k = len(col)
+    while k > 0 and col[k - 1] == col[-1]:     # drop the current colour run
+        k -= 1
+    if not any(c in ("amber", "red") for c in col[:k]):
+        return None
+    try:
+        r = pd.read_csv(MODEL / "score_skill_summary.csv").iloc[0]
+    except (OSError, IndexError):
+        return None
+    start = pd.Timestamp(r.longest_elevated_run_start + "-01")
+    end = pd.Timestamp(r.longest_elevated_run_end + "-01")
+    ur = fred("UNRATE")
+    during = ur[(ur.index >= start) & (ur.index <= end)]
+    first, last = start.year + (start.month > 6), end.year - (end.month < 7)     # as outlook.most_years
+    years = f"{first}–{last}" if last > first else str(first)
+    return (f"The score was amber or red for most of {years}: unemployment drifted up from "
+            f"{during.min():.1f}% to {during.max():.1f}% and two short scares followed, but no recession.")
 
 
 # Covered employment grew sharply in 1978 when state and local government workers came under UI coverage,
@@ -238,7 +485,10 @@ def weekly_tile(name, s: pd.Series, decimals, unit, change_unit, since_label, no
     }
 
 
-def build_tiles(claims: pd.DataFrame) -> list[dict]:
+def build_tiles(claims: pd.DataFrame, live: dict | None = None) -> list[dict]:
+    """Five tiles (review WP7, Part E): unemployment rate; new job losses (frequency): new claims 4-week average and
+    new claims rate; duration (severity): people on benefits vs. a year ago and the continuing claims rate.
+    'group' starts a labelled group of tiles. The Sahm indicator tile was removed (Troy's decision 9)."""
     tiles = []
 
     # 1. Unemployment rate (monthly, from 1948)
@@ -256,11 +506,17 @@ def build_tiles(claims: pd.DataFrame) -> list[dict]:
         "percentile": percentile_text(ur, latest, ur.index[0].year),
     })
 
-    # 2. SA initial claims, 4-week average (FRED IC4WSA, from 1967)
+    # 2. SA initial claims, 4-week average (FRED IC4WSA, from 1967); last line: vs. the past year's low (trigger 2)
     ic4 = fred("IC4WSA")
     src = claims.set_index("week_ended")["source_initial"].get(ic4.index[-1], "")
-    tiles.append(weekly_tile("SA initial claims, 4-week average", ic4, 0, "", "", ic4.index[0].year,
-                             prelim_label(src) if is_preliminary(src) else ""))
+    t2 = weekly_tile("New claims, 4-week average", ic4, 0, "", "", ic4.index[0].year,
+                     prelim_label(src) if is_preliminary(src) else "")
+    if live is not None:
+        x = round(trigger_value(live, "claims_vs_low") * 100)
+        t2["percentile"] = ("At the past year's low" if x == 0 else
+                            f"{abs(x)}% {'above' if x > 0 else 'below'} the past year's low")
+    t2["group"] = "New job losses (frequency)"
+    tiles.append(t2)
 
     # 3. SA initial claims rate, 4-week average, per 10,000 covered workers (DOL, from 1971). Review WP9 C5:
     #    the 4-week average, like the rate chart's bold line; changes and percentile on the same series.
@@ -269,26 +525,27 @@ def build_tiles(claims: pd.DataFrame) -> list[dict]:
                              w.index[0].year, prelim_label(w["source_initial"].iloc[-1])
                              if is_preliminary(w["source_initial"].iloc[-1]) else "", is_rate=True))
 
-    # 4. SA continuing claims rate, 4-week average, percent (DOL, from 1971)
-    c = claims.dropna(subset=["cc_rate_sa_4wk"]).set_index("week_ended")
-    tiles.append(weekly_tile("Continuing claims rate, 4-week average", c["cc_rate_sa_4wk"], 1, "%", " pt",
-                             c.index[0].year, prelim_label(c["source_continued"].iloc[-1])
-                             if is_preliminary(c["source_continued"].iloc[-1]) else "", is_rate=True))
+    # 4. People on benefits vs. a year ago (trigger 4's value) with the Duration watch word and colour
+    c4 = claims.dropna(subset=["cc_sa_4wk"]).set_index("week_ended")["cc_sa_4wk"]
+    if live is not None:
+        v = trigger_value(live, "cont_claims_yoy")
+        c4 = c4[c4.index <= pd.Timestamp(live["inputs"]["continuing_claims_week"])]
+        dw = duration_watch(v)
+        r = round(v * 100)
+        tiles.append({"name": "People on benefits vs. a year ago",
+                      "value": ("+" if r > 0 else "−" if r < 0 else "") + f"{abs(r)}%",
+                      "as_of": f"{c4.iloc[-1] / 1e6:.2f} million, week ending {fmt_date(c4.index[-1])}",
+                      "changes": [], "percentile": f"Duration watch: {dw['word']}", "edge": dw["colour"],
+                      "group": "Duration (severity)"})
 
-    # 5. Sahm indicator vs. the 0.50 recession threshold (no percentile)
-    sahm = fred("SAHMREALTIME")
-    s_date, s = sahm.index[-1], sahm.iloc[-1]
-    s_prev, s_prev_label = vs_month(sahm, s_date - pd.DateOffset(months=1), "not published")
-    gap = 0.50 - s
-    tiles.append({
-        "name": "Sahm indicator",
-        "value": f"{s:.2f}",
-        "as_of": fmt_month(s_date),
-        "changes": [f"{fmt_change(s - s_prev, 2)} vs. {s_prev_label}",
-                    (f"{gap:.2f} points below the threshold" if gap > 0
-                     else f"{-gap:.2f} points above the threshold")],
-        "percentile": "Recession signal at 0.50 or more",
-    })
+    # 5. SA continuing claims rate, 4-week average, percent (DOL, from 1971)
+    c = claims.dropna(subset=["cc_rate_sa_4wk"]).set_index("week_ended")
+    t5 = weekly_tile("Continuing claims rate, 4-week average", c["cc_rate_sa_4wk"], 1, "%", " pt",
+                     c.index[0].year, prelim_label(c["source_continued"].iloc[-1])
+                     if is_preliminary(c["source_continued"].iloc[-1]) else "", is_rate=True)
+    if live is None:
+        t5["group"] = "Duration (severity)"
+    tiles.append(t5)
     return tiles
 
 
@@ -311,93 +568,164 @@ def moved(delta) -> str:
 
 
 def score_sentence(live: dict | None) -> str | None:
-    """'The early-warning score moved from 2% to 3%; its colour is green.' (rule added in Phase 3)"""
+    """'The early-warning score is 2%, green, unchanged.' (review WP7, Part D). A move under 0.5 point reads
+    'unchanged' when the score is shown as a whole percent (the same rule as the line under the score, WP9 C2)."""
     if live is None:
         return None
     s = live["score"]
     a, b = s["previous"]["display"]["text"], s["display"]["6"]["text"]
     colour = signal(s["colour"])["label"].lower()
     if s.get("first_live_run"):
-        return f"The early-warning score is {b}, {colour}, in its first live run."    # review WP9 C2
-    label = s.get("compare_label", "vs. last week")
-    if label != "vs. last week":                   # the previous run was not a week earlier
-        return (f"The early-warning score is {b} ({fmt_change(s['change_pt'], 1, ' pt')} {label}); "
-                f"its colour is {colour}.")
-    if a == b:
-        return (f"The early-warning score was little changed at {b} ({fmt_change(s['change_pt'], 1, ' pt')} "
-                f"vs. last week); its colour is {colour}.")
-    return f"The early-warning score moved from {a} to {b}; its colour is {colour}."
+        # review WP9 C2 wording, kept only while there are at most 4 live runs
+        if s.get("live_runs", 1) <= 4:
+            return f"The early-warning score is {b}, {colour}, in its first live run."
+        return f"The early-warning score is {b}, {colour}."
+    ch = s["change_pt"]
+    unchanged_below = 0.05 if s["display"]["6"].get("words") else 0.5
+    move = ("unchanged" if abs(ch) < unchanged_below else
+            f"{'up' if ch > 0 else 'down'} {abs(ch):.1f} point{'' if round(abs(ch), 1) == 1 else 's'}")
+    return f"The early-warning score is {b}, {colour}, {move}."
 
 
-def what_changed(claims: pd.DataFrame, built: datetime, live: dict | None = None) -> list[str]:
-    sentences = []
-    first = score_sentence(live)
-    if first:
-        sentences.append(first)
+# Moves larger than usual (review WP7, Part D): |weekly change| > 1.5 standard deviations of the series' weekly
+# changes over the previous 104 weeks.
+UNUSUAL_SD = 1.5
+SCORE_MOVE_PT = 5            # a score move of 5 points or more is listed with the unusual items
+TRIGGER_NAMES = {"sahm": "the Sahm indicator", "claims_vs_low": "new claims vs. their low of the past year",
+                 "cont_claims_yoy": "continuing claims vs. a year ago"}
+
+
+def larger_than_usual(s: pd.Series) -> bool:
+    """True when the latest weekly change is more than 1.5 standard deviations of the previous 104 changes."""
+    d = s.diff().dropna()
+    if len(d) < 30:
+        return False
+    return bool(abs(d.iloc[-1]) > UNUSUAL_SD * d.iloc[-105:-1].std())
+
+
+def previous_run(live: dict | None) -> dict | None:
+    """The archived live run before this one (data/archive/YYYY/*.json), or None."""
+    if live is None:
+        return None
+    key = lambda d: (d.get("asof", ""), d.get("run_at", ""))
+    best = None
+    for f in sorted((MODEL.parent / "archive").glob("*/*.json")):
+        try:
+            d = json.loads(f.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        if key(d) < key(live) and (best is None or key(d) > key(best)):
+            best = d
+    return best
+
+
+def colour_changes(live: dict | None, prev: dict | None) -> list[str]:
+    """(a) colour changes since the previous live run: score, Duration watch, the Sahm indicator, new claims and
+    continuing claims triggers, and the event flag."""
+    if live is None:
+        return []
+    out = []
+    s = live["score"]
+    was = (s.get("previous") or {}).get("colour")
+    if was and was != s["colour"] and not s.get("first_live_run"):
+        out.append(f"The early-warning score turned {s['colour']} (from {was}).")
+    if prev is None:
+        return out
+    rows = {r["id"]: r for r in live["triggers"]["rows"]}
+    old = {r["id"]: r for r in (prev.get("triggers") or {}).get("rows", [])}
+    if "cont_claims_yoy" in rows and old.get("cont_claims_yoy", {}).get("value") is not None:
+        now_w = duration_watch(trigger_value(live, "cont_claims_yoy"))["word"]
+        then_w = duration_watch(float(old["cont_claims_yoy"]["value"]))["word"]
+        if now_w != then_w:
+            out.append(f"Duration watch moved to {now_w} (from {then_w}).")
+    for tid, name in TRIGGER_NAMES.items():
+        if tid in rows and tid in old and rows[tid]["colour"] != old[tid]["colour"]:
+            out.append(f"The confirmation trigger for {name} turned {rows[tid]['colour']} "
+                       f"(from {old[tid]['colour']}).")
+    on_now, _ = event_under_way(live)
+    on_then, _ = event_under_way(prev)
+    if on_now and not on_then:
+        out.append("A deterioration is now flagged as under way (provisional).")
+    elif on_then and not on_now:
+        out.append("The provisional flag for a deterioration under way has been lifted.")
+    return out
+
+
+def claims_tag(src) -> str:
+    src = "" if pd.isna(src) else str(src)
+    return (" (estimated from state filings: DOL's release is delayed)" if is_estimate(src)
+            else " (advance figure)" if is_preliminary(src) and "advance" in src else "")
+
+
+def what_changed(claims: pd.DataFrame, built: datetime, live: dict | None = None,
+                 prev: dict | None = None, series: dict | None = None, ur_news: bool | None = None) -> list[str]:
+    """'What changed this week' (review WP7, Part D), in this order, at most four bullets:
+      (a) colour changes since the previous live run; (b) a score move of 5 points or more;
+      (c) claims moves larger than usual, in the usual wording plus "(a larger move than usual)";
+      (d) one merged line for the ordinary moves; (e) the unemployment rate, only within 7 days of the jobs report.
+    If nothing in (a)-(c) applies, the first bullet is "Nothing unusual this week." The score sentence follows the
+    unusual items (it is itself item (b) when the score moved 5 points or more).
+    prev / series / ur_news: for tests (default: the archive, the FRED files and FRED's update time)."""
     nw = claims.set_index("week_ended")
+    get = (lambda k: series[k]) if series else fred
+    ic, ic4, cc = get("ICSA"), get("IC4WSA"), get("CCSA")
+    if prev is None and series is None:
+        prev = previous_run(live)
+    unusual = colour_changes(live, prev)
+    score_line = score_sentence(live)
+    if score_line and live is not None and abs(live["score"]["change_pt"]) >= SCORE_MOVE_PT \
+            and not live["score"].get("first_live_run"):
+        unusual.append(score_line)
+        score_line = None
 
-    # Rule 1: SA initial claims, latest week (with advance flag and "highest/lowest since")
-    ic = fred("ICSA")
-    d = ic.iloc[-1] - ic.iloc[-2]
-    src = nw["source_initial"].get(ic.index[-1], "")
-    tag = (" (estimated from state filings: DOL's release is delayed)" if is_estimate(src)
-           else " (advance figure)" if is_preliminary(src) and "advance" in src else "")
-    if d == 0:
-        sentences.append(f"SA initial claims were unchanged at {fmt_claims(ic.iloc[-1])} in the week ending "
-                         f"{fmt_date(ic.index[-1])}{tag}.")
-    else:
-        sentences.append(f"SA initial claims {moved(d)} {fmt_claims(abs(d))} to {fmt_claims(ic.iloc[-1])} in the week "
-                         f"ending {fmt_date(ic.index[-1])}{tag}{since_clause(ic)}.")
+    # (c) the three weekly claims measures: unusual ones get their own sentence
+    d, d4, dc = ic.iloc[-1] - ic.iloc[-2], ic4.iloc[-1] - ic4.iloc[-2], cc.iloc[-1] - cc.iloc[-2]
+    tag = claims_tag(nw["source_initial"].get(ic.index[-1], ""))
+    ctag = claims_tag(nw["source_continued"].get(cc.index[-1], ""))
+    big = {"ic": larger_than_usual(ic), "ic4": larger_than_usual(ic4), "cc": larger_than_usual(cc)}
+    larger = " (a larger move than usual)."
+    if big["ic"]:
+        unusual.append(f"SA initial claims {moved(d)} {fmt_claims(abs(d))} to {fmt_claims(ic.iloc[-1])} in the week "
+                       f"ending {fmt_date(ic.index[-1])}{tag}{since_clause(ic)}{larger}")
+    if big["ic4"]:
+        n = streak(ic4)
+        streak_txt = (f", its {ordinal(abs(n))} straight weekly {'rise' if n > 0 else 'decline'}" if abs(n) >= 3 else "")
+        unusual.append(f"The SA initial claims 4-week average, which smooths out weekly noise, {moved(d4)} "
+                       f"{fmt_claims(abs(d4))} to {fmt_claims(ic4.iloc[-1])}{streak_txt}{larger}")
+    if big["cc"]:
+        unusual.append(f"SA continuing claims {moved(dc)} {fmt_claims(abs(dc))} to {fmt_claims(cc.iloc[-1])} in the "
+                       f"week ending {fmt_date(cc.index[-1])}{ctag}{since_clause(cc)}{larger}")
 
-    # Rule 2: SA initial claims 4-week average, with a streak of 3+ weeks
-    ic4 = fred("IC4WSA")
-    d4 = ic4.iloc[-1] - ic4.iloc[-2]
-    n = streak(ic4)
-    streak_txt = (f", its {ordinal(abs(n))} straight weekly {'rise' if n > 0 else 'decline'}" if abs(n) >= 3 else "")
-    if d4 == 0:
-        sentences.append(f"The SA initial claims 4-week average was unchanged at {fmt_claims(ic4.iloc[-1])}.")
-    else:
-        sentences.append(f"The SA initial claims 4-week average, which smooths out weekly noise, {moved(d4)} "
-                         f"{fmt_claims(abs(d4))} to {fmt_claims(ic4.iloc[-1])}{streak_txt}.")
+    out = unusual if unusual else ["Nothing unusual this week."]
+    if score_line:
+        out.append(score_line)
 
-    # Rule 3: SA initial claims 4-week average vs. a year ago (52 weeks earlier)
-    yr_date, yr = value_on_or_before(ic4, ic4.index[-1] - timedelta(days=364))
-    pct = 100 * (ic4.iloc[-1] / yr - 1)
-    if round(pct, 1) == 0:
-        sentences.append(f"The SA initial claims 4-week average is about the same as a year ago ({fmt_claims(yr)}).")
-    else:
-        sentences.append(f"The SA initial claims 4-week average is {abs(pct):.1f}% {'above' if pct > 0 else 'below'} "
-                         f"a year ago ({fmt_claims(yr)}).")
+    # (d) the ordinary moves, merged into one line; an advance / estimated week says so inside the brackets
+    updown = lambda x: f"{'up' if x > 0 else 'down'} {fmt_claims(abs(x))}" if x else "unchanged"
+    inner = lambda tag_, rest: f" ({tag_.strip(' ()')}; {rest})" if tag_ else f" ({rest})"
+    pieces = []
+    if not big["ic"] and not big["ic4"]:
+        pieces.append(f"new claims {fmt_claims(ic.iloc[-1])}"
+                      + inner(tag, f"4-week average {fmt_claims(ic4.iloc[-1])}, {updown(d4)}"))
+    elif not big["ic"]:
+        pieces.append(f"new claims {fmt_claims(ic.iloc[-1])}" + inner(tag, updown(d)))
+    elif not big["ic4"]:
+        pieces.append(f"new claims 4-week average {fmt_claims(ic4.iloc[-1])} ({updown(d4)})")
+    if not big["cc"]:
+        pieces.append(f"people on benefits {fmt_claims(cc.iloc[-1])}" + inner(ctag, updown(dc)))
+    if pieces:
+        out.append("Weekly claims moved within their normal range: " + "; ".join(pieces) + ".")
 
-    # Rule 4: SA continuing claims (one week behind initial claims)
-    cc = fred("CCSA")
-    dc = cc.iloc[-1] - cc.iloc[-2]
-    csrc = nw["source_continued"].get(cc.index[-1], "")
-    ctag = (" (estimated from state filings: DOL's release is delayed)" if is_estimate(csrc)
-            else " (advance figure)" if is_preliminary(csrc) and "advance" in csrc else "")
-    if dc == 0:
-        sentences.append(f"SA continuing claims were unchanged at {fmt_claims(cc.iloc[-1])} in the week ending "
-                         f"{fmt_date(cc.index[-1])}{ctag}.")
-    else:
-        sentences.append(f"SA continuing claims {moved(dc)} {fmt_claims(abs(dc))} to {fmt_claims(cc.iloc[-1])} in the "
-                         f"week ending {fmt_date(cc.index[-1])}{ctag}{since_clause(cc)}.")
-
-    # Rule 5: unemployment rate and Sahm indicator, only if FRED updated them in the past 7 days
-    meta = fred_metadata()
-    updated = pd.Timestamp(meta.loc["UNRATE", "last_updated"]).tz_convert("UTC")
-    if (pd.Timestamp(built) - updated).days < MONTHLY_NEWS_DAYS:
-        ur = fred("UNRATE")
+    # (e) the unemployment rate, only if the jobs report came out in the past 7 days
+    if ur_news is None:
+        updated = pd.Timestamp(fred_metadata().loc["UNRATE", "last_updated"]).tz_convert("UTC")
+        ur_news = (pd.Timestamp(built) - updated).days < MONTHLY_NEWS_DAYS
+    if ur_news:
+        ur = get("UNRATE")
         du = round(ur.iloc[-1] - ur.iloc[-2], 1)
-        change = (f"unchanged from {ur.index[-2]:%B}" if du == 0 else
-                  f"{'up' if du > 0 else 'down'} {abs(du):.1f} point from {ur.index[-2]:%B}")
-        text = f"The unemployment rate was {ur.iloc[-1]:.1f}% in {ur.index[-1]:%B}, {change}"
-        sahm = fred("SAHMREALTIME")
-        if sahm.index[-1] == ur.index[-1]:
-            s = sahm.iloc[-1]
-            text += (f"; the Sahm indicator is {s:.2f}, "
-                     f"{'below' if s < 0.50 else 'at or above'} the 0.50 recession threshold")
-        sentences.append(text + ".")
-    return sentences[:6]
+        change = "unchanged" if du == 0 else f"{'up' if du > 0 else 'down'} {abs(du):.1f} point"
+        out.append(f"The unemployment rate was {ur.iloc[-1]:.1f}% in {ur.index[-1]:%B}, {change}.")
+    return out[:4]
 
 
 # ===========================================================================
@@ -413,5 +741,11 @@ def build(built: datetime) -> dict:
     if mini:
         charts["score"] = mini           # first: it is the first chart on the page
     charts.update({"unemployment": unemployment_chart(live), "ic": ic_rate_chart(claims), "cc": cc_rate_chart(claims)})
-    return {"tiles": build_tiles(claims), "sentences": what_changed(claims, built, live), "charts": charts,
-            "score": score_panel(m)}
+    tiles = build_tiles(claims, live)
+    groups = []                          # tiles in labelled groups (review WP7, Part E)
+    for t in tiles:
+        if t.get("group") or not groups:
+            groups.append({"label": t.get("group", ""), "tiles": []})
+        groups[-1]["tiles"].append(t)
+    return {"tiles": tiles, "tile_groups": groups, "sentences": what_changed(claims, built, live), "charts": charts,
+            "score": score_panel(m), "stand": stand_panel(live, claims)}

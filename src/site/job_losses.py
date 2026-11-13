@@ -58,6 +58,9 @@ def build(built: datetime) -> dict:
     # 1. SA initial claims rate (same chart as the Overview), full width; Phase 3: what-if paths and notes
     ic = ic_rate_chart(claims, wide=True)
     charts.append(ic_outlook(ic, live) if live else ic)
+    if live:   # review WP7 (P3)
+        charts[-1]["caveat"] = ("No forecast is shown: in testing we could not predict new claims better than assuming "
+                                "no change. The what-if paths show past downturns from today's level.")
 
     # 2. SA initial claims level: 4-week average bold, weekly faint (FRED, from 1967)
     level = pd.DataFrame({"ic_sa": fred("ICSA"), "ic_sa_4wk": fred("IC4WSA")})
