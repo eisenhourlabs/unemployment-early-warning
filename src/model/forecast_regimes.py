@@ -23,6 +23,13 @@ Measures:
   cover80      share with q10 <= realized <= q90 (should be about 0.8)
   above_q90, below_q10   share above / below the 80% range
 
+Review WP8 test T1 (pre-registration docs/model_tests_tail_probability.md): also writes
+data/model/forecast_tail_reliability.csv, the reliability of the chance of a large rise (p_rise_050 for the
+unemployment rate, p_rise_20pct for the continuing claims rate): rows = target x horizon x bin of the stated
+probability ([0, 0.10), [0.10, 0.25), [0.25, 0.50), [0.50, 1]) plus a base_rate row; columns origins, mean_stated,
+observed (share whose realized value met the threshold), and the fixed rule's result (monotone, calibrated, show).
+Same origins as above (2000-01 on, month starts, realized known, 2020 window excluded).
+
 Run after forecast.py:  python src\\model\\forecast_regimes.py
 """
 from pathlib import Path
@@ -33,6 +40,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[2]
 MODEL = ROOT / "data" / "model"
 OUT = MODEL / "forecast_evaluation_regimes.csv"
+TAIL_OUT = MODEL / "forecast_tail_reliability.csv"     # review WP8 T1
 REGIMES = ["during an event", "before an event", "other"]
 
 
@@ -110,6 +118,37 @@ def evaluate(bt: pd.DataFrame, ev: pd.DataFrame, state: pd.DataFrame | None = No
     return pd.DataFrame(rows)
 
 
+def tail_reliability(bt: pd.DataFrame) -> pd.DataFrame:
+    """Review WP8 T1: reliability of the stated chance of a large rise, by target x horizon x bin, with the fixed
+    rule applied to each target-horizon (src/model/tail_prob.py)."""
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import tail_prob as tp
+    bt = bt[(bt.origin >= "2000-01-01") & (bt.origin.dt.day == 1) & bt.realized.notna()
+            & ~bt.covid_window.astype(bool)]
+    rows = []
+    for (target, horizon), g in bt.groupby(["target", "horizon"], sort=False):
+        col = tp.column(target)
+        if col is None or col not in g or g[col].isna().all():
+            continue
+        g = g[g[col].notna()]
+        hit = tp.met(target, g.level_at_origin.values, g.realized.values)
+        b = g[col].map(tp.bin_label).values
+        part = []
+        for label in tp.BIN_LABELS:
+            m = b == label
+            part.append({"target": target, "horizon": int(horizon), "measure": col, "bin": label,
+                         "origins": int(m.sum()), "mean_stated": float(g[col].values[m].mean()) if m.any() else np.nan,
+                         "observed": float(hit[m].mean()) if m.any() else np.nan})
+        verdict = tp.rule(part)
+        for r in part:
+            r.update(verdict)
+        rows += part
+        rows.append({"target": target, "horizon": int(horizon), "measure": col, "bin": "base_rate",
+                     "origins": len(g), "mean_stated": float(g[col].mean()), "observed": float(hit.mean()), **verdict})
+    return pd.DataFrame(rows)
+
+
 def main() -> None:
     bt = pd.read_csv(MODEL / "forecast_backtest.csv", parse_dates=["origin"])
     out = evaluate(bt, load_events(), realtime_state())      # review WP4: real-time event ages
@@ -117,6 +156,12 @@ def main() -> None:
     with pd.option_context("display.width", 160):
         print(out.round(3).to_string(index=False))
     print(f"\nWrote {OUT.relative_to(ROOT)}")
+    if "p_rise_050" in bt:                                   # review WP8 T1
+        tail = tail_reliability(bt)
+        tail.round(4).to_csv(TAIL_OUT, index=False)
+        with pd.option_context("display.width", 160):
+            print(tail.round(3).to_string(index=False))
+        print(f"Wrote {TAIL_OUT.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":

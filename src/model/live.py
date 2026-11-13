@@ -60,6 +60,7 @@ import realtime                                     # noqa: E402  (claims_table,
 from realtime import as_known_on                    # noqa: E402
 from fomc_marker import fomc_next                   # noqa: E402  (review WP3: next year's FOMC marker)
 import realtime_events                              # noqa: E402  (review WP4: real-time "event under way" state)
+import tail_prob                                    # noqa: E402  (review WP8 T1: chance of a large rise)
 
 MODEL = ROOT / "data" / "model"
 PROCESSED = ROOT / "data" / "processed"
@@ -393,11 +394,15 @@ def fan(fz: dict, name: str, x: dict, probs: dict, asof: pd.Timestamp, rng, stat
                 pool = rec if grp_rec[i] else scr
                 det_draw[i] = pool[rng.integers(0, len(pool))][h - j[i] + 1]
         change = np.where(is_det, det_draw, base_pred) + resid[rng.integers(0, len(resid), D)]
-        q = np.quantile(apply(scale, y0, change), Q)
+        levels = apply(scale, y0, change)
+        q = np.quantile(levels, Q)
+        # Review WP8 T1: chance of a large rise from the same draws (no random numbers used, so the bands are unchanged)
+        p_rise = tail_prob.p_rise(name, levels, y0)
         out.append({"horizon": h, "horizon_months": hm, "target_period": f"{step(freq, L, h):%Y-%m-%d}",
                     "q10": q[0], "q25": q[1], "median": q[2], "q75": q[3], "q90": q[4],
                     "deterioration_weight": w, "recession_share": share,
                     "baseline_median": float(apply(scale, y0, base_pred)),
+                    **({tail_prob.column(name): p_rise} if p_rise is not None else {}),
                     **({"provisional": True} if provisional and w == 1.0 else {})})
     return {"label": t["label"], "frequency": freq, "latest_period": f"{L:%Y-%m-%d}", "level": y0, "horizons": out}
 
@@ -709,7 +714,8 @@ def run(asof: pd.Timestamp, archive: bool) -> dict | None:
         rows = [{"asof": result["asof"], "target": name, "label": f["label"], "latest_period": f["latest_period"],
                  "level_at_origin": f["level"], **{k: h[k] for k in ("horizon", "horizon_months", "target_period", "q10",
                                                                      "q25", "median", "q75", "q90",
-                                                                     "deterioration_weight")}}
+                                                                     "deterioration_weight")},
+                 "p_rise_050": h.get("p_rise_050"), "p_rise_20pct": h.get("p_rise_20pct")}     # review WP8 T1
                 for name, f in fans.items() for h in f["horizons"]]
         hist = pd.read_csv(FANS_HISTORY) if FANS_HISTORY.exists() else pd.DataFrame(columns=list(rows[0]))
         hist = pd.concat([hist[hist["asof"] != result["asof"]], pd.DataFrame(rows)])   # hist["asof"]: .asof is a method

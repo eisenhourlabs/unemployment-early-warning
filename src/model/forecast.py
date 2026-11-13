@@ -24,7 +24,8 @@ MIXTURE     With probability P (the event probability for the matching horizon: 
                  the deterioration weight is 1 and the path is picked up at the event's current age, using past
                  events that lasted at least that long. Younger events use the normal mixture.
 BANDS       10 / 25 / 50 / 75 / 90 percentiles of 4,000 simulated draws (baseline or deterioration, plus a resampled
-            baseline residual). Center = the median.
+            baseline residual). Center = the median. Review WP8 T1: p_rise_050 (ur) / p_rise_20pct (cc) = share of
+            the same draws at least 0.5 point / 20% above the level at the origin (src/model/tail_prob.py).
 BENCHMARKS  no-change; climatology (no-change center plus the empirical quantiles of all past h-step changes).
 
 Writes data/model/forecast_backtest.csv (one row per origin x target x horizon), forecast_evaluation.csv,
@@ -45,6 +46,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src" / "model"))
 from realtime import as_known_on    # noqa: E402
 import realtime_events as rte       # noqa: E402  (review WP4: real-time event dating, shared with live.py)
+import tail_prob                    # noqa: E402  (review WP8 T1: chance of a large rise)
 
 MODEL = ROOT / "data" / "model"
 FEATURES = ["sahm", "claims_low", "claims_yoy", "cont_yoy", "temp_help", "yield_curve", "mfg", "nfci"]
@@ -347,6 +349,8 @@ def main() -> None:
                     change = np.where(is_det, det_draw, base_pred) + noise
                     levels = ser.apply(y0, change)
                     q = np.quantile(levels, QUANTILES)
+                    # Review WP8 T1: chance of a large rise, from the same draws (no random numbers used)
+                    p_rise = tail_prob.p_rise(name, levels, y0)
                     realized = ser.final.get(T)
                     rows.append({
                         "origin": m, "target": name, "horizon": h, "horizon_months": hm, "latest_period": L,
@@ -357,7 +361,9 @@ def main() -> None:
                         "event_starts_within_h": starts, "covid_window": covid, "ridge_alpha": alpha,
                         "clim_q10": ser.apply(y0, clim_q[0]), "clim_q25": ser.apply(y0, clim_q[1]),
                         "clim_q50": ser.apply(y0, clim_q[2]), "clim_q75": ser.apply(y0, clim_q[3]),
-                        "clim_q90": ser.apply(y0, clim_q[4]), "realized": realized})
+                        "clim_q90": ser.apply(y0, clim_q[4]), "realized": realized,
+                        "p_rise_050": p_rise if name == "ur" else np.nan,
+                        "p_rise_20pct": p_rise if name == "cc" else np.nan})
         print(f"{name}: done")
 
     bt = pd.DataFrame(rows)
