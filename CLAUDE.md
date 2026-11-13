@@ -86,7 +86,7 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 | `src/signals/`, `src/forecast/` | Phase 3: triggers, composite score, forecast fan |
 | `src/site/build_site.py` | Builds the "Unemployment Watch" website (Plotly + Jinja2) into `site/`: shared frame, renders each page |
 | `src/site/common.py` | Shared site pieces: data reading, formats, statistics, recession shading, chart builders |
-| `src/site/overview.py`, `outlook.py`, `job_losses.py`, `duration.py`, `leading.py` | One module per page: its charts, tiles, tables and text (Outlook = early-warning score in full) |
+| `src/site/overview.py`, `outlook.py`, `job_losses.py`, `duration.py`, `leading.py` | One module per page: its charts, tiles, tables and text (Overview opens with `stand_panel`, "Where things stand", review WP7; Outlook = early-warning score in full, with "Three things to know" and "How to use the colours") |
 | `src/site/states.py` | States page (Phase 4b): diffusion chart, weighted-vs-national charts (Weighted view only, no download), and `site/assets/states.json` (per-state history for the map, tiles, table); browser side in `static/states.js`, map outline `static/usa_110m.json` |
 | `src/site/about.py` | About page: definitions, sources (from the catalog), updates, revisions, method notes, disclaimer |
 | `src/site/downloads.py` | Data & Downloads page: writes every CSV / XLSX and bundle under `site/data/` (public licences only) |
@@ -328,6 +328,11 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   unreadable reply, then its push was rejected). The first had already saved the data. Check the next morning run.
 - Watch: on 2026-11-08 the Claude Code process crashed once (exit 0xC0000409, likely low memory on this 6 GB PC). Keep
   sessions short, commit work in progress often.
+
+- 2026-11-12: WP7 (Overview "Where things stand" panel, grouped tiles without Sahm, "What changed" rules, chart caveats with
+  folding "Source and method", Outlook history split at events, "Three things to know", "How to use the colours") built on
+  branch review-wp7 (pushed; NOT merged; site unchanged). tests/test_stand_panel.py; 57 unit tests OK; browser check 1024 pass.
+  Troy asked for WP7, WP5, WP4, WP6 in one go without stopping; each on its own branch, stacked, none merged before the meeting.
 
 ## Next steps, in order
 Phase 4 and its review (Gates 1-4) are complete, merged and live; Troy ratified all delegated Phase 4 decisions on

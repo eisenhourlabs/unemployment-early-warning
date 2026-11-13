@@ -500,7 +500,7 @@ def check_phase3(browser, base) -> None:
     sig = labels()
     check(good(sig), f"Overview: the colour shows its text label and icon {sig}")
     check(page.locator(".score-value").inner_text().strip() != "", "Overview: score value shown")
-    check("As of" in page.locator(".score-asof").inner_text(), "Overview: score panel has its 'As of' line")
+    check("As of" in page.locator(".score-panel .score-asof").inner_text(), "Overview: score panel has its 'As of' line")
     check(page.locator(".drivers li").count() == 3, f"Overview: 3 drivers listed ({page.locator('.drivers li').count()})")
     check("early-warning score" in page.locator(".changes").inner_text(), "Overview: 'What changed' has the score sentence")
 
@@ -961,6 +961,100 @@ def check_estimates(browser, base) -> None:
     page.context.close()
 
 
+def wp7_expected() -> dict:
+    """Review WP7: the panel's warning levels, worked out here independently from the FRED files and the live run
+    (amber for new claims = 1.15 x the lowest 4-week average of the previous 52 weeks, nearest 500; continuing
+    claims = 1.10 x the 4-week average 52 weeks earlier, in millions; Sahm = lowest 3-month average of the
+    previous 12 months + 0.30)."""
+    import pandas as pd
+    live = json.loads((ROOT / "data" / "model" / "live_latest.json").read_text(encoding="utf-8"))
+    i = live["inputs"]
+    read = lambda s: pd.read_csv(ROOT / "data" / "processed" / f"{s}.csv", parse_dates=["date"]).set_index("date")["value"].dropna()
+    ic4 = read("IC4WSA")
+    ic4 = ic4[ic4.index <= i["initial_claims_week"]]
+    cc4 = read("CCSA").rolling(4).mean()
+    cc4 = cc4[cc4.index <= i["continuing_claims_week"]].dropna()
+    ur3 = read("UNRATE")
+    ur3 = ur3[ur3.index <= i["unemployment_month"]].rolling(3).mean().dropna()
+    amber_ic = int(round(1.15 * ic4.iloc[-53:-1].min() / 500) * 500)
+    amber_cc = 1.10 * cc4[cc4.index[-1] - pd.Timedelta(weeks=52)] / 1e6
+    return {"claims": f"{amber_ic:,}", "cont": f"{amber_cc:.2f} million", "sahm": f"{ur3.iloc[-13:-1].min() + 0.30:.2f}%"}
+
+
+def check_wp7(browser, base) -> None:
+    """Review WP7: the 'Where things stand' panel, tiles, 'What changed', chart caveats and the Outlook cards."""
+    import re
+    print("\n=== Review WP7: where things stand, tiles, caveats, Outlook cards ===")
+    want = wp7_expected()
+    for width, height in ((1280, 900), (400, 860)):
+        page = browser.new_context(viewport={"width": width, "height": height}).new_page()
+        page.goto(base + "index.html")
+        page.wait_for_selector("body[data-ready=true]")
+        first = page.evaluate("document.querySelector('main .card').id")
+        check(first == "card-stand", f"{width} px: 'Where things stand' is the first card ({first})")
+        cells = page.locator("#card-stand .stand-cell").count()
+        watch = page.locator("#card-stand .stand-watch li").count()
+        meaning = page.locator("#card-stand .stand-meaning").count()
+        check(cells == 3 and meaning == 1 and 1 <= watch <= 3,
+              f"{width} px: panel has 3 cells ({cells}), a 'What it means' line ({meaning}) and 1-3 watch items ({watch})")
+        text = page.locator("#card-stand").inner_text()
+        for v in want.values():
+            check(v in text, f"{width} px: panel shows the warning level {v}")
+        overflow = page.evaluate("document.documentElement.scrollWidth - window.innerWidth")
+        check(overflow <= 0, f"{width} px: no horizontal scroll ({overflow} px)")
+        box_meaning = page.locator("#card-stand .stand-meaning").bounding_box()
+        box_cell = page.locator("#card-stand .stand-cell").first.bounding_box()
+        if width == 1280:
+            check(box_meaning["y"] + box_meaning["height"] <= height,
+                  f"1280 x 900: the panel down to 'What it means' is on the first screen (ends at {box_meaning['y'] + box_meaning['height']:.0f} px)")
+            meters = page.eval_on_selector_all("#card-stand .meter", "els => els.map(e => e.getAttribute('role') + '|' + e.getAttribute('aria-label'))")
+            check(all(re.fullmatch(r"img\|\d+% of the way to amber", m) for m in meters),
+                  f"progress bars have role=img and an aria-label {meters}")
+            tiles = page.locator(".overview-tiles .tile").all_inner_texts()
+            check(len(tiles) == 5, f"Overview: 5 tiles ({len(tiles)})")
+            check(sum("vs. a year ago" in t.split("\n")[0] and re.search(r"Falling|Steady|Rising", t) is not None
+                      for t in tiles) == 1, "Overview: one tile is 'vs. a year ago' with a Duration watch word")
+            bad = [t.split("\n")[0] for t in tiles if "percentile since 1967" in t or "Sahm" in t]
+            check(not bad, f"Overview: no tile says 'percentile since 1967' or 'Sahm' {bad}")
+            labels = page.locator(".tile-group-label").all_inner_texts()
+            check("New job losses (frequency)" in labels and "Duration (severity)" in labels,
+                  f"Overview: tile group labels {labels}")
+            n_changes = page.locator(".changes li").count()
+            check(2 <= n_changes <= 4, f"Overview: 'What changed this week' has 2-4 items ({n_changes})")
+            cav = page.locator("#card-unemployment-rate .chart-caveat").count()
+            check(cav == 1, "Overview: unemployment chart has its caveat")
+        else:
+            check(box_cell["y"] < height, f"400 px: the panel title and first cell start on the first screen ({box_cell['y']:.0f} px)")
+        page.context.close()
+
+    page = browser.new_context(viewport={"width": 1280, "height": 900}).new_page()
+    for name, card in (("job-losses.html", "#card-ic-rate"), ("duration.html", "#card-cc-rate")):
+        page.goto(base + name)
+        page.wait_for_selector("body[data-ready=true]")
+        check(page.locator(f"{card} .chart-caveat").count() == 1, f"{name}: rate chart has its caveat")
+        opened = page.eval_on_selector_all("details.chart-source", "els => els.filter(e => e.open).length")
+        total = page.locator("details.chart-source").count()
+        check(total >= 1 and opened == 0, f"{name}: {total} 'Source and method' boxes, all closed by default")
+    page.goto(base + "leading.html")
+    page.wait_for_selector("body[data-ready=true]")
+    check(page.locator(".summary .chart-caveat").count() == 1, "Leading: caveat above the summary table")
+
+    page.goto(base + "outlook.html")
+    page.wait_for_selector("body[data-ready=true]")
+    traces = page.evaluate("""() => document.getElementById('chart-score-history-long').data.map(t => ({
+        name: t.name || '', x: t.x || [], y: t.y || []}))""")
+    check(any(t["name"] == "During an event (not a forecast)" for t in traces),
+          "Outlook: history has a trace 'During an event (not a forecast)'")
+    blue = next(t for t in traces if t["name"] == "2000 on: out of sample")
+    inside = [x for x, y in zip(blue["x"], blue["y"]) if y is not None and
+              ("2001-01" <= x[:7] <= "2002-11" or "2008-03" <= x[:7] <= "2010-05")]
+    check(not inside, f"Outlook: the blue 2000-on line has no points during the 2001 and 2008 events {inside[:3]}")
+    for title in ("Three things to know", "How to use the colours"):
+        loc = page.locator(f"section.card h2:text-is('{title}')")
+        check(loc.count() == 1 and loc.is_visible(), f"Outlook: card '{title}' visible without clicking")
+    page.context.close()
+
+
 def TODAY_OF(page) -> str:
     return json.loads(page.locator("#page-data").text_content())["today"]
 
@@ -982,6 +1076,7 @@ def main() -> int:
         check_estimates(browser, base)
         if "outlook.html" in links:
             check_phase3(browser, base)
+            check_wp7(browser, base)
         for i, href in enumerate(links):
             if href == "data.html":
                 check_data_page(browser, base + href, base)
