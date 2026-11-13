@@ -328,7 +328,7 @@ def check_data_page(browser, url, base):
     for href in [l for l in links if l.endswith(".xlsx")]:
         names = load_workbook(SITE / href, read_only=True).sheetnames
         want = (["Data", "Columns", "About"] if ("/dol/" in href or "/states/" in href or "/derived/" in href or "dol_weekly" in href)
-                else ["Daily", "Weekly (Sat)", "Weekly (Fri)", "Monthly", "Dictionary"] if "everything" in href else ["Data", "About"])
+                else ["Daily", "Weekly (Sat)", "Weekly (Fri)", "Monthly", "Quarterly", "Dictionary"] if "everything" in href else ["Data", "About"])
         if names != want:
             bad_xlsx.append(f"{href}: {names}")
     check(not bad_xlsx, f"every XLSX opens with the expected sheets {bad_xlsx[:3]}")
