@@ -10,8 +10,8 @@ ARCCLAIMS,Continued Claims (Insured Unemployment) in Arkansas,Number,"Weekly, En
 ARICLAIMS,Initial Claims in Arkansas,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:39:05-06,1990-01-06,2026-10-31,1095.0
 ARUR,Unemployment Rate in Arkansas,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:38:35-05,1990-01-01,2026-09-01,3.9
 AWHMAN,"Average Weekly Hours of Production and Nonsupervisory Employees, Manufacturing",Hours,Monthly,Seasonally Adjusted,2026-11-06 09:42:35-06,1990-01-01,2026-10-01,41.8
-AZCCLAIMS,Continued Claims (Insured Unemployment) in Arizona,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:39:02-06,1990-01-06,2026-10-24,19038.0
-AZICLAIMS,Initial Claims in Arizona,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:39:05-06,1990-01-06,2026-10-31,2242.0
+AZCCLAIMS,Continued Claims (Insured Unemployment) in Arizona,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-13 07:39:30-06,1990-01-06,2026-10-31,18462.0
+AZICLAIMS,Initial Claims in Arizona,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-13 07:39:30-06,1990-01-06,2026-11-07,2422.0
 AZUR,Unemployment Rate in Arizona,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:40:18-05,1990-01-01,2026-09-01,4.9
 CACCLAIMS,Continued Claims (Insured Unemployment) in California,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:39:04-06,1990-01-06,2026-10-24,305135.0
 CAICLAIMS,Initial Claims in California,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:39:05-06,1990-01-06,2026-10-31,39974.0
@@ -187,7 +187,7 @@ SCUR,Unemployment Rate in South Carolina,Percent,Monthly,Seasonally Adjusted,202
 SDCCLAIMS,Continued Claims (Insured Unemployment) in South Dakota,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:38-06,1990-01-06,2026-10-24,1064.0
 SDICLAIMS,Initial Claims in South Dakota,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:39-06,1990-01-06,2026-10-31,206.0
 SDUR,Unemployment Rate in South Dakota,Percent,Monthly,Seasonally Adjusted,2026-10-20 09:51:44-05,1990-01-01,2026-09-01,2.0
-T10Y3M,10-Year Treasury Constant Maturity Minus 3-Month Treasury Constant Maturity,Percent,Daily,Not Seasonally Adjusted,2026-11-10 16:04:32-06,1990-01-01,2026-11-10,0.68
+T10Y3M,10-Year Treasury Constant Maturity Minus 3-Month Treasury Constant Maturity,Percent,Daily,Not Seasonally Adjusted,2026-11-12 16:03:32-06,1990-01-01,2026-11-12,0.78
 TEMPHELPS,"All Employees, Temporary Help Services",Thousands of Persons,Monthly,Seasonally Adjusted,2026-11-06 09:43:18-06,1990-01-01,2026-10-01,2526.0
 TNCCLAIMS,Continued Claims (Insured Unemployment) in Tennessee,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:37-06,1990-01-06,2026-10-24,12678.0
 TNICLAIMS,Initial Claims in Tennessee,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-06 07:38:35-06,1990-01-06,2026-10-31,2289.0

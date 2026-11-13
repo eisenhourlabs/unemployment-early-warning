@@ -1,5 +1,5 @@
 release,next_date,following_date,detail,time_et,schedule_source,source_url
-Weekly jobless claims,2026-11-12,2026-11-19,Unemployment Insurance Weekly Claims Report,8:30 am,FRED release schedule,https://fred.stlouisfed.org/releases/calendar?rid=180
+Weekly jobless claims,2026-11-19,2026-11-25,Unemployment Insurance Weekly Claims Report,8:30 am,FRED release schedule,https://fred.stlouisfed.org/releases/calendar?rid=180
 "Jobs report (unemployment rate, payrolls)",2026-12-04,,Employment Situation,8:30 am,FRED release schedule,https://fred.stlouisfed.org/releases/calendar?rid=50
 "JOLTS (job openings, hires, layoffs)",2026-12-01,,Job Openings and Labor Turnover Survey,10:00 am,FRED release schedule,https://fred.stlouisfed.org/releases/calendar?rid=192
 Chicago Fed Labor Market Indicators,2026-11-24,2026-12-03,November 2026 advance,8:30 am,Chicago Fed release schedule,https://www.chicagofed.org/research/data/chicago-fed-labor-market-indicators/release-schedule
