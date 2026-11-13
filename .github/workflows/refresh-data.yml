@@ -112,6 +112,10 @@ jobs:
         env:
           ALERTS_ENABLED: ${{ vars.ALERTS_ENABLED || 'false' }}
         run: python src/model/live.py --archive
+      - name: Live scorecard (reads the archive back; review WP4)
+        id: scorecard
+        if: ${{ !cancelled() && steps.model_step.outcome == 'success' }}
+        run: python src/model/live_scorecard.py
       - name: Record that the model could not run (the site then says so and keeps the last good values)
         if: ${{ !cancelled() && (steps.tests.outcome == 'failure' || steps.model_inputs.outcome == 'failure') }}
         run: python src/model/live.py --record-failure "model inputs could not be refreshed"

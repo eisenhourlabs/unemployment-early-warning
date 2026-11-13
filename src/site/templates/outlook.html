@@ -18,6 +18,7 @@
     <p class="score-asof">{{ asof }}</p>
   </div>
   {%- if note %}<p class="model-note" role="status">⚠ {{ note }}</p>{% endif %}
+  {%- if event %}<p class="model-note event-note" role="status">⚠ {{ event }}</p>{% endif %}
   <p class="score-line">
     <span class="signal signal-{{ signal.colour }}"><span aria-hidden="true">{{ signal.icon }}</span> {{ signal.label }}</span>
     <span class="score-value" title="{{ tooltip }}">{{ value }}</span>
@@ -134,8 +135,7 @@
 <section class="card outlook-section" id="track" aria-labelledby="tk-title">
   <h2 id="tk-title">Track record</h2>
   <h3>Live</h3>
-  <p class="why">What we said 3 and 6 months ago vs. what happened, from the first archived live run. First entries from
-    {{ first_live }}.</p>
+  <p class="why">{{ live_record }} First entries from {{ first_live }}.</p>
   {%- if backtest %}
   <h3>Tested on history (not live forecasts)</h3>
   {#- Review WP1: every number below comes from data/model/score_skill_summary.csv (src/model/score_uncertainty.py) #}

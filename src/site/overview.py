@@ -10,7 +10,7 @@ from zoneinfo import ZoneInfo
 import pandas as pd
 import plotly.graph_objects as go
 
-from common import (ACCENT, GREYS, MODEL, WHATIF_FOOTER, add_colour_band, add_fan, add_whatif, asof_line, with_outlook, base_layout, card, claims_weekly, dates, duration_watch, model_csv,
+from common import (ACCENT, GREYS, MODEL, PROVISIONAL_FAN, WHATIF_FOOTER, event_banner, fan_is_provisional, add_colour_band, add_fan, add_whatif, asof_line, with_outlook, base_layout, card, claims_weekly, dates, duration_watch, model_csv,
                     model_output, pre_recession_averages, fmt_change, fmt_claims, fmt_date, fmt_month, fred,
                     fred_metadata, is_estimate, is_preliminary, last_time_as_extreme, line_chart, ordinal, percentile_text, plain,
                     prelim_label, signal, streak, value_on_or_before, vs_month, weekly_claims_chart)
@@ -72,7 +72,7 @@ def unemployment_chart(live: dict | None = None) -> dict:
         "and 12-month ranges are joined by straight lines; no middle line is drawn at 12 months, where confidence is "
         "lower." + WHATIF_FOOTER
         + " FOMC median: Federal Reserve Board Summary of Economic Projections via FRED (UNRATEMD), shown for "
-        "comparison and not offered for download.")
+        "comparison and not offered for download." + (PROVISIONAL_FAN if fan_is_provisional(live["fans"]["ur"]) else ""))
 
 
 def fan_coverage_sentence() -> str:
@@ -171,7 +171,7 @@ def trigger_value(live: dict, tid: str) -> float:
 def event_under_way(live: dict) -> tuple[bool, str | None]:
     """Review WP4's provisional 'event under way' flag; an absent key means not under way."""
     e = live.get("event_state") or {}
-    return bool(e.get("under_way")), e.get("since")
+    return bool(e.get("under_way")), e.get("provisional_start")
 
 
 def stand_numbers(live: dict, claims: pd.DataFrame, ur: pd.Series) -> dict:
@@ -361,7 +361,7 @@ def score_panel(m: dict) -> dict:
     return {"available": True, "signal": signal(s["colour"]), "value": d6["text"], "words": d6["words"],
             "tooltip": d6["tooltip"], "change": change, "asof": asof_line(live), "definition": SCORE_DEFINITION,
             "drivers": [{"arrow": "↑" if d["direction"] == "up" else "↓", "text": d["text"]} for d in s["drivers"]],
-            "note": m["note"]}
+            "note": m["note"], "event": event_banner(live)}
 
 
 def score_mini_chart(live: dict | None, built: datetime) -> dict | None:

@@ -11,7 +11,7 @@ from zoneinfo import ZoneInfo
 import pandas as pd
 import plotly.graph_objects as go
 
-from common import (ACCENT, FAINT, GREYS, MODEL, add_colour_band, asof_line, base_layout, card, dates, fmt_date,
+from common import (ACCENT, FAINT, GREYS, MODEL, add_colour_band, event_banner, asof_line, base_layout, card, dates, fmt_date,
                     fmt_month, fred, model_csv, model_output, plain, signal)
 
 CENTRAL = ZoneInfo("America/Chicago")
@@ -384,6 +384,26 @@ def colour_guide() -> dict | None:
     }
 
 
+def live_record() -> str:
+    """Review WP4 Part C: the live scorecard sentence, from data/model/live_scorecard.csv (src/model/live_scorecard.py)."""
+    try:
+        card = pd.read_csv(MODEL / "live_scorecard.csv")
+    except OSError:
+        card = pd.DataFrame(columns=["asof", "colour", "during_event", "outcome_known", "event_started_within_6m"])
+    if len(card):
+        card["during_event"] = card.during_event.astype(str).eq("True")
+        card["outcome_known"] = card.outcome_known.astype(str).eq("True")
+    judged = card[card.outcome_known & ~card.during_event] if len(card) else card
+    if judged.empty:
+        first = (pd.Timestamp(card.asof.min()) if len(card) else pd.Timestamp("2026-11-08")) + pd.DateOffset(months=6)
+        return f"No live reading is old enough to judge yet; the first will be in {first:%B %Y}."
+    hit = judged.event_started_within_6m.astype(str).eq("True")
+    n = lambda c: int((judged.colour == c).sum())
+    k = lambda c: int(((judged.colour == c) & hit).sum())
+    return (f"{len(judged)} live readings are old enough to judge: {n('green')} green ({k('green')} followed by an event "
+            f"within 6 months), {n('amber')} amber ({k('amber')}), {n('red')} red ({k('red')}).")
+
+
 def weights_table(live: dict) -> dict:
     s = live["score"]
     rows = []
@@ -419,4 +439,6 @@ def build(built: datetime) -> dict:
         "first_live": f"{first_live:%B %Y}",
         "thresholds": s["thresholds"],
         "guide": colour_guide(),
+        "event": event_banner(live),
+        "live_record": live_record(),
     }

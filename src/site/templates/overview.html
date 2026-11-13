@@ -41,6 +41,9 @@
   {%- if score.note %}
   <p class="model-note" role="status">⚠ {{ score.note }}</p>
   {%- endif %}
+  {%- if score.event %}
+  <p class="model-note event-note" role="status">⚠ {{ score.event }}</p>
+  {%- endif %}
   {%- if score.available %}
   <div class="score-body">
     <div class="score-main">

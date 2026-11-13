@@ -9,7 +9,7 @@ from datetime import datetime
 import pandas as pd
 import plotly.graph_objects as go
 
-from common import (DOL, MODEL, PROCESSED, WHATIF_FOOTER, add_fan, add_marker, add_whatif, claims_weekly,
+from common import (DOL, MODEL, PROCESSED, PROVISIONAL_FAN, WHATIF_FOOTER, fan_is_provisional, add_fan, add_marker, add_whatif, claims_weekly,
                     duration_watch, fmt_date, fred, line_chart, line_with_comparison, model_output, signal,
                     weekly_claims_chart, with_outlook)
 from overview import cc_rate_chart
@@ -59,7 +59,7 @@ def cc_outlook(c: dict, live: dict) -> dict:
                         " Fan = our forecast range for the 4-week average at 13 and 26 weeks: in testing (2000–2026, "
                         f"excluding 2020) the darker band held {span('cover50')} of outcomes and the lighter band "
                         f"{span('cover80')}; when it missed, outcomes were more often below the range than above it."
-                        + WHATIF_FOOTER)
+                        + WHATIF_FOOTER + (PROVISIONAL_FAN if fan_is_provisional(live["fans"]["cc"]) else ""))
 
 
 # ===========================================================================

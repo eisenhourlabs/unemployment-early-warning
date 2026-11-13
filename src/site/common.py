@@ -185,6 +185,29 @@ def add_fomc_next(live: dict) -> None:
         fm["next"] = nxt
 
 
+# Review WP4: the provisional "event under way" banner (Overview score panel, Outlook header)
+EVENT_REASON = {"claims": "new claims are 25% or more above their low of the past year",
+                "unemployment": "unemployment's 3-month average is 0.5 point or more above its low"}
+EVENT_REASON["both"] = EVENT_REASON["claims"] + " and " + EVENT_REASON["unemployment"]
+PROVISIONAL_FAN = (" The range now follows past downturns from the same stage (provisional: the start date is set "
+                   "automatically from this week's data).")
+
+
+def event_banner(live: dict | None) -> str | None:
+    """'Deterioration under way since Sep 2026 (provisional): ...' while the real-time flag is on, else None."""
+    e = (live or {}).get("event_state") or {}
+    if not e.get("under_way") or not e.get("provisional_start"):
+        return None
+    since = pd.Timestamp(e["provisional_start"] + "-01")
+    return (f"Deterioration under way since {since:%b %Y}{'' if e.get('confirmed') else ' (provisional)'}: "
+            f"{EVENT_REASON.get(e.get('leg'), EVENT_REASON['claims'])}. The score below is the chance of a further, new "
+            "event and is less informative during one; watch the claims and duration pages.")
+
+
+def fan_is_provisional(f: dict) -> bool:
+    return any(h.get("provisional") for h in f.get("horizons", []))
+
+
 def model_output(built) -> dict:
     """The live model result set (data/model/live_latest.json, from src/model/live.py), with a status note.
 
@@ -198,6 +221,12 @@ def model_output(built) -> dict:
         return {"live": None, "note": "Early-warning score not available: the model output is missing."}
     reword_live(live)
     add_fomc_next(live)
+    # Review WP4 preview switch (PC only, like UW_PREVIEW_DELAY): UW_PREVIEW_EVENT=YYYY-MM builds the site as if an
+    # event had been under way since that month (banner and panel only; no model output changes).
+    import os as _os
+    if _os.environ.get("UW_PREVIEW_EVENT"):
+        live["event_state"] = {"under_way": True, "provisional_start": _os.environ["UW_PREVIEW_EVENT"][:7],
+                               "leg": "claims", "confirmed": False, "preview": True}
     from zoneinfo import ZoneInfo
     today = pd.Timestamp(pd.Timestamp(built).tz_convert(ZoneInfo("America/Chicago")).date())
     asof = pd.Timestamp(live["asof"])

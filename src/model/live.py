@@ -59,6 +59,7 @@ from nowcast import reference_saturday              # noqa: E402
 import realtime                                     # noqa: E402  (claims_table, estimates switch: stage 4c)
 from realtime import as_known_on                    # noqa: E402
 from fomc_marker import fomc_next                   # noqa: E402  (review WP3: next year's FOMC marker)
+import realtime_events                              # noqa: E402  (review WP4: real-time "event under way" state)
 
 MODEL = ROOT / "data" / "model"
 PROCESSED = ROOT / "data" / "processed"
@@ -319,8 +320,21 @@ def event_in_progress(asof: pd.Timestamp):
     return None
 
 
-def fan(fz: dict, name: str, x: dict, probs: dict, asof: pd.Timestamp, rng) -> dict:
-    """One target's fan at every shown horizon (the stage 3d mixture, with the frozen pieces)."""
+def live_event_state(asof: pd.Timestamp, x: dict) -> dict:
+    """Review WP4: the real-time event state on the run date. Month-end readings from triggers_monthly.csv; this run's
+    inputs stand for the current, unfinished month. confirmed = events.csv also has an event covering the month."""
+    v = lambda k: x.get(k) if x.get(k) is not None and not (isinstance(x.get(k), float) and math.isnan(x.get(k))) else -1
+    current = {"month": pd.Timestamp(f"{asof:%Y-%m}-01"), "ur": v("sahm") >= realtime_events.SAHM_ON,
+               "claims": v("claims_low") >= realtime_events.CLAIMS_ON}
+    state = realtime_events.event_state(realtime_events.month_end_on(), current)
+    state["confirmed"] = event_in_progress(asof) is not None
+    return state
+
+
+def fan(fz: dict, name: str, x: dict, probs: dict, asof: pd.Timestamp, rng, state: dict | None = None) -> dict:
+    """One target's fan at every shown horizon (the stage 3d mixture, with the frozen pieces).
+    state (review WP4): the real-time event state; when events.csv has no event under way but the automatic flag
+    has one, its provisional start is used, and each horizon says "provisional": True."""
     fc = fz["forecast"]
     t = fc["targets"][name]
     freq, scale = t["frequency"], t["scale"]
@@ -329,6 +343,9 @@ def fan(fz: dict, name: str, x: dict, probs: dict, asof: pd.Timestamp, rng) -> d
     paths = [dict(p, start=pd.Timestamp(p["start"] + "-01"), base=pd.Timestamp(p["base"]),
                   path=np.array([np.nan if v is None else v for v in p["path"]])) for p in t["paths"]]
     cur_start = event_in_progress(asof)
+    provisional = False
+    if cur_start is None and state and state.get("under_way") and state.get("provisional_start"):
+        cur_start, provisional = pd.Timestamp(state["provisional_start"] + "-01"), True
     age_now = 0 if cur_start is None else (asof.year - cur_start.year) * 12 + asof.month - cur_start.month + 1
     out = []
     for h_key, hz in t["horizons"].items():
@@ -373,7 +390,8 @@ def fan(fz: dict, name: str, x: dict, probs: dict, asof: pd.Timestamp, rng) -> d
         out.append({"horizon": h, "horizon_months": hm, "target_period": f"{step(freq, L, h):%Y-%m-%d}",
                     "q10": q[0], "q25": q[1], "median": q[2], "q75": q[3], "q90": q[4],
                     "deterioration_weight": w, "recession_share": share,
-                    "baseline_median": float(apply(scale, y0, base_pred))})
+                    "baseline_median": float(apply(scale, y0, base_pred)),
+                    **({"provisional": True} if provisional and w == 1.0 else {})})
     return {"label": t["label"], "frequency": freq, "latest_period": f"{L:%Y-%m-%d}", "level": y0, "horizons": out}
 
 
@@ -557,6 +575,33 @@ def colour_alert(result: dict) -> tuple[str, str] | None:
     return f"Unemployment Watch: early-warning colour changed to {new.upper()}", body
 
 
+def previous_event_state(this_file: Path) -> dict:
+    """The event state of the archived run before this one ({} if none or written before review WP4)."""
+    files = sorted(f for f in ARCHIVE.glob("*/*.json") if f != this_file)
+    if not files:
+        return {}
+    try:
+        return json.loads(files[-1].read_text(encoding="utf-8")).get("event_state") or {}
+    except (OSError, ValueError):
+        return {}
+
+
+def with_event_change(alert: tuple[str, str] | None, result: dict, before: dict) -> tuple[str, str] | None:
+    """Review WP4: add a change in the provisional 'event under way' flag to the colour-change alert (or send it on
+    its own). Alerts stay off unless ALERTS_ENABLED=true; while off the text is only printed in the log."""
+    now, was = result.get("event_state") or {}, bool(before.get("under_way"))
+    if bool(now.get("under_way")) == was:
+        return alert
+    if now.get("under_way"):
+        line = (f"A deterioration is now flagged as under way since {now['provisional_start']} (provisional, "
+                f"{now['leg']} leg). Details: {SITE_URL}/index.html")
+        subject = "Unemployment Watch: deterioration under way (provisional)"
+    else:
+        line = "The provisional 'deterioration under way' flag has been lifted (6 months without a leg on)."
+        subject = "Unemployment Watch: deterioration flag lifted"
+    return (alert[0], alert[1] + "\n" + line) if alert else (subject, line)
+
+
 # ===================================================================================================
 def run(asof: pd.Timestamp, archive: bool) -> dict | None:
     fz = load_frozen(asof)
@@ -608,8 +653,9 @@ def run(asof: pd.Timestamp, archive: bool) -> dict | None:
 
     inputs = {**now, "values": {k: (None if v is None or (isinstance(v, float) and math.isnan(v)) else float(v))
                                 for k, v in x.items() if k in fz["score"]["features"]}}
+    state = live_event_state(asof, x)
     rng = np.random.default_rng(SEED)
-    fans = {name: fan(fz, name, x, probs, asof, rng) for name in fz["forecast"]["targets"]}
+    fans = {name: fan(fz, name, x, probs, asof, rng, state) for name in fz["forecast"]["targets"]}
     result = {
         "asof": f"{asof:%Y-%m-%d}",
         "run_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
@@ -637,6 +683,7 @@ def run(asof: pd.Timestamp, archive: bool) -> dict | None:
         "stress": stress_paths(fz, asof),
         "nowcast": nowcast(fz, asof),
         "fomc": fomc(asof, fans["ur"]),
+        "event_state": state,
     }
     if archive:
         # Archive FIRST: if this run's file already exists, stop here before touching anything else.
@@ -662,7 +709,7 @@ def run(asof: pd.Timestamp, archive: bool) -> dict | None:
         hist.sort_values(["asof", "target", "horizon"]).to_csv(FANS_HISTORY, index=False)
         write_status({"last_attempt": f"{asof:%Y-%m-%d}", "ok": True, "result": "new live run",
                       "last_run": path.name})
-        alert = colour_alert(result)
+        alert = with_event_change(colour_alert(result), result, previous_event_state(path))
         if alert:
             sys.path.insert(0, str(ROOT / "src" / "alerts"))
             from alerts import send_alert      # prints the message instead of sending while ALERTS_ENABLED is off
@@ -680,6 +727,9 @@ def run(asof: pd.Timestamp, archive: bool) -> dict | None:
     for d in s["drivers"]:
         print(f"    {d['text']}")
     t = result["triggers"]
+    e = result["event_state"]
+    print(f"  event state: {'UNDER WAY since ' + e['provisional_start'] if e['under_way'] else 'none under way'}"
+          f" (last leg on {e['last_on']}; confirmed in events.csv: {e['confirmed']})")
     print(f"  Layer 1 overall {t['overall']}: " + ", ".join(f"{r['id']} {r['colour']}" for r in t["rows"]))
     for name, f in fans.items():
         print(f"  fan {name} from {f['level']:.3f} ({f['latest_period']}): " + "; ".join(
