@@ -15,7 +15,7 @@
 
 <nav class="card toc" aria-label="On this page">
   <a href="#definitions">Definitions</a> · <a href="#sources">Sources</a> · <a href="#updates">Updates</a> ·
-  <a href="#revisions">Revisions</a> · <a href="#methods">Method notes</a> · <a href="#disclaimer">Disclaimer</a>
+  <a href="#revisions">Revisions</a> · <a href="#methods">Method notes</a> · {% if card %}<a href="#model-card">Model card</a> · {% endif %}<a href="#disclaimer">Disclaimer</a>
 </nav>
 
 <section class="card prose" id="definitions" aria-labelledby="def-title">
@@ -225,6 +225,48 @@
       not official forecasts.</li>
   </ul>
 </section>
+
+{%- if card %}
+<section class="card prose" id="model-card" aria-labelledby="card-title">
+  <h2 id="card-title">Model card</h2>
+  <p>The early-warning score and the forecast ranges on the <a href="outlook.html">Outlook</a> page come from one
+    model, summarised here. The Outlook page has the full method, track record and limits.</p>
+  <ul>
+    <li><strong>What it estimates.</strong> The chance that, within 6 months, new claims jump 25% or more above their
+      low of the past year, or unemployment's 3-month average rises 0.5 point above its low. It is a labour-market
+      stress alert, not a recession forecast, and it covers new job losses, not how long unemployment lasts (the
+      <a href="duration.html">Duration</a> page follows that).</li>
+    <li><strong>Inputs.</strong> Eight measures, each as published at the time: the Sahm indicator, new claims against
+      their past-year low and against a year ago, continuing claims against a year ago, temp-help jobs, the yield
+      curve, regional manufacturing surveys and the Chicago Fed's financial conditions index. They are combined by a
+      logistic regression with weights of zero or above.</li>
+    <li><strong>Version.</strong> The {{ card.year }} model, fitted on data known by {{ card.known_by }} and frozen on
+      {{ card.frozen }}. It is re-fitted once a year ({{ card.next_refit }} next); any change between re-fits must
+      first pass a test whose rule was fixed before it was run.</li>
+    <li><strong>How it was tested.</strong> Each month from 2000 was scored by a model fitted only on earlier data:
+      {{ card.months }} months covering {{ card.events }} events (2020 left out). Results are given first with
+      claims as first published, then with today's revised claims, which make the record look better.</li>
+  </ul>
+  <div class="table-scroll">
+  <table class="model-table compact" id="card-table">
+    <thead><tr><th>Tested 2000–2026</th><th>Claims as first published</th><th>Claims as revised today</th></tr></thead>
+    <tbody>
+      {%- for r in card.rows %}
+      <tr><td>{{ r.label }}</td><td>{{ r.cells[0] }}</td><td>{{ r.cells[1] }}</td></tr>
+      {%- endfor %}
+    </tbody>
+  </table>
+  </div>
+  <ul>
+    <li><strong>Forecast ranges.</strong> The unemployment rate's 80% ranges held {{ card.cover_all }} of outcomes at
+      3 / 6 / 12 months, but only {{ card.cover_during }} once a deterioration had been under way for 3 months or
+      more.</li>
+    <li><strong>Limits.</strong> The test rests on only {{ card.events }} events since 2000: the skill range includes zero, and the
+      live record is short. State UI claims are a proxy for, not a measure of, any private insurance's claims. The
+      score and ranges are a monitoring aid, not a basis on their own for pricing, reserving or risk limits.</li>
+  </ul>
+</section>
+{%- endif %}
 
 <section class="card prose" id="disclaimer" aria-labelledby="disc-title">
   <h2 id="disc-title">Disclaimer</h2>

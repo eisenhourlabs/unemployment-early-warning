@@ -297,8 +297,9 @@ def model_output(built) -> dict:
             latest_month = pd.Timestamp(n["month"])
         if latest_month < pd.Timestamp(n["month"]):
             notes.append(f"Release delayed: the {pd.Timestamp(n['month']):%B} jobs report (scheduled "
-                         f"{fmt_date(n['release_date'])}) has not been published. Estimate: the unemployment-rate "
-                         "nowcast is our estimate, not a published value.")
+                         f"{fmt_date(n['release_date'])}) has not been published. Until it is, our estimate of the "
+                         "unemployment rate (the nowcast, not a published value) is in the Forecasts table on the "
+                         "Outlook page.")
     return {"live": live, "note": " ".join(notes), "claims_delayed": claims_delayed}
 
 

@@ -4,6 +4,7 @@ method notes and the disclaimer. Called by build_site.py.
 """
 
 import csv
+import json
 import re
 import sys
 
@@ -68,7 +69,41 @@ def fallback_accuracy() -> dict | None:
     return out
 
 
+def model_card() -> dict | None:
+    """The "Model card" section (review X5): the model in use and its key tested numbers, read from the same files
+    as docs/model_card.md (which tests/test_model_card.py keeps in step). None if a file is missing: no section."""
+    model = ROOT / "data" / "model"
+    try:
+        frozen = json.loads(sorted((model / "frozen").glob("model_*.json"))[-1].read_text())
+        s = pd.read_csv(model / "score_skill_summary.csv").set_index("basis")
+        fe = pd.read_csv(model / "forecast_evaluation.csv")
+        reg = pd.read_csv(model / "forecast_evaluation_regimes.csv")
+    except (OSError, IndexError):
+        return None
+    pc = lambda v: f"{v * 100:.0f}%"
+    sg = lambda v: f"{v:+.2f}".replace("-", "−")
+    rows = []
+    for colour, label in (("red", "Red (50% and above)"), ("amber", "Amber (20% to 50%)"),
+                          ("green", "Green (under 20%)")):
+        rows.append({"label": label, "cells": [f"{int(s.loc[b, 'n_' + colour])} months, "
+                                               f"{pc(s.loc[b, 'hit_' + colour])} followed by an event"
+                                               for b in ("first_published", "revised")]})
+    rows.append({"label": "Skill against the long-run average (90% range)",
+                 "cells": [f"{sg(s.loc[b, 'skill'])} ({sg(s.loc[b, 'skill_p05'])} to {sg(s.loc[b, 'skill_p95'])})"
+                           for b in ("first_published", "revised")]})
+    ur = fe[(fe.target == "ur") & (fe.subset == "2000-on excl. 2020")].set_index("horizon")
+    during = reg[(reg.target == "ur") & (reg.regime == "during an event")].set_index("horizon")
+    hs = [3, 6, 12]
+    rv = s.loc["revised"]
+    return {"year": frozen["model_year"], "frozen": pd.Timestamp(frozen["frozen_at"][:10]).strftime("%B %d, %Y")
+            .replace(" 0", " "), "known_by": pd.Timestamp(frozen["data_known_by"]).strftime("%B %d, %Y").replace(" 0", " "),
+            "next_refit": f"January {frozen['model_year'] + 1}", "months": int(rv.months),
+            "events": int(rv.events_in_test), "rows": rows,
+            "cover_all": " / ".join(pc(ur.loc[h].cover80) for h in hs),
+            "cover_during": " / ".join(pc(during.loc[h].cover80) for h in hs)}
+
+
 def build() -> dict:
     max_diff, since = iur_check()
     return {"sources": source_rows(), "iur_max_diff": f"{max_diff:.2f}", "iur_since": since,
-            "weighted_sentence": WEIGHTED_SENTENCE, "fallback": fallback_accuracy()}
+            "weighted_sentence": WEIGHTED_SENTENCE, "fallback": fallback_accuracy(), "card": model_card()}

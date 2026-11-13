@@ -9,6 +9,7 @@ reports/refit_<year>.md:
   4. any target x horizon shown on the site that now FAILS the gate (bands within 10 points of 50% / 80%, and more
      accurate than no change);
   5. changes to the event list (a new event needs Troy's classification before the model is used).
+  6. whether docs/model_card.md still matches the new files (tests/test_model_card.py; review X5).
 Nothing here changes the site: the live run uses the newest frozen model on main, so only merging the pull request
 does that.
 
@@ -125,11 +126,29 @@ def main(year: int, old_dir: Path) -> None:
                         [[r.event, f"{r.start_month_old} / {r.end_month_old} / {r.classification_old}",
                           f"{r.start_month_new} / {r.end_month_new} / {r.classification_new}"]
                          for r in changed.itertuples()]), ""]
+    lines += ["## 6. Model card", ""] + model_card_check()
     out = ROOT / "reports" / f"refit_{year}.md"
     out.parent.mkdir(exist_ok=True)
     out.write_text("\n".join(lines), encoding="utf-8")
     print("\n".join(lines))
     print(f"\nWrote {out.relative_to(ROOT)}")
+
+
+def model_card_check() -> list[str]:
+    """Run tests/test_model_card.py against the new files. A mismatch must be fixed in this pull request: the weekday
+    refresh runs the unit tests before its model step, so a stale card would stop the live updates after the merge."""
+    import io
+    import unittest
+    sys.path.insert(0, str(ROOT / "tests"))
+    import test_model_card
+    result = unittest.TextTestRunner(stream=io.StringIO(), verbosity=0).run(
+        unittest.defaultTestLoader.loadTestsFromModule(test_model_card))
+    problems = [str(err).strip().splitlines()[-1] for _, err in result.failures + result.errors]
+    if not problems:
+        return ["docs/model_card.md matches the new files.", ""]
+    return (["**docs/model_card.md no longer matches the new files. Update the card (numbers, version line and its "
+             "\"What changed\" table) in this pull request before merging, or the weekday refresh will fail its "
+             "unit tests and skip the model step.**", ""] + [f"- {x}" for x in problems] + [""])
 
 
 if __name__ == "__main__":

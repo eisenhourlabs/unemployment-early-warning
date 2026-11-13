@@ -84,12 +84,13 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
 | `config/model_series.csv`, `config/event_notes.csv`, `config/triggers.csv` | Modeling series: ALFRED / first-release / current vintage, release lag; Troy's event rulings and notes; Layer 1 trigger thresholds |
 | `data/model/` | Modeling data: `claims_weekly.csv`, `alfred/` (vintages + coverage), `current/` (GS10, TB3MS, T10Y3MM full history), `events.csv`, `event_flags_monthly.csv`, `claims_leg_weekly.csv`, `triggers_monthly.csv`, `trigger_episodes.csv`, `trigger_leads.csv`, `trigger_summary.csv`, `status_comparison.csv`, `features_monthly.csv`, `score_*.csv` (incl. `score_skill_summary.csv`, `score_simple_benchmarks.csv`), `forecast_*.csv` (incl. `forecast_evaluation_regimes.csv`), `stress_paths.csv`, `nowcast.csv`, `benchmark_summary.csv`, `frozen/model_<year>.json` (frozen model), `live_latest.json` + `score_display_weekly.csv` / `score_display_monthly.csv` (what the site reads), `live_history.csv` (one row per live run) + `live_fans_history.csv` (each run's fans); WP8: `forecast_tail_reliability.csv` (T1; its `show` column decides which horizons the Outlook shows), `severity_watch_realtime*.csv` (T2), `forecast_*_ipnoise.csv` + `forecast_in_progress_noise_test.csv` (T3), `material_target_*.csv` (T4) |
 | `docs/model.md`, `reports/` | Phase 3 method and results (grows each stage); review charts (not on the site) |
+| `docs/model_card.md` | Model card: two-page summary to quote from (key numbers checked by `tests/test_model_card.py`; review it at each January re-fit) |
 | `src/signals/`, `src/forecast/` | Phase 3: triggers, composite score, forecast fan |
 | `src/site/build_site.py` | Builds the "Unemployment Watch" website (Plotly + Jinja2) into `site/`: shared frame, renders each page |
 | `src/site/common.py` | Shared site pieces: data reading, formats, statistics, recession shading, chart builders |
 | `src/site/overview.py`, `outlook.py`, `job_losses.py`, `duration.py`, `leading.py` | One module per page: its charts, tiles, tables and text (Overview opens with `stand_panel`, "Where things stand", review WP7; Outlook = early-warning score in full, with "Three things to know" and "How to use the colours"; Leading table sorted by "Reading vs. history", `risk_pct`, review WP6) |
 | `src/site/states.py` | States page (Phase 4b): diffusion chart, weighted-vs-national charts (Weighted view only, no download), and `site/assets/states.json` (per-state history for the map, tiles, table); browser side in `static/states.js`, map outline `static/usa_110m.json` |
-| `src/site/about.py` | About page: definitions, sources (from the catalog), updates, revisions, method notes, disclaimer |
+| `src/site/about.py` | About page: definitions, sources (from the catalog), updates, revisions, method notes, model card (from the model files), disclaimer |
 | `src/site/downloads.py` | Data & Downloads page: writes every CSV / XLSX and bundle under `site/data/` (public licences only) |
 | `config/derived_columns.csv` | Descriptions of the columns we calculate in DOL files (used in download Columns sheets) |
 | `src/site/templates/`, `src/site/static/` | Templates (`base.html` = shared frame, `_macros.html` = chart card, `charts_page.html` = chart-grid pages) and the site's CSS / JavaScript (time control, dark mode, downloads) |
@@ -370,6 +371,9 @@ uncertainty) but NEW to Python, Git, GitHub and VS Code. So:
   claims: passes -> fractions and band table shown (common.T2_PASSED). T3 wider in-progress ranges: not adopted (overall
   80% coverage 0.854 / 0.852 at 3 / 12 months). T4 material-event score: not adopted (skill +0.02). Model unchanged;
   nothing for the January 2027 re-fit. Troy approved the T1 / T2 display (2026-11-13; no follow-up test for T3); merged into main.
+- 2026-11-13: review follow-ups on branch review-followups (NOT merged): model card docs/model_card.md + About "Model card"
+  section + tests/test_model_card.py (X5); "jobs report delayed" note points to the Outlook Forecasts table; exact state
+  weights stay published (Troy); the review's optional ideas recorded under Next steps (LATER).
 
 ## Next steps, in order
 Phase 4 and its review (Gates 1-4) are complete, merged and live; Troy ratified all delegated Phase 4 decisions on
@@ -396,6 +400,14 @@ merge + push himself or approves it, then Claude verifies the Publish run.
    chart cards.
 3. LATER (Troy, 2026-11-09: not worth the effort now; revisit later): WARN notices (openICPSR sign-up for the Cleveland
    Fed CC BY data, or a WARN Firehose key); asking Revelio for written permission to chart RPLS.
+   LATER, ideas from the independent review (Troy, 2026-11-13: keep on record, not being built now):
+   - Screen free BLS series that may sit closer to a consumer-lending book: unemployment for workers without a college
+     degree, by industry of last job, ages 25-54 (verify IDs; test like Stage 3 / docs/phase4_model_tests.md).
+   - A weighted Duration watch (continuing claims vs. a year ago, Weighted view; weights never shown).
+   - A one-page weekly brief (PDF or email on Thursdays) from the "Where things stand" panel data.
+   - For an internal version (needs permission / company data; deferred): whether these indicators lead the book's
+     own claim counts and durations; who receives an amber alert and what they do; single points of failure (one
+     FRED key, one GitHub account, DOL file formats).
 4. Deferred to a later phase (do not build): consumer credit stress (Tier 5) and any company data.
 5. Old branches deleted on 2026-11-09 with Troy's permission (phase2-review-fixes, phase3a, phase4a-e, phase4-review).
 Open items to watch: ETA 539 allowed age (42 days); DOL certificate glitch seen once on 2026-11-08; GitHub moving

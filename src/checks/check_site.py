@@ -745,6 +745,17 @@ def check_phase3(browser, base) -> None:
     check("No forecast yet" not in about and page.locator("a[href='outlook.html']").count() >= 1,
           "About: no 'No forecast yet'; points to the Outlook page")
     check("manual" in about, "About: says which model steps are manual")
+    # Review X5: the Model card section, its table read from score_skill_summary.csv, and its contents link
+    import pandas as pd
+    summ = pd.read_csv(ROOT / "data" / "model" / "score_skill_summary.csv").set_index("basis")
+    card_rows = page.locator("#card-table tbody tr")
+    red_cells = [card_rows.nth(0).locator("td").nth(i).inner_text() for i in (1, 2)] if card_rows.count() else []
+    want_red = [f"{int(summ.loc[b, 'n_red'])} months, {summ.loc[b, 'hit_red'] * 100:.0f}% followed by an event"
+                for b in ("first_published", "revised")]
+    check(page.locator("nav.toc a[href='#model-card']").count() == 1 and card_rows.count() == 4
+          and red_cells == want_red, f"About: Model card with 4 rows; red row {red_cells} = {want_red}")
+    check("not a recession forecast" in page.locator("#model-card").inner_text(),
+          "About: Model card says 'not a recession forecast'")
     check(not errors, f"no browser errors {errors[:3] if errors else ''}")
     page.context.close()
 
