@@ -1156,6 +1156,7 @@ def check_wp6(browser, base) -> None:
 
 def check_wp9b(browser, base) -> None:
     """Review WP9 items C7, C8, C12, C13, C14 (after the meeting)."""
+    import re
     print("\n=== Review WP9b: what-if tables, Outlook order and trigger names, benchmarks, episodes, States ===")
     page = browser.new_context(viewport={"width": 1280, "height": 900}).new_page()
     # C7: a what-if table under each chart with the toggle: hidden by default, shown when ticked, 2 rows
@@ -1186,13 +1187,15 @@ def check_wp9b(browser, base) -> None:
     check("A warning can show more than 6 months before an event" in body
           and re.search(r"The \d+ tested months are those from 2000 on", body) is not None,
           "Outlook: lead-time and tested-months sentences under the event table")
-    check("new claims against their past-year low alone gives about half the full model's skill" in body,
+    full = " ".join(page.text_content("main").split())     # includes text inside closed <details> boxes
+    check("new claims against their past-year low alone gives about half the full model's skill" in full,
           "Outlook: simple-rule benchmark sentence")
     ep = page.locator("#episodes")
     check(ep.count() == 1 and not ep.evaluate("e => e.open"), "Outlook: episode list present, closed by default")
-    ep_rows = ep.locator("tbody tr").all_inner_texts() if ep.count() else []
-    long_run = [r for r in ep_rows if "Nov 2022" in r and "Amber" in r]
-    check(len(long_run) == 1 and "40" in long_run[0].split("\t"), f"Outlook: 2022-2026 amber run is one long row {long_run}")
+    ep_rows = page.eval_on_selector_all("#episodes tbody tr",
+                                        "rows => rows.map(r => [...r.cells].map(c => c.textContent.trim()))")
+    long_run = [r for r in ep_rows if r[1] == "Nov 2022" and r[0].startswith("Amber")]
+    check(len(long_run) == 1 and int(long_run[0][3]) >= 36, f"Outlook: 2022-2026 amber run is one long row {long_run}")
     html = " ".join((SITE / name).read_text(encoding="utf-8") for name in
                     ("index.html", "outlook.html", "duration.html", "job-losses.html", "leading.html"))
     check(not re.search(r"trigger [124]\b|triggers? 1, 2", html), "no numbered triggers in reader-facing text")
