@@ -1516,3 +1516,30 @@ has only 10 amber / red months (no pattern can be read from it); the green band'
 Display (with Troy's approval; display only): `common.T2_PASSED = True`: the Duration watch card and the Overview
 duration line use the wording with fractions, and the card shows the four-band table (today's revised data, 1968–2026,
 `severity_watch.csv`).
+
+### 11.3 T3: wider ranges once an event is under way (finding F2 part 3)
+
+Pre-registration: `docs/model_tests_in_progress_noise.md`. Change under test (`forecast.py --from 1985 --option ipnoise`,
+outputs `forecast_*_ipnoise.csv`; the site's model untouched): at in-progress origins (real-time event of 3+ months) the
+noise is resampled from residuals of past in-progress forecasts (earlier events, outcome published by the origin:
+realized change as known then minus the median event-path change used then). The pool always had 30+ residuals
+(unemployment rate 116–219, claims rates 88–191), so the 1.5x fallback was never used. Comparison:
+`src/model/in_progress_noise_test.py` -> `data/model/forecast_in_progress_noise_test.csv`.
+
+Unemployment rate, 2000–2026 (without -> with the change), 3 / 6 / 12 months:
+
+| Measure | 3 months | 6 months | 12 months |
+| --- | --- | --- | --- |
+| 80% coverage, during an event (73 / 73 / 72 origins) | 0.73 -> 0.88 | 0.67 -> 0.86 | 0.72 -> 0.96 |
+| Above the 90th percentile, during an event | 0.18 -> 0.03 | 0.18 -> 0.07 | 0.13 -> 0.03 |
+| 80% coverage, all origins | 0.82 -> **0.854** | 0.79 -> 0.84 | 0.79 -> **0.852** |
+| RMSE ratio, all origins | 0.821 -> 0.824 | 0.807 -> 0.815 | 0.780 -> 0.791 |
+
+1985–1999 (36 in-progress origins): during-an-event 80% coverage 0.58 / 0.58 / 0.92 -> 1.00 at every horizon. Gate with
+the change (2000-on): unemployment 3 / 6 / 12 and continuing claims 13 weeks all pass.
+
+Rule: during-an-event coverage >= 0.70 (yes at all three), overall coverage 0.75–0.85 (**no at 3 and 12 months**),
+RMSE ratio change < 0.02 (yes: +0.003 / +0.007 / +0.011), shown fans pass the gate (yes). **Not adopted**: the model and
+the WP3 wording stay. Reported, not used to change the rule: the miss is narrow (0.004 and 0.002 above the ceiling),
+and the pooled residuals over-correct in 1985–1999 (every outcome inside the 80% range), so the change widens the
+ranges more than the shortfall needs; a smaller widening would be a new test, pre-registered again.
