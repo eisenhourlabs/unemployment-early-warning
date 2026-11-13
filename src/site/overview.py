@@ -13,7 +13,7 @@ import plotly.graph_objects as go
 from common import (ACCENT, GREYS, MODEL, PROVISIONAL_FAN, WHATIF_FOOTER, event_banner, fan_is_provisional, add_colour_band, add_fan, add_whatif, whatif_table, asof_line, with_outlook, base_layout, card, claims_weekly, dates, duration_watch, model_csv,
                     model_output, pre_recession_averages, fmt_change, fmt_claims, fmt_date, fmt_month, fred,
                     fred_metadata, is_estimate, is_preliminary, last_time_as_extreme, line_chart, ordinal, percentile_text, plain,
-                    prelim_label, signal, streak, value_on_or_before, vs_month, weekly_claims_chart)
+                    prelim_label, signal, streak, value_on_or_before, vs_month, weekly_claims_chart, T2_PASSED)
 
 # How far back a value must last have been matched before a sentence says "the highest since ..."
 HIGHEST_SINCE_MIN_WEEKS = 13
@@ -140,8 +140,18 @@ MEANING = {
     "all_green": "Nothing here points to more claims or longer claims in the months ahead. Routine weekly monitoring.",
 }
 
-# Small line under the Duration cell. Bracketed wording (review WP7) until test T2 in WP8 has passed.
-DURATION_SMALL = {
+# Small line under the Duration cell (review WP7). With fractions once WP8 test T2 passed (common.T2_PASSED); the
+# bracketed words-only wording otherwise.
+DURATION_SMALL_FRACTIONS = {
+    "falling": "From here, durations have almost never lengthened within a year. Would turn amber at about {amber} "
+               "million (10% above a year ago).",
+    "green": "From here, durations have lengthened within a year about 1 time in 6. Amber at about {amber} million.",
+    "amber": "From here, long-term unemployment has risen sharply within a year more than half the time. Red at about "
+             "{red} million.",
+    "red": "From here, long-term unemployment has risen sharply within a year about 5 times in 6, and durations kept "
+           "rising for one to two years after layoffs peaked.",
+}
+DURATION_SMALL_WORDS = {
     "falling": "From here, durations have almost never lengthened within a year. Would turn amber at about {amber} "
                "million (10% above a year ago).",
     "green": "From here, durations have lengthened within a year occasionally. Amber at about {amber} million.",
@@ -149,6 +159,7 @@ DURATION_SMALL = {
     "red": "From here, long-term unemployment has risen sharply within a year in most cases, and durations kept "
            "rising for one to two years after layoffs peaked.",
 }
+DURATION_SMALL = DURATION_SMALL_FRACTIONS if T2_PASSED else DURATION_SMALL_WORDS
 WORST = {"green": 0, "amber": 1, "red": 2}
 
 

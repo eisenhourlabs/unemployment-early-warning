@@ -1487,3 +1487,32 @@ Display (with Troy's approval; display only, no re-fit): Outlook forecast table,
 more" on the 3- and 6-month unemployment rows, in words (cut points 0.10 / 0.17 / 0.30 / 0.50) with the usual rate in
 grey. The Overview sentence of WP7 cell 3 is a 12-month figure and is **not** shown. Live values (Nov 12 run):
 3 months 0.1%, 6 months 0.5% ("under 1 in 10"); 12 months 12.7% (not shown).
+
+### 11.2 T2: the Duration watch on data as known at the time (finding I1 part 2)
+
+Pre-registration: `docs/model_tests_severity_watch.md`; script `src/model/severity_watch_realtime.py` ->
+`data/model/severity_watch_realtime.csv`. Each month's band from continuing claims vs. a year ago as known at the month
+end (`cont_yoy_of(as_known_on("CCSA", month end))`: current vintage, 12-day lag, the trigger's own value), and from 2010
+also on claims as first published (`CCSA_vintage`). Outcomes on final data, 2019-04 to 2021-12 excluded.
+
+Share of months followed within 12 months by each outcome (falling / green / amber / red; months in brackets):
+
+| Basis, window | Long-term share up 3+ points | Median weeks up 1.5+ | Months |
+| --- | --- | --- | --- |
+| **Real time, 1968–1999** | 0.03 / 0.03 / 0.50 / 0.82 | 0.03 / 0.05 / 0.38 / 0.52 | 215 / 66 / 34 / 68 |
+| **Real time, 2000–2026** | 0.00 / 0.35 / 0.77 / 0.88 | 0.01 / 0.23 / 0.54 / 0.69 | 179 / 43 / 13 / 42 |
+| Real time, 1968–2026 | 0.02 / 0.16 / 0.57 / 0.85 | 0.02 / 0.12 / 0.43 / 0.58 | 394 / 109 / 47 / 110 |
+| WP5 revised (no lag), 1968–2026 | 0.01 / 0.17 / 0.58 / 0.83 | 0.02 / 0.10 / 0.51 / 0.57 | 392 / 113 / 43 / 113 |
+| First published, 2010–2026 | 0.00 / 0.48 / 0.00 / 0.43 | 0.01 / 0.22 / 0.00 / 0.29 | 124 / 23 / 3 / 7 |
+| Real time, 2010–2026 | 0.00 / 0.48 / 0.00 / 0.43 | 0.01 / 0.22 / 0.00 / 0.29 | 124 / 23 / 3 / 7 |
+
+Rule (both rule windows, both outcomes: red >= 0.50, falling <= 0.10, rising band to band): **passes**. 96% of months
+fall in the same band on real-time as on WP5's revised data; from 2010 first-published claims put every month in the
+same band as real-time current-vintage claims. Reported, not part of the rule: the 1968–1999 median-weeks red share
+(0.515) clears 0.50 narrowly and green barely exceeds falling there (0.03 vs. 0.03 for the long-term share); 2010–2026
+has only 10 amber / red months (no pattern can be read from it); the green band's whole-sample 1 in 6 combines about
+1 in 30 before 2000 with about 1 in 3 since.
+
+Display (with Troy's approval; display only): `common.T2_PASSED = True`: the Duration watch card and the Overview
+duration line use the wording with fractions, and the card shows the four-band table (today's revised data, 1968–2026,
+`severity_watch.csv`).

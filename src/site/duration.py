@@ -11,7 +11,7 @@ import plotly.graph_objects as go
 
 from common import (DOL, MODEL, PROCESSED, PROVISIONAL_FAN, WHATIF_FOOTER, fan_is_provisional, add_fan, add_marker, add_whatif, whatif_table, claims_weekly,
                     duration_watch, fmt_date, fred, line_chart, line_with_comparison, model_output, signal,
-                    weekly_claims_chart, with_outlook)
+                    weekly_claims_chart, with_outlook, T2_PASSED)
 from overview import cc_rate_chart
 
 INTRO = ("How long unemployment lasts. State UI continuing claims show it weekly; exhaustion and benefit duration "
@@ -74,9 +74,19 @@ def cc_outlook(c: dict, live: dict) -> dict:
 # ===========================================================================
 # Duration watch (review WP5, Part C): an early read on claim severity from continuing claims vs. a year ago
 # ===========================================================================
-# The spec's wording in square brackets (no percentages) until WP8 test T2 has passed; then the table shows too.
-T2_PASSED = False
-WATCH_HEADLINE = {
+# With fractions and the small table once WP8 test T2 passed (common.T2_PASSED); otherwise the spec's wording in
+# square brackets (no percentages) and no table.
+WATCH_HEADLINE_FRACTIONS = {
+    "falling": "Continuing claims are {x}% below a year ago. In the past, durations have almost never lengthened in "
+               "the following year from here (1 month in 100).",
+    "green": "Continuing claims are {x}% above a year ago. Durations have lengthened within a year about 1 time in 6 "
+             "from here.",
+    "amber": "Continuing claims are {x}% above a year ago. Long-term unemployment has risen sharply within a year more "
+             "than half the time from here.",
+    "red": "Continuing claims are {x}% above a year ago. Long-term unemployment has risen sharply within a year about 5 "
+           "times in 6 from here, and benefit durations have lengthened for one to two years after layoffs peaked.",
+}
+WATCH_HEADLINE_WORDS = {
     "falling": "Continuing claims are {x}% below a year ago. In the past, durations have almost never lengthened in "
                "the following year from here.",
     "green": "Continuing claims are {x}% above a year ago. Durations have occasionally lengthened within a year from "
@@ -86,6 +96,7 @@ WATCH_HEADLINE = {
     "red": "Continuing claims are {x}% above a year ago. Long-term unemployment has risen sharply within a year in "
            "most cases from here, and benefit durations have lengthened for one to two years after layoffs peaked.",
 }
+WATCH_HEADLINE = WATCH_HEADLINE_FRACTIONS if T2_PASSED else WATCH_HEADLINE_WORDS
 WATCH_WHY = ("For involuntary unemployment insurance, this is the early read on claim severity: the official duration "
              "measures below move 6 to 18 months later.")
 WATCH_FOOTER = ("Rule: 4-week average of SA continuing claims vs. the same weeks a year earlier; amber from +10%, red "

@@ -337,6 +337,12 @@ def tail_shown() -> dict[int, float]:
     return {int(r.horizon): float(r.observed) for r in t.itertuples()}
 
 
+# Review WP8 test T2 (docs/model_tests_severity_watch.md): the Duration watch band shares held on data as known at the
+# time (1968-1999 and 2000-2026, both outcomes; data/model/severity_watch_realtime.csv), so the wording with fractions
+# and the small table are shown (Duration watch card, Overview "Where things stand"). False = the words-only wording.
+T2_PASSED = True
+
+
 # Duration watch (review WP5 / WP7): the band of continuing claims vs. a year ago (trigger 4's value v).
 # A falling reading shows green with the word "Falling" (Troy's decision 6).
 def duration_watch(v: float) -> dict:

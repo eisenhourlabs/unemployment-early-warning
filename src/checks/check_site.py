@@ -1082,6 +1082,23 @@ def check_wp5(browser, base) -> None:
     badge = card.locator(".signal").inner_text().strip() if card.count() else ""
     check(any(w in badge for w in ("Falling", "Steady", "Rising")), f"Duration watch: badge with a band word ({badge!r})")
     check("staying on benefits longer" not in page.inner_text("main"), "Duration: never says 'staying on benefits longer'")
+    # Review WP8 T2: once the real-time test passed, the card shows the band table (= severity_watch.csv) and its
+    # headline uses the wording with fractions; before that, words only and no table
+    sys.path.insert(0, str(ROOT / "src" / "site"))
+    from common import T2_PASSED
+    rows = [[c.strip() for c in r] for r in page.eval_on_selector_all(
+        "#card-duration-watch tbody tr", "rows => rows.map(r => [...r.cells].map(c => c.innerText))")]
+    sw = pd.read_csv(ROOT / "data" / "model" / "severity_watch.csv")
+    want = [[str(int(sw[(sw.outcome == "lt_share_up") & (sw.band == b)].months.iloc[0])),
+             f"{sw[(sw.outcome == 'lt_share_up') & (sw.band == b)].share_followed.iloc[0] * 100:.0f}%",
+             f"{sw[(sw.outcome == 'median_up') & (sw.band == b)].share_followed.iloc[0] * 100:.0f}%"]
+            for b in ("falling", "green", "amber", "red")]
+    check(([r[1:] for r in rows] == want) if T2_PASSED else not rows,
+          f"Duration watch: band table {'matches severity_watch.csv' if T2_PASSED else 'absent'} ({[r[1:] for r in rows]})")
+    head = card.locator(".watch-headline").inner_text() if card.count() else ""
+    fractions = ("1 month in 100", "1 time in 6", "more than half the time", "5 times in 6")
+    check(any(f in head for f in fractions) == T2_PASSED,
+          f"Duration watch: headline {'with' if T2_PASSED else 'without'} fractions ({head!r})")
     pdata = json.loads(page.locator("#page-data").text_content())
     ids = [c["id"] for c in pdata["charts"]]
     check(len(ids) == 10, f"Duration: 10 charts ({len(ids)})")
