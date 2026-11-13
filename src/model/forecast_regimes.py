@@ -10,7 +10,9 @@ Writes data/model/forecast_evaluation_regimes.csv: one row per target x horizon 
 
 Origins used: from 2000-01, on the first day of a month, outcome known, outside the 2020 window.
 Regime of each origin (event #13, 2020, left out of the event list):
-  during an event   in_progress and the event containing the origin has lasted 3+ months (start month = 1)
+  during an event   in_progress and the event containing the origin has lasted 3+ months (start month = 1). Since
+                    review WP4 both come from the real-time event state (src/model/realtime_events.py), as in
+                    forecast.py; "before an event" still uses events.csv (final dating) for the start.
   before an event   not in an event, and an event starts within the forecast horizon (event_starts_within_h)
   other             everything else
 Measures:
@@ -51,9 +53,30 @@ def event_age(month: pd.Timestamp, ev: pd.DataFrame) -> int:
     return (month.year - s.year) * 12 + month.month - s.month + 1
 
 
-def add_regime(bt: pd.DataFrame, ev: pd.DataFrame) -> pd.DataFrame:
+def realtime_age(month: pd.Timestamp, state: pd.DataFrame) -> int:
+    """Review WP4: months since the real-time provisional start of the event under way at `month` (start = 1)."""
+    s = state[state.index <= pd.Timestamp(f"{month:%Y-%m}-01")]
+    if s.empty or not s.under_way.iloc[-1]:
+        return 0
+    st = s.start.iloc[-1]
+    return (month.year - st.year) * 12 + month.month - st.month + 1
+
+
+def realtime_state() -> pd.DataFrame:
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import realtime_events as rte
+    return rte.state_by_month(rte.month_end_on())
+
+
+def add_regime(bt: pd.DataFrame, ev: pd.DataFrame, state: pd.DataFrame | None = None) -> pd.DataFrame:
+    """state (review WP4): the real-time event state by month; when given, an event's age counts from its real-time
+    start (main() passes it). Without it the age comes from events.csv (as before WP4; the unit tests use this)."""
     bt = bt.copy()
-    bt["age"] = bt.origin.map(lambda m: event_age(m, ev))
+    if state is not None:
+        bt["age"] = bt.origin.map(lambda m: realtime_age(pd.Timestamp(m), state))
+    else:
+        bt["age"] = bt.origin.map(lambda m: event_age(m, ev))
     in_progress = bt.in_progress.astype(bool)
     # An origin early in an event (in progress, under 3 months) is "other", not "before", even when a further event
     # starts within the horizon (as in the review's reference split).
@@ -73,11 +96,11 @@ def measures(g: pd.DataFrame) -> dict:
             "below_q10": float((g.realized < g.q10).mean())}
 
 
-def evaluate(bt: pd.DataFrame, ev: pd.DataFrame) -> pd.DataFrame:
+def evaluate(bt: pd.DataFrame, ev: pd.DataFrame, state: pd.DataFrame | None = None) -> pd.DataFrame:
     """The table, from a backtest frame (origin parsed as dates) and the event list."""
     bt = bt[(bt.origin >= "2000-01-01") & (bt.origin.dt.day == 1) & bt.realized.notna()
             & ~bt.covid_window.astype(bool)]
-    bt = add_regime(bt, ev)
+    bt = add_regime(bt, ev, state)
     rows = []
     for (target, horizon), g in bt.groupby(["target", "horizon"], sort=False):
         for regime in REGIMES + ["all"]:
@@ -89,7 +112,7 @@ def evaluate(bt: pd.DataFrame, ev: pd.DataFrame) -> pd.DataFrame:
 
 def main() -> None:
     bt = pd.read_csv(MODEL / "forecast_backtest.csv", parse_dates=["origin"])
-    out = evaluate(bt, load_events())
+    out = evaluate(bt, load_events(), realtime_state())      # review WP4: real-time event ages
     out.round(4).to_csv(OUT, index=False)
     with pd.option_context("display.width", 160):
         print(out.round(3).to_string(index=False))

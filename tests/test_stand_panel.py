@@ -100,7 +100,7 @@ class StandPanel(unittest.TestCase):
         self.assertIn("past its warning level", p["closing"])
 
     def test_d_event_flag(self):
-        p = overview.stand_panel(live(event={"under_way": True, "since": "2026-09"}), claims_table(), UR)
+        p = overview.stand_panel(live(event={"under_way": True, "provisional_start": "2026-09"}), claims_table(), UR)
         self.assertEqual(p["cells"][2]["main"], "A deterioration is under way since Sep 2026 (provisional). The score "
                                                 "now shows the chance of a further, new event.")
         self.assertTrue(p["meaning"].startswith(overview.MEANING["freq_red"]))

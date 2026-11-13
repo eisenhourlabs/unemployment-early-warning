@@ -208,6 +208,25 @@ def fan_is_provisional(f: dict) -> bool:
     return any(h.get("provisional") for h in f.get("horizons", []))
 
 
+def apply_fan_gate(live: dict) -> None:
+    """In place (review WP4 Part D): a fan horizon is shown only while it passes the stage 3d gate in
+    data/model/forecast_evaluation.csv (2000-on excluding 2020: 50% and 80% coverage within 10 points of target and
+    error below no-change). The live run (frozen model) still computes every horizon; the site leaves out the ones
+    that fail and lists them in live["fans_dropped"] as (target, horizon, 80% coverage)."""
+    try:
+        ev = pd.read_csv(MODEL / "forecast_evaluation.csv")
+    except OSError:
+        return
+    ev = ev[ev.subset == "2000-on excl. 2020"]
+    failed = {(r.target, int(r.horizon)): r.cover80 for r in ev.itertuples() if not bool(r.gate_pass)}
+    live["fans_dropped"] = []
+    for name, f in (live.get("fans") or {}).items():
+        keep = [h for h in f["horizons"] if (name, int(h["horizon"])) not in failed]
+        live["fans_dropped"] += [(name, int(h["horizon"]), failed[(name, int(h["horizon"]))])
+                                 for h in f["horizons"] if (name, int(h["horizon"])) in failed]
+        f["horizons"] = keep
+
+
 def model_output(built) -> dict:
     """The live model result set (data/model/live_latest.json, from src/model/live.py), with a status note.
 
@@ -221,6 +240,7 @@ def model_output(built) -> dict:
         return {"live": None, "note": "Early-warning score not available: the model output is missing."}
     reword_live(live)
     add_fomc_next(live)
+    apply_fan_gate(live)
     # Review WP4 preview switch (PC only, like UW_PREVIEW_DELAY): UW_PREVIEW_EVENT=YYYY-MM builds the site as if an
     # event had been under way since that month (banner and panel only; no model output changes).
     import os as _os

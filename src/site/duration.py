@@ -42,21 +42,28 @@ def ar218_not_reported() -> str:
 
 
 def cc_outlook(c: dict, live: dict) -> dict:
-    """Phase 3 on the continuing-claims-rate chart: the 13 and 26-week fan, what-if paths, and why 52 weeks is not
-    shown (its 80% band held too few outcomes in testing)."""
+    """Phase 3 on the continuing-claims-rate chart: the fan at the horizons that pass the gate (13 weeks; 26 weeks until
+    review WP4's re-run), what-if paths, and why the others are not shown (80% bands held too few outcomes)."""
     fig = go.Figure(c["figure"])
     ahead = add_fan(fig, live["fans"]["cc"], 1, ".2f", "%",
                     lambda h: f"week ending {fmt_date(h['target_period'])} ({h['horizon']} weeks)", labels_below=True)
     whatif_ahead = add_whatif(fig, live["stress"]["cc"], 1, ".2f", "%")
     ev = pd.read_csv(MODEL / "forecast_evaluation.csv")
-    row = ev[(ev.target == "cc") & (ev.horizon == 52) & (ev.subset == "2000-on excl. 2020")]
-    held = f" (80% bands held only {row.cover80.iloc[0] * 100:.0f}% of outcomes)" if len(row) else ""
-    notes = [f"52-week ranges are not shown: in testing they were too narrow{held}."]
-    # Review WP3 (F6): coverage as measured in testing, at the two horizons shown
-    shown = ev[(ev.target == "cc") & ev.horizon.isin([13, 26]) & (ev.subset == "2000-on excl. 2020")]
-    span = lambda col: f"{shown[col].min() * 100:.0f}–{shown[col].max() * 100:.0f}%"
+    ev = ev[(ev.target == "cc") & (ev.subset == "2000-on excl. 2020")]
+    # Review WP4 Part D: horizons that fail the gate are left out (common.apply_fan_gate); 52 weeks always has
+    shown_h = [int(h["horizon"]) for h in live["fans"]["cc"]["horizons"]]
+    dropped = sorted(set(int(h) for h in ev.horizon) - set(shown_h) | {52})
+    gone = ev[ev.horizon.isin(dropped)].sort_values("horizon")
+    held = " and ".join(f"{v * 100:.0f}%" for v in gone.cover80)
+    notes = [f"{' and '.join(str(h) for h in gone.horizon)}-week ranges are not shown: in testing they were too narrow "
+             f"(80% bands held only {held} of outcomes)."]
+    # Review WP3 (F6): coverage as measured in testing, at the horizons shown
+    shown = ev[ev.horizon.isin(shown_h)]
+    span = lambda col: (f"{shown[col].iloc[0] * 100:.0f}%" if len(shown) == 1
+                        else f"{shown[col].min() * 100:.0f}–{shown[col].max() * 100:.0f}%")
     return with_outlook(c, fig, ahead, whatif_ahead, notes,
-                        " Fan = our forecast range for the 4-week average at 13 and 26 weeks: in testing (2000–2026, "
+                        f" Fan = our forecast range for the 4-week average at {' and '.join(map(str, shown_h))} weeks: "
+                        "in testing (2000–2026, "
                         f"excluding 2020) the darker band held {span('cover50')} of outcomes and the lighter band "
                         f"{span('cover80')}; when it missed, outcomes were more often below the range than above it."
                         + WHATIF_FOOTER + (PROVISIONAL_FAN if fan_is_provisional(live["fans"]["cc"]) else ""))
@@ -131,8 +138,9 @@ def build(built: datetime) -> dict:
                        f"week since {both.week_ended.dt.year.min()} (DOL rounds to 0.1).")
     charts.append(cc_outlook(rate, live) if live else rate)
     if live:   # review WP7 (P3): the caveat a reader should see without opening the footer
+        months = "3 to 6 months" if any(h["horizon"] == 26 for h in live["fans"]["cc"]["horizons"]) else "3 months"
         charts[-1]["caveat"] = ("The range has been about right overall and a little too narrow since 2021. It is a "
-                                "range for the next 3 to 6 months, not a view on a downturn.")
+                                f"range for the next {months}, not a view on a downturn.")
 
     # 2. SA continuing claims level: 4-week average bold, weekly faint (FRED, from 1967)
     sources = claims.set_index("week_ended")["source_continued"]

@@ -177,8 +177,7 @@
   </table>
   </div>
   <p class="chart-footer">Warning = months between the colour first showing and the event's start; "on since" = the colour
-    was already showing from an earlier, unresolved warning. Fans: of the 5 forecasts shown on this site (unemployment rate
-    at 3, 6 and 12 months, continuing claims rate at 13 and 26 weeks), how many outcomes fell inside the 80% range.
+    was already showing from an earlier, unresolved warning. Fans: {{ backtest.fans_shown }}, how many outcomes fell inside the 80% range.
     Counted as warning episodes: amber {{ backtest.score.amber_real }} followed by an event,
     {{ backtest.score.amber_false }} false ({{ backtest.false_ambers }}); red {{ backtest.score.red_real }} followed by
     an event, {{ backtest.score.red_false }} false ({{ backtest.false_reds }}). Episode counts understate long warnings:
@@ -282,9 +281,9 @@
     <p>Each range mixes two things: a "quiet times" path fitted on months with no event near, and the paths that followed
       past events, weighted by the score's probability for the matching window. When risk rises, the upper side of the
       range stretches toward past downturns, so the fan is lopsided. The ranges held about the right share of outcomes in
-      testing overall, and the middle line beat "no change" by 13–27%. They were weakest when it mattered most: once the
-      2008–09 downturn was under way, the 80% range for unemployment held only half to two-thirds of outcomes and the
-      middle line ran 0.4 to 1.2 points too low. During a downturn, treat the upper edge of the range as a floor for
+      testing overall, and the middle line beat "no change" by 13–27%. They were weakest when it mattered most: in forecasts made
+      once an event was under way, the 80% range for unemployment held only about two-thirds to three-quarters of
+      outcomes, and in the 2008–09 downturn the middle line ran 0.2 to 0.6 point too low. During a downturn, treat the upper edge of the range as a floor for
       planning, and look at the what-if paths. But professional
       forecasters' consensus has been a better single-number forecast than our middle line (about 15–20% lower error):
       use the range and the tilt, not the middle line. In 2022–26 unemployment drifted up slowly without an event, and the

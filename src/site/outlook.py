@@ -277,6 +277,10 @@ def backtest() -> dict | None:
         r_ = reg[(reg.target == t) & (reg.horizon == h) & (reg.regime == regime)]
         return f"{r_.cover80.iloc[0] * 100:.0f}%" if len(r_) else "—"
 
+    # Review WP4 Part D: forecasts that fail the gate are no longer shown on the site (common.apply_fan_gate)
+    shown = {k: v for k, v in shown.items()
+             if bool(fe[(fe.target == k[0]) & (fe.horizon == k[1]) & (fe.subset == "2000-on excl. 2020")]
+                     .gate_pass.all())}
     fans = []
     for (t, h), label in shown.items():
         g = fe[(fe.target == t) & (fe.horizon == h) & (fe.subset == "2000-on excl. 2020")]
@@ -298,7 +302,11 @@ def backtest() -> dict | None:
         rows.append({"event": f"#{e.event}", "start": fmt_month(e.start_month + "-01"), "kind": kind, "rise": rise,
                      "amber": lead_text(r.get(f"amber_lead_#{e.event}")), "red": lead_text(r.get(f"red_lead_#{e.event}")),
                      "fan6": inside[6], "fan3": inside[3]})
-    return {"score": score, "fans": fans, "events": rows, "evidence": evidence(),
+    ur_h = [str(h) for (t, h) in shown if t == "ur"]
+    cc_h = [str(h) for (t, h) in shown if t == "cc"]
+    fans_shown = (f"of the {len(shown)} forecasts shown on this site (unemployment rate at {', '.join(ur_h[:-1])} and "
+                  f"{ur_h[-1]} months, continuing claims rate at {' and '.join(cc_h)} weeks)")
+    return {"score": score, "fans": fans, "events": rows, "evidence": evidence(), "fans_shown": fans_shown,
             "false_ambers": ", ".join(fmt_month(x + "-01") for x in str(r.amber_false_starts).split(", ")),
             "false_reds": ", ".join(fmt_month(x + "-01") for x in str(r.red_false_starts).split(", "))}
 
