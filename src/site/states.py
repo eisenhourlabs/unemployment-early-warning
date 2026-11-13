@@ -75,6 +75,36 @@ MAP_MEASURES = [
 ]
 
 
+# Review WP9 C14: the map's colour scale is fixed for each measure (it used to rescale to the states shown at each
+# date, so the same colour meant different values at different dates). Range: the 5th to 95th percentile of every
+# state's values over the whole history, leaving out March 2020 to December 2021 (pandemic claims would otherwise
+# stretch the scale until today's map is nearly one colour); diverging measures are centred on 0.
+RANGE_SKIP = ("2020-03", "2021-12")
+
+
+def colour_range(values, kind: str) -> tuple[float, float]:
+    """(zmin, zmax) for a map measure from all its values (None / NaN ignored)."""
+    v = np.array([x for x in values if x is not None and x == x], dtype=float)
+    q05, q95 = np.quantile(v, [0.05, 0.95])
+    if kind == "diverging":
+        lim = max(abs(q05), abs(q95)) or 1.0
+        return -round(float(lim), 2), round(float(lim), 2)
+    return round(float(q05), 2), round(float(max(q95, q05 + 1e-6)), 2)
+
+
+def map_ranges(payload: dict) -> list[dict]:
+    """MAP_MEASURES with each measure's fixed colour range (zmin, zmax) added; states and DC only."""
+    on_map = [i for i, ar in enumerate(payload["areas"]) if ar["map"]]
+    out = []
+    for m in MAP_MEASURES:
+        periods = payload["weeks"] if m["freq"] == "w" else payload["months"]
+        keep = [k for k, d in enumerate(periods) if not (RANGE_SKIP[0] <= d[:7] <= RANGE_SKIP[1])]
+        arrs = payload[m["freq"]][m["key"]]
+        zmin, zmax = colour_range([arrs[i][k] for i in on_map for k in keep], m["kind"])
+        out.append({**m, "zmin": zmin, "zmax": zmax})
+    return out
+
+
 def read(name: str, date_col: str) -> pd.DataFrame:
     return pd.read_csv(STATES / name, parse_dates=[date_col])
 
@@ -219,7 +249,7 @@ def states_payload() -> dict:
         "w_icy": rounded(ww.weighted_ic_yoy_pct, 1), "w_cc": rounded(ww.weighted_cc_rate_4wk, 3),
         "w_ccy": rounded(ww.weighted_cc_rate_yoy_pp, 3), "w_diff": rounded(ww.weighted_diffusion_pct, 1),
     }
-    return {
+    payload = {
         "areas": [{"code": r.state, "name": r.state_name, "map": r.area_type in ("state", "dc")}
                   for r in a.itertuples()],
         "weeks": [d.strftime("%Y-%m-%d") for d in weeks],
@@ -229,6 +259,8 @@ def states_payload() -> dict:
         "threshold": THRESHOLD, "gapThreshold": GAP_THRESHOLD, "normalThreshold": NORMAL_THRESHOLD,
         "shutdownWeeks": list(SHUTDOWN_WEEKS),
     }
+    payload["measures"] = map_ranges(payload)
+    return payload
 
 
 def write_payload(out_dir) -> int:

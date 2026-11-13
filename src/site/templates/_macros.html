@@ -11,6 +11,23 @@
   <label class="whatif-toggle"><input type="checkbox" data-whatif="{{ c.id }}"> Show what-if paths (not a forecast)</label>
   {%- endif %}
   <div class="chart" id="chart-{{ c.id }}" role="img" aria-label="{{ c.title }} chart"></div>
+  {%- if c.whatif_table %}
+  {#- Review WP9 C7: the what-if paths as numbers, shown only while "Show what-if paths" is ticked (site.js) -#}
+  <div class="whatif-table" data-whatif-table="{{ c.id }}" hidden>
+    <div class="table-scroll">
+    <table class="model-table compact">
+      <caption>{{ c.whatif_table.caption }}</caption>
+      <thead><tr><th>What-if path</th>{% for h in c.whatif_table.head %}<th class="num">{{ h }}</th>{% endfor %}</tr></thead>
+      <tbody>
+        {%- for r in c.whatif_table.rows %}
+        <tr><td>{{ r.name }}</td>{% for v in r.cells %}<td class="num">{{ v }}</td>{% endfor %}<td class="num">{{ r.peak }}</td></tr>
+        {%- endfor %}
+      </tbody>
+    </table>
+    </div>
+    <p class="chart-note">{{ c.whatif_table.note }}</p>
+  </div>
+  {%- endif %}
   {%- if c.caveat %}
   <p class="chart-caveat">{{ c.caveat }}</p>
   {%- endif %}

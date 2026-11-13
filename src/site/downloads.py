@@ -315,9 +315,10 @@ def model_files() -> list[dict]:
              ["<trigger>_color", "green / amber / red (blank before enough data exist)"],
              ["<trigger>_basis", "real-time (as published then), current-vintage (today's claims cut back by the "
               "release lag) or revised (before the first archived vintage)"],
-             ["overall_status", "Status rule: red if trigger 1, 2 or 4 is red; amber if one of them is amber/red and "
-              "another trigger that counts toward the status (1, 2, 4, 6, 8) is amber/red; else green. Temp help "
-              "and factory surveys are shown for context, not counted"]])
+             ["overall_status", "Status rule: red if the Sahm indicator, new claims or continuing claims is red; "
+              "amber if one of those three is amber/red and another trigger that counts toward the status (those "
+              "three, the yield curve or financial conditions) is amber/red; else green. Temp help and factory "
+              "surveys are shown for context, not counted"]])
     # 3. Forecast archive: every live run's fans
     fans = MODEL / "live_fans_history.csv"
     if fans.exists():

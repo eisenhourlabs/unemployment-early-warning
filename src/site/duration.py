@@ -9,7 +9,7 @@ from datetime import datetime
 import pandas as pd
 import plotly.graph_objects as go
 
-from common import (DOL, MODEL, PROCESSED, PROVISIONAL_FAN, WHATIF_FOOTER, fan_is_provisional, add_fan, add_marker, add_whatif, claims_weekly,
+from common import (DOL, MODEL, PROCESSED, PROVISIONAL_FAN, WHATIF_FOOTER, fan_is_provisional, add_fan, add_marker, add_whatif, whatif_table, claims_weekly,
                     duration_watch, fmt_date, fred, line_chart, line_with_comparison, model_output, signal,
                     weekly_claims_chart, with_outlook)
 from overview import cc_rate_chart
@@ -48,6 +48,8 @@ def cc_outlook(c: dict, live: dict) -> dict:
     ahead = add_fan(fig, live["fans"]["cc"], 1, ".2f", "%",
                     lambda h: f"week ending {fmt_date(h['target_period'])} ({h['horizon']} weeks)", labels_below=True)
     whatif_ahead = add_whatif(fig, live["stress"]["cc"], 1, ".2f", "%")
+    c["whatif_table"] = whatif_table(live["stress"]["cc"], [13, 26, 52], "weeks", 1, 2, "%",   # review WP9 C7
+                                     "Continuing claims rate (4-week average), % of covered employment")
     ev = pd.read_csv(MODEL / "forecast_evaluation.csv")
     ev = ev[(ev.target == "cc") & (ev.subset == "2000-on excl. 2020")]
     # Review WP4 Part D: horizons that fail the gate are left out (common.apply_fan_gate); 52 weeks always has
@@ -87,7 +89,7 @@ WATCH_HEADLINE = {
 WATCH_WHY = ("For involuntary unemployment insurance, this is the early read on claim severity: the official duration "
              "measures below move 6 to 18 months later.")
 WATCH_FOOTER = ("Rule: 4-week average of SA continuing claims vs. the same weeks a year earlier; amber from +10%, red "
-                "from +20% (the same thresholds as confirmation trigger 4 on the Outlook page). \u2018Risen sharply\u2019 = "
+                "from +20% (the same thresholds as the continuing-claims confirmation trigger on the Outlook page). \u2018Risen sharply\u2019 = "
                 "share of unemployed out of work 27+ weeks up 3 points or more within 12 months; 1968–2026 excluding "
                 "2019–21; today's revised data. Continuing claims rise when more people start claiming as well as "
                 "when people stay on benefits longer, so this is an early read on duration, not a direct measure of "

@@ -361,6 +361,10 @@
       downloadPng(byId(t.dataset.png));
     }
   });
+  // Review WP9 C7: the what-if numbers table under a chart follows the same toggle.
+  function showWhatifTable(id, on) {
+    document.querySelectorAll("[data-whatif-table='" + id + "']").forEach(function (t) { t.hidden = !on; });
+  }
   // "Show what-if paths (not a forecast)": shows or hides the stress paths of one chart. They only appear in
   // today's view; while they show, the x-axis runs on to where they end.
   document.addEventListener("change", function (e) {
@@ -368,6 +372,7 @@
     if (!box) return;
     var chart = byId(box.dataset.whatif);
     chart.whatif = box.checked;
+    showWhatifTable(box.dataset.whatif, box.checked);
     var w = windowFor(chart);
     setView(chart, w[0], w[1]);
   });
@@ -387,6 +392,7 @@
   document.querySelectorAll("input[data-whatif]").forEach(function (b) {
     var c = byId(b.dataset.whatif);
     if (c) c.whatif = b.checked;
+    showWhatifTable(b.dataset.whatif, b.checked);
   });
   Promise.all(charts.map(draw)).then(function () { document.body.dataset.ready = "true"; });
 })();

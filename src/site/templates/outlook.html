@@ -52,12 +52,6 @@
 </section>
 {%- endif %}
 
-<div class="grid">
-  {%- for c in charts %}
-  {{ chart_card(c) }}
-  {%- endfor %}
-</div>
-
 <div class="outlook-cards">
   <section class="card" id="horizons" aria-labelledby="hz-title">
     <h2 id="hz-title">Other horizons</h2>
@@ -86,20 +80,26 @@
   </section>
 </div>
 
+<div class="grid">
+  {%- for c in charts %}
+  {{ chart_card(c) }}
+  {%- endfor %}
+</div>
+
 <section class="card outlook-section" aria-labelledby="trt-title">
   <h2 id="trt-title">Trigger detail</h2>
   <div class="table-scroll">
   <table class="model-table">
-    <thead><tr><th>#</th><th>Trigger</th><th>Rule</th><th class="num">Value</th><th>Colour</th><th>Last change</th></tr></thead>
+    <thead><tr><th>Trigger</th><th>Rule</th><th class="num">Value</th><th>Colour</th><th>Last change</th></tr></thead>
     <tbody>
       {%- for r in triggers.panel %}
-      <tr><td>{{ r.n }}</td><td>{{ r.name }}{% if r.note %}<span class="block muted">{{ r.note }}</span>{% endif %}</td>
+      <tr><td>{{ r.name }}{% if r.note %}<span class="block muted">{{ r.note }}</span>{% endif %}</td>
         <td class="small">{{ r.rule }}</td><td class="num">{{ r.value }}</td>
         <td><span class="signal signal-sm signal-{{ r.signal.colour }}"><span aria-hidden="true">{{ r.signal.icon }}</span> {{ r.signal.label }}</span></td>
         <td class="small">{{ r.change }}</td></tr>
       {%- endfor %}
       {%- for r in triggers.context %}
-      <tr class="muted"><td>{{ r.n }}</td><td>{{ r.name }}<span class="block">shown for context</span></td>
+      <tr class="muted"><td>{{ r.name }}<span class="block">shown for context</span></td>
         <td class="small">{{ r.rule }}</td><td class="num">{{ r.value }}</td><td>—</td><td class="small"></td></tr>
       {%- endfor %}
     </tbody>
@@ -181,7 +181,10 @@
     Counted as warning episodes: amber {{ backtest.score.amber_real }} followed by an event,
     {{ backtest.score.amber_false }} false ({{ backtest.false_ambers }}); red {{ backtest.score.red_real }} followed by
     an event, {{ backtest.score.red_false }} false ({{ backtest.false_reds }}). Episode counts understate long warnings:
-    see the <a href="#stretch-2022-2025">2022–2025 note</a> below.</p>
+    see the <a href="#stretch-2022-2025">2022–2025 note</a> below. A warning can show more than 6 months before an
+    event: the table counts from the month the colour first appeared and stayed on, while the score itself looks 6
+    months ahead. The {{ backtest.score.months }} tested months are those from 2000 on with no event under way, outside
+    the 2020 window, and old enough for the outcome to be known.</p>
   <div class="table-scroll">
   <table class="model-table">
     <thead><tr><th>Forecast, 2000–2026 excluding 2020</th><th class="num">Error vs. no change</th><th class="num">Inside 50% range</th>
@@ -315,6 +318,29 @@
         weight beside initial claims.</li>
     </ul>
   </details>
+  {%- if episodes %}
+  <details id="episodes">
+    <summary>Every amber and red episode since 2000</summary>
+    <p>Runs of months with the tested score at amber or above (20%+) and at red (50%+), 2000 on, as in the track record
+      above.</p>
+    <div class="table-scroll">
+    <table class="model-table compact">
+      <thead><tr><th>Level</th><th>Start</th><th>End</th><th class="num">Months</th><th class="num">Highest score</th><th>Outcome</th></tr></thead>
+      <tbody>
+        {%- for e in episodes %}
+        <tr><td>{{ e.colour }}</td><td>{{ e.start }}</td><td>{{ e.end }}</td><td class="num">{{ e.months }}</td>
+          <td class="num">{{ e.highest }}</td><td>{{ e.outcome }}</td></tr>
+        {%- endfor %}
+      </tbody>
+    </table>
+    </div>
+    <p class="chart-footer">An episode counts as "event followed" when an event started within 12 months of the
+      episode's first month and the episode was still on in the 3 months before it; otherwise "false", even if an event
+      began later in a long episode (as in 2006–2009). "During an event": the episode began inside one. "Too recent to
+      judge": its 12 months are not over. Up to 2 months below the level inside an episode are bridged. Highest score
+      includes any months inside an event.</p>
+  </details>
+  {%- endif %}
 </section>
 {%- endif %}
 {% endblock %}

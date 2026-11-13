@@ -412,6 +412,33 @@ def live_record() -> str:
             f"within 6 months), {n('amber')} amber ({k('amber')}), {n('red')} red ({k('red')}).")
 
 
+OUTCOME_WORDS = {"false": "false", "during event": "during an event", "too recent to judge": "too recent to judge"}
+
+
+def warning_episodes() -> list[dict] | None:
+    """Review WP9 C13: every amber (score 20%+) and red (50%+) episode since 2000, from the tested score
+    (data/model/score_oos.csv, column logit), with the outcome rule the track record uses (src/model/score.py
+    score_episodes: an event starting within 12 months of the episode's start while it is still on = "event
+    followed"). Imported here, not at the top: score.py loads scikit-learn."""
+    try:
+        oos = pd.read_csv(MODEL / "score_oos.csv", parse_dates=["month"]).set_index("month")
+        import score as S                      # src/model/score.py (functions only; main() is never called)
+    except (OSError, ImportError):
+        return None
+    S.DATA_END = oos.index[-1]                 # as score.main() does: "too recent to judge" needs the last month
+    ev = S.load_events()
+    p = oos.logit[oos.index >= "2000-01-01"]
+    rows = []
+    for theta, colour in ((0.20, "Amber or red (20%+)"), (0.50, "Red (50%+)")):
+        eps, _, _ = S.score_episodes(p, theta, ev)
+        for e in eps.itertuples():
+            during = p[(p.index >= e.start) & (p.index <= e.end)]
+            outcome = "event followed" if e.outcome.startswith("real") else OUTCOME_WORDS.get(e.outcome, e.outcome)
+            rows.append({"colour": colour, "start": fmt_month(e.start), "end": fmt_month(e.end),
+                         "months": len(during), "highest": f"{during.max() * 100:.0f}%", "outcome": outcome})
+    return rows
+
+
 def benchmark_sentence() -> str | None:
     """Review WP9 C12: how much of the score's tested skill one input gives (data/model/score_simple_benchmarks.csv,
     written by src/model/score_simple_benchmarks.py; revised claims, 2000-2026). The approved words "about half" and
@@ -467,6 +494,7 @@ def build(built: datetime) -> dict:
         "backtest": backtest(),
         "weights": weights_table(live),
         "benchmark": benchmark_sentence(),
+        "episodes": warning_episodes(),
         "model_year": live["model_year"],
         "first_live": f"{first_live:%B %Y}",
         "thresholds": s["thresholds"],

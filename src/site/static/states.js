@@ -211,7 +211,9 @@
     order.forEach(function (h, k) { h.rank = k + 1; });
     var vals = have.map(function (h) { return h.v; }).sort(function (x, y) { return x - y; });
     var zmin, zmax;
-    if (m.kind === "diverging") {
+    if (m.zmin !== undefined && m.zmax !== undefined) {   // review WP9 C14: fixed for each measure
+      zmin = m.zmin; zmax = m.zmax;
+    } else if (m.kind === "diverging") {
       var lim = Math.max(Math.abs(quantile(vals, 0.05)), Math.abs(quantile(vals, 0.95))) || 1;
       zmin = -lim; zmax = lim;
     } else {
@@ -242,6 +244,15 @@
       customdata: missing.map(function (h) { return [h.name, "not reported for " + period.toLowerCase()]; }),
       hovertemplate: "<b>%{customdata[0]}</b><br>%{customdata[1]}<extra></extra>"
     });
+    // Review WP9 C14: states whose latest value is older than the period shown carry a dot (not only the tooltip)
+    var older = have.filter(function (h) { return h.i < snap[c.at]; });
+    if (older.length) traces.push({
+      type: "scattergeo", locationmode: "USA-states", mode: "markers", name: "Older reading", showlegend: false,
+      locations: older.map(function (h) { return h.code; }),
+      marker: { size: 7, color: t.text, line: { color: t.bg, width: 1.5 } },
+      customdata: older.map(function (h) { return [h.name, "latest value from " + periodText(c.group, h.i).toLowerCase()]; }),
+      hovertemplate: "<b>%{customdata[0]}</b><br>%{customdata[1]}<extra></extra>"
+    });
     var layout = {
       geo: { scope: "usa", projection: { type: "albers usa" }, bgcolor: t.bg, showlakes: false, showland: true,
              landcolor: sc.missing, subunitcolor: sc.border, showframe: false },
@@ -249,12 +260,18 @@
       paper_bgcolor: t.bg, font: { family: "system-ui, -apple-system, Segoe UI, Roboto, sans-serif", color: t.text },
       dragmode: false, hoverlabel: { bgcolor: t.hoverBg, bordercolor: t.axis, font: { color: t.hoverText } }
     };
-    var note = el("map-missing");
-    note.hidden = !missing.length;
-    note.textContent = missing.length ? "Grey: not reported for " + period.toLowerCase() + " (" +
-      missing.map(function (h) { return h.code; }).join(", ") + ")." : "";
+    var note = el("map-missing"), parts = [];
+    if (missing.length) parts.push("Grey: not reported for " + period.toLowerCase() + " (" +
+      missing.map(function (h) { return h.code; }).join(", ") + ").");
+    if (older.length) parts.push("Dot: latest value is from an earlier period (" +
+      older.map(function (h) { return h.code; }).join(", ") + ").");
+    note.hidden = !parts.length;
+    note.textContent = parts.join(" ");
     el("map-footer").textContent = m.label + ", " + period.replace("Week", "week") + ". " + m.footer +
-      " A state that has not reported this period shows its own latest value (its date is in the tooltip)." +
+      " A state that has not reported this period shows its own latest value, marked with a dot (its date is in the" +
+      " tooltip). Colours use one fixed scale for each measure (" + fmt(zmin, m.decimals, m.unit, m.signed) + " to " +
+      fmt(zmax, m.decimals, m.unit, m.signed) + ": the 5th to 95th percentile of all states' values, leaving out" +
+      " March 2020 to December 2021), so a colour means the same at every date." +
       " Sources: DOL ETA 539 / ETA 5159, BLS via FRED; our calculation.";
     return Plotly.react(mapEl, traces, layout, { displayModeBar: false, responsive: true, scrollZoom: false,
                                                  topojsonURL: "assets/" }).then(function (gd) {
@@ -380,6 +397,23 @@
     drawDrill();
     if (scroll) el("drill").scrollIntoView({ behavior: "smooth", block: "start" });
   }
+  // Review WP9 C14: the same measure, baseline and weeks that put a state on the watch list (renderRising)
+  function flagLine(a) {
+    var i = snap.ic, n = P.w.icn[a], thr = P.normalThreshold, run = 0, parts = [];
+    for (var k = i; k >= 0 && n[k] !== null && n[k] >= thr; k--) run++;
+    if (i >= 0 && n[i] !== null) {
+      parts.push("New claims " + fmt(n[i], 0, "%", true) + " vs. normal for these weeks (4-week average claims rate, " +
+        "week ending " + fmtDate(P.weeks[i]) + ", against the median of the same weeks in the 3 earlier years)" +
+        (run ? ", " + run + (run === 1 ? " week" : " weeks") + " running at " + thr + "% or more" : "") + ".");
+    }
+    var g = P.m.gap[a][snap.gap];
+    if (g !== null && g !== undefined) parts.push("Unemployment (3-month average) " + fmt(g, 1, " pt", true) +
+      " vs. its 12-month low, " + fmtMonth(P.months[snap.gap]) + ".");
+    var on = run >= 3 || (g !== null && g !== undefined && g >= P.gapThreshold - 1e-9);
+    parts.push((on ? "On the watch list" : "Not on the watch list") + " (rule: new claims " + thr + "% or more above " +
+      "normal for 3 weeks in a row, or unemployment " + P.gapThreshold + " point or more above its 12-month low).");
+    return parts.join(" ");
+  }
   function drawDrill() {
     if (!P || !drillCode) return;
     var a = P.areas.map(function (ar) { return ar.code; }).indexOf(drillCode);
@@ -414,6 +448,7 @@
                                  hovertemplate: "%{y:.1f} weeks<extra></extra>" }],
                  Object.assign(drillLayout(t, "Weeks", "%Y"), { showlegend: false }), cfg);
     el("drill-title").textContent = "State detail: " + P.areas[a].name;
+    el("drill-flag").textContent = flagLine(a);
   }
   el("drill-state").addEventListener("change", function (e) { openDrill(e.target.value, false); });
   document.addEventListener("click", function (e) {

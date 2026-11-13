@@ -245,6 +245,14 @@ def monthly_history(fz: dict) -> pd.DataFrame:
 # ===================================================================================================
 # Layer 1 triggers
 # ===================================================================================================
+
+# Review WP9 C8: triggers are named, never numbered, in reader-facing text (src/site/common.py reword_live applies the
+# same sentence to a live_latest.json written before this change).
+TRIGGER_RULE = ("Red if the Sahm indicator, new claims or continuing claims is red. Amber if one of those three is "
+                "amber or red and another trigger (including the yield curve or financial conditions) is amber or red. "
+                "Otherwise green.")
+
+
 def triggers_now(asof: pd.Timestamp) -> dict:
     cfg = pd.read_csv(TR.CONFIG).set_index("trigger_id")
     funcs = {"sahm": TR.t_sahm, "claims_vs_low": TR.t_claims_vs_low, "cont_claims_yoy": TR.t_cont_claims_yoy,
@@ -278,8 +286,7 @@ def triggers_now(asof: pd.Timestamp) -> dict:
     overall = ("red" if on(core, ("red",)) else
                "amber" if on(core) >= 1 and on(PANEL) >= 2 else "green")
     return {"rows": rows, "overall": overall,
-            "rule": "Red if trigger 1, 2 or 4 is red; amber if one of 1, 2, 4 is amber or red and another trigger "
-                    "that counts toward the status is amber or red; otherwise green."}
+            "rule": TRIGGER_RULE}
 
 
 # ===================================================================================================

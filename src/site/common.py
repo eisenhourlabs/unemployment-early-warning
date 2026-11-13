@@ -151,6 +151,10 @@ def claims_weekly() -> pd.DataFrame:
 WORDS_NOTE = ("In testing, readings this high were followed by a claims jump or unemployment rise roughly half the "
               "time.")
 OLD_RULE_TAIL, NEW_RULE_TAIL = "another panel trigger is", "another trigger that counts toward the status is"
+# Review WP9 C8: the named rule (same text as src/model/live.py TRIGGER_RULE; tests/test_trigger_names.py checks it)
+TRIGGER_RULE = ("Red if the Sahm indicator, new claims or continuing claims is red. Amber if one of those three is "
+                "amber or red and another trigger (including the yield curve or financial conditions) is amber or red. "
+                "Otherwise green.")
 
 
 def reword_live(live: dict) -> None:
@@ -168,6 +172,8 @@ def reword_live(live: dict) -> None:
     t = live.get("triggers") or {}
     if "rule" in t:
         t["rule"] = t["rule"].replace(OLD_RULE_TAIL, NEW_RULE_TAIL)
+        if "trigger 1" in t["rule"]:      # a numbered rule written before review WP9 C8
+            t["rule"] = TRIGGER_RULE
 
 
 def add_fomc_next(live: dict) -> None:
@@ -420,7 +426,8 @@ WHATIF_TABLE_NOTE = ("Each path takes what the series did after the last month b
                      "change). A what-if, not a forecast.")
 
 
-def whatif_table(stress: dict, steps: list[int], step_word: str, mult: float, decimals: int, unit: str) -> dict:
+def whatif_table(stress: dict, steps: list[int], step_word: str, mult: float, decimals: int, unit: str,
+                 caption: str) -> dict:
     """Review WP9 C7: the what-if paths as a small table (hidden until the reader ticks "Show what-if paths").
     One row per path ("2001-type", "2008-type"): today, the value `steps` periods ahead (months for the
     unemployment rate, weeks for the claims rates) and the peak with how long after today it comes.
@@ -432,8 +439,8 @@ def whatif_table(stress: dict, steps: list[int], step_word: str, mult: float, de
         peak = max(range(len(levels)), key=lambda i: levels[i])
         rows.append({"name": label.split(" ")[0],
                      "cells": [fmt(levels[0])] + [fmt(levels[s]) if s < len(levels) else "—" for s in steps],
-                     "peak": f"{fmt(levels[peak])} after {peak} {step_word}"})
-    return {"head": ["Today"] + [f"+{s} {step_word}" for s in steps] + ["Peak"], "rows": rows,
+                     "peak": f"{fmt(levels[peak])} " + (f"after {peak} {step_word if peak > 1 else step_word.rstrip('s')}" if peak else "today")})
+    return {"caption": caption, "head": ["Today"] + [f"+{s} {step_word}" for s in steps] + ["Peak"], "rows": rows,
             "note": WHATIF_TABLE_NOTE}
 
 

@@ -1154,6 +1154,77 @@ def check_wp6(browser, base) -> None:
     page.context.close()
 
 
+def check_wp9b(browser, base) -> None:
+    """Review WP9 items C7, C8, C12, C13, C14 (after the meeting)."""
+    print("\n=== Review WP9b: what-if tables, Outlook order and trigger names, benchmarks, episodes, States ===")
+    page = browser.new_context(viewport={"width": 1280, "height": 900}).new_page()
+    # C7: a what-if table under each chart with the toggle: hidden by default, shown when ticked, 2 rows
+    for name, cid in (("index.html", "unemployment-rate"), ("job-losses.html", "ic-rate"), ("duration.html", "cc-rate")):
+        page.goto(base + name)
+        page.wait_for_selector("body[data-ready=true]")
+        tbl = page.locator(f"[data-whatif-table='{cid}']")
+        check(tbl.count() == 1 and not tbl.is_visible(), f"{name}: what-if table present and hidden by default")
+        page.check(f"input[data-whatif='{cid}']")
+        rows = tbl.locator("tbody tr").all_inner_texts()
+        check(tbl.is_visible() and len(rows) == 2 and rows[0].startswith("2001-type") and rows[1].startswith("2008-type"),
+              f"{name}: what-if table visible after the toggle, 2 rows {[r[:40] for r in rows]}")
+        check("A what-if, not a forecast." in tbl.inner_text(), f"{name}: what-if table sentence")
+        page.uncheck(f"input[data-whatif='{cid}']")
+        check(not tbl.is_visible(), f"{name}: what-if table hidden again when unticked")
+    # C8: Outlook order, no '#' column, named rule, lead-time sentence; C12 benchmark sentence; C13 episode list
+    page.goto(base + "outlook.html")
+    page.wait_for_selector("body[data-ready=true]")
+    order = page.evaluate("""() => { const ids = ['three-things', 'colour-guide', 'horizons', 'card-score-history-long'];
+        const els = ids.map(i => document.getElementById(i));
+        if (els.some(e => !e)) return null;
+        return els.every((e, k) => k === 0 || (els[k - 1].compareDocumentPosition(e) & Node.DOCUMENT_POSITION_FOLLOWING)); }""")
+    check(order is True, "Outlook: three things, colour guide, other horizons / triggers, then the history chart")
+    heads = page.eval_on_selector_all("table.model-table thead th", "els => els.map(e => e.innerText.trim())")
+    check("#" not in heads, "Outlook: trigger table has no '#' column")
+    body = " ".join(page.inner_text("main").split())
+    check("Red if the Sahm indicator, new claims or continuing claims is red." in body, "Outlook: rule names the triggers")
+    check("A warning can show more than 6 months before an event" in body
+          and re.search(r"The \d+ tested months are those from 2000 on", body) is not None,
+          "Outlook: lead-time and tested-months sentences under the event table")
+    check("new claims against their past-year low alone gives about half the full model's skill" in body,
+          "Outlook: simple-rule benchmark sentence")
+    ep = page.locator("#episodes")
+    check(ep.count() == 1 and not ep.evaluate("e => e.open"), "Outlook: episode list present, closed by default")
+    ep_rows = ep.locator("tbody tr").all_inner_texts() if ep.count() else []
+    long_run = [r for r in ep_rows if "Nov 2022" in r and "Amber" in r]
+    check(len(long_run) == 1 and "40" in long_run[0].split("\t"), f"Outlook: 2022-2026 amber run is one long row {long_run}")
+    html = " ".join((SITE / name).read_text(encoding="utf-8") for name in
+                    ("index.html", "outlook.html", "duration.html", "job-losses.html", "leading.html"))
+    check(not re.search(r"trigger [124]\b|triggers? 1, 2", html), "no numbered triggers in reader-facing text")
+    # C14: States: fixed colour scale, older-reading dots, flag line in the drill-down
+    scales = []
+    for q in ("", "?from=2016-03-01&to=2021-03-31"):
+        page.goto(base + "states.html" + q)
+        page.wait_for_selector("body[data-ready=true]")
+        page.wait_for_timeout(800)
+        scales.append(page.evaluate("() => { const d = document.getElementById('states-map').data[0]; return [d.zmin, d.zmax]; }"))
+    check(scales[0] == scales[1], f"States: map colour scale fixed across dates {scales}")
+    check("one fixed scale for each measure" in page.locator("#map-footer").inner_text(), "States: map footer states the fixed scale")
+    page.goto(base + "states.html")
+    page.wait_for_selector("body[data-ready=true]")
+    page.wait_for_timeout(800)
+    btn = page.locator("#rising-list button").first
+    if btn.count():
+        name = btn.inner_text()
+        btn.click()
+        page.wait_for_timeout(500)
+        flag = page.locator("#drill-flag").inner_text()
+        check("On the watch list" in flag and "rule:" in flag, f"States: drill-down states the watch-list flag ({name}: {flag[:90]}…)")
+    page.select_option("#drill-state", "OH")
+    page.wait_for_timeout(300)
+    check("vs. normal for these weeks" in page.locator("#drill-flag").inner_text(), "States: drill-down gives new claims vs. normal")
+    dots = page.evaluate("""() => document.getElementById('states-map').data.filter(t => t.type === 'scattergeo')
+        .map(t => t.locations.length)""")
+    note = page.locator("#map-missing").inner_text() if page.locator("#map-missing").is_visible() else ""
+    check((not dots and "Dot:" not in note) or (dots and "Dot:" in note), f"States: older readings dotted and listed {dots} {note!r}")
+    page.context.close()
+
+
 def TODAY_OF(page) -> str:
     return json.loads(page.locator("#page-data").text_content())["today"]
 
@@ -1179,6 +1250,7 @@ def main() -> int:
             check_wp5(browser, base)
             check_wp4(browser, base)
             check_wp6(browser, base)
+            check_wp9b(browser, base)
         for i, href in enumerate(links):
             if href == "data.html":
                 check_data_page(browser, base + href, base)

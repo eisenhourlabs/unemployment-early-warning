@@ -9,7 +9,7 @@ from datetime import datetime
 import pandas as pd
 import plotly.graph_objects as go
 
-from common import (WHATIF_FOOTER, add_whatif, bars_with_average, claims_weekly, fred, line_chart, lines_chart,
+from common import (WHATIF_FOOTER, add_whatif, whatif_table, bars_with_average, claims_weekly, fred, line_chart, lines_chart,
                     model_output,
                     ordinal, seasonal_chart, weekly_claims_chart, with_outlook, year_ago_change_pct)
 from overview import ic_rate_chart
@@ -42,6 +42,8 @@ def ic_outlook(c: dict, live: dict) -> dict:
     """Phase 3 on the initial-claims-rate chart: what-if paths (no fan) and the notes the design asks for."""
     fig = go.Figure(c["figure"])
     whatif_ahead = add_whatif(fig, live["stress"]["ic"], 100, ".1f", " per 10k")   # stored in %, shown per 10,000
+    c["whatif_table"] = whatif_table(live["stress"]["ic"], [13, 26, 52], "weeks", 100, 1, "",   # review WP9 C7
+                                     "Initial claims rate (4-week average), per 10,000 covered workers")
     notes = [n for n in [score_driver_line(live)] if n]
     notes.append("We don't show a forecast range for initial claims: in testing it was no more accurate than assuming "
                  "no change. The early-warning score (Overview, Outlook) is our forward view of new claims.")

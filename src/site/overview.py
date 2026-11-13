@@ -10,7 +10,7 @@ from zoneinfo import ZoneInfo
 import pandas as pd
 import plotly.graph_objects as go
 
-from common import (ACCENT, GREYS, MODEL, PROVISIONAL_FAN, WHATIF_FOOTER, event_banner, fan_is_provisional, add_colour_band, add_fan, add_whatif, asof_line, with_outlook, base_layout, card, claims_weekly, dates, duration_watch, model_csv,
+from common import (ACCENT, GREYS, MODEL, PROVISIONAL_FAN, WHATIF_FOOTER, event_banner, fan_is_provisional, add_colour_band, add_fan, add_whatif, whatif_table, asof_line, with_outlook, base_layout, card, claims_weekly, dates, duration_watch, model_csv,
                     model_output, pre_recession_averages, fmt_change, fmt_claims, fmt_date, fmt_month, fred,
                     fred_metadata, is_estimate, is_preliminary, last_time_as_extreme, line_chart, ordinal, percentile_text, plain,
                     prelim_label, signal, streak, value_on_or_before, vs_month, weekly_claims_chart)
@@ -63,6 +63,8 @@ def unemployment_chart(live: dict | None = None) -> dict:
                 hovertemplate=f"FOMC median for Q4 {year}: %{{y:.1f}}% ({released})<extra></extra>",
                 meta={"role": "grey0", **today}))
     whatif_ahead = add_whatif(fig, live["stress"]["ur"], 1, ".1f", "%")
+    c["whatif_table"] = whatif_table(live["stress"]["ur"], [3, 6, 12], "months", 1, 1, "%",   # review WP9 C7
+                                     "Unemployment rate, %")
     # Review WP7 (P3): the caveat a reader should see without opening the footer
     c["caveat"] = ("Read the shaded range, not a single line. The Fed's median is marked for comparison; forecasters' "
                    "consensus has been the better guide to the middle.")

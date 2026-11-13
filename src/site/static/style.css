@@ -336,3 +336,7 @@ details.chart-source summary { cursor: pointer; color: var(--text-2); font-size:
 .watch-card { margin-bottom: 16px; }
 .watch-headline { margin: 8px 0 4px; font-size: 0.98rem; max-width: 85ch; }
 tr.current td { font-weight: 700; }
+
+/* Review WP9 C7: what-if numbers under a chart, shown only while "Show what-if paths" is ticked */
+.whatif-table { margin: 8px 0 4px; }
+.whatif-table caption { caption-side: top; text-align: left; font-size: 0.85rem; color: var(--muted); padding-bottom: 4px; }
