@@ -198,9 +198,9 @@ DOL:national_weekly.csv:cc_sa,DOL,1,weekly,1971-01-02,2026-10-31,17,21,0,,-0.76,
 DOL:claims_rates_weekly.csv:ic_rate_sa,DOL,1,weekly,1971-01-02,2026-11-07,10,14,0,,1.0,,n/a,,OK
 DOL:claims_rates_weekly.csv:cc_rate_sa,DOL,1,weekly,1971-01-02,2026-10-31,17,21,0,,-0.74,,n/a,,OK
 DOL:ar539.csv:ic_state_ui,DOL,4,weekly,1995-01-07,2026-11-07,10,14,0,,,53/53 (2026-11-07),ok,,OK
-DOL:ar5159.csv:fp_state_ui_total,DOL,2,monthly,1995-01-31,2026-09-30,48,75,0,,,45/53 (2026-10-31),ok,,OK
+DOL:ar5159.csv:fp_state_ui_total,DOL,2,monthly,1995-01-31,2026-10-31,17,75,0,,,53/53 (2026-10-31),ok,,OK
 DOL:ar218.csv:actual_avg_weeks,DOL,2,quarterly,1995-03-31,2026-06-30,140,200,0,,,52/53 (2026-09-30),ok,,OK
-DOL:exhaustion_duration_monthly.csv:exhaustion_rate_12m,DOL,2,monthly,1996-06-30,2026-09-30,48,100,0,,-2.06,,n/a,,OK
-DOL:exhaustion_duration_monthly.csv:avg_duration_12m,DOL,2,monthly,1995-12-31,2026-09-30,48,100,0,,-1.52,,n/a,,OK
+DOL:exhaustion_duration_monthly.csv:exhaustion_rate_12m,DOL,2,monthly,1996-06-30,2026-10-31,17,100,0,,-0.47,,n/a,,OK
+DOL:exhaustion_duration_monthly.csv:avg_duration_12m,DOL,2,monthly,1995-12-31,2026-10-31,17,100,0,,-0.34,,n/a,,OK
 DOL:benefit_duration_quarterly.csv:actual_avg_weeks,DOL,2,quarterly,1995-03-31,2026-06-30,140,200,0,,,,n/a,,OK
 DOL:seasonal_factors.csv,DOL,1,weekly,1971-01-02,2027-04-03,,,,,,20 future weeks,n/a,,OK
