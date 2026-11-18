@@ -9,3 +9,4 @@ history. When past periods change, the stored file is overwritten and one row is
 | Run date (UTC) | File | Periods changed | Date range | Largest change |
 | --- | --- | --- | --- | --- |
 | 2026-11-13 | State ar539 | 3 | 2026-10-17 to 2026-10-31 | cw_state_ui +16 (2026-10-31 HI) |
+| 2026-11-18 | State ar5159 | 1 | 2026-10-31 to 2026-10-31 | changes only in other columns |
