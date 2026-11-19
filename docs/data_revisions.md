@@ -10,3 +10,4 @@ history. When past periods change, the stored file is overwritten and one row is
 | --- | --- | --- | --- | --- |
 | 2026-11-13 | State ar539 | 3 | 2026-10-17 to 2026-10-31 | cw_state_ui +16 (2026-10-31 HI) |
 | 2026-11-18 | State ar5159 | 1 | 2026-10-31 to 2026-10-31 | changes only in other columns |
+| 2026-11-19 | State ar539 | 2 | 2026-10-31 to 2026-11-07 | cw_state_ui +19 (2026-11-07 HI) |
