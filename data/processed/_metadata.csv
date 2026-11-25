@@ -16,9 +16,9 @@ AZUR,Unemployment Rate in Arizona,Percent,Monthly,Seasonally Adjusted,2026-11-20
 CACCLAIMS,Continued Claims (Insured Unemployment) in California,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-20 07:40:04-06,1990-01-06,2026-11-07,305629.0
 CAICLAIMS,Initial Claims in California,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-20 07:40:05-06,1990-01-06,2026-11-14,42987.0
 CAUR,Unemployment Rate in California,Percent,Monthly,Seasonally Adjusted,2026-11-20 09:38:47-06,1990-01-01,2026-10-01,5.0
-CC4WSA,4-Week Moving Average of Continued Claims (Insured Unemployment),Number,"Weekly, Ending Saturday",Seasonally Adjusted,2026-11-19 07:34:25-06,1967-01-28,2026-11-07,1717000.0
-CCNSA,Continued Claims (Insured Unemployment),Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-19 07:34:25-06,1990-01-06,2026-11-07,1542726.0
-CCSA,Continued Claims (Insured Unemployment),Number,"Weekly, Ending Saturday",Seasonally Adjusted,2026-11-19 07:34:25-06,1967-01-07,2026-11-07,1763000.0
+CC4WSA,4-Week Moving Average of Continued Claims (Insured Unemployment),Number,"Weekly, Ending Saturday",Seasonally Adjusted,2026-11-25 07:34:06-06,1967-01-28,2026-11-14,1724750.0
+CCNSA,Continued Claims (Insured Unemployment),Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-25 07:33:55-06,1990-01-06,2026-11-14,1562814.0
+CCSA,Continued Claims (Insured Unemployment),Number,"Weekly, Ending Saturday",Seasonally Adjusted,2026-11-25 07:34:05-06,1967-01-07,2026-11-14,1697000.0
 CFLMICONTRIBUTIONHIRINGRATEUWADVANCE,CFLMI Real-Time Hiring Contribution (Advance),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,0.012
 CFLMICONTRIBUTIONHIRINGRATEUWFINAL,CFLMI Real-Time Hiring Contribution (Final),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,-0.023
 CFLMICONTRIBUTIONLAYOFFSOTHERSEPSADVANCE,CFLMI Real-Time Layoffs Contribution (Advance),%,Monthly,SA,"November 5, 2026",2025-09-13,2026-10-17,0.003
@@ -82,9 +82,9 @@ HIUR,Unemployment Rate in Hawaii,Percent,Monthly,Seasonally Adjusted,2026-11-20 
 IACCLAIMS,Continued Claims (Insured Unemployment) in Iowa,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-20 07:39:52-06,1990-01-06,2026-11-07,6600.0
 IAICLAIMS,Initial Claims in Iowa,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-20 07:39:59-06,1990-01-06,2026-11-14,1419.0
 IAUR,Unemployment Rate in Iowa,Percent,Monthly,Seasonally Adjusted,2026-11-20 09:43:25-06,1990-01-01,2026-10-01,3.3
-IC4WSA,4-Week Moving Average of Initial Claims,Number,"Weekly, Ending Saturday",Seasonally Adjusted,2026-11-19 07:34:25-06,1967-01-28,2026-11-14,197750.0
-ICNSA,Initial Claims,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-19 07:34:24-06,1990-01-06,2026-11-14,197492.0
-ICSA,Initial Claims,Number,"Weekly, Ending Saturday",Seasonally Adjusted,2026-11-19 07:34:24-06,1967-01-07,2026-11-14,203000.0
+IC4WSA,4-Week Moving Average of Initial Claims,Number,"Weekly, Ending Saturday",Seasonally Adjusted,2026-11-25 07:34:07-06,1967-01-28,2026-11-21,196000.0
+ICNSA,Initial Claims,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-25 07:34:01-06,1990-01-06,2026-11-21,212945.0
+ICSA,Initial Claims,Number,"Weekly, Ending Saturday",Seasonally Adjusted,2026-11-25 07:34:05-06,1967-01-07,2026-11-21,189000.0
 IDCCLAIMS,Continued Claims (Insured Unemployment) in Idaho,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-20 07:39:52-06,1990-01-06,2026-11-07,4862.0
 IDICLAIMS,Initial Claims in Idaho,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-20 07:39:59-06,1990-01-06,2026-11-14,996.0
 IDUR,Unemployment Rate in Idaho,Percent,Monthly,Seasonally Adjusted,2026-11-20 09:43:31-06,1990-01-01,2026-10-01,3.7
@@ -94,8 +94,8 @@ ILUR,Unemployment Rate in Illinois,Percent,Monthly,Seasonally Adjusted,2026-11-2
 INCCLAIMS,Continued Claims (Insured Unemployment) in Indiana,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-20 07:39:51-06,1990-01-06,2026-11-07,17061.0
 INICLAIMS,Initial Claims in Indiana,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-20 07:39:56-06,1990-01-06,2026-11-14,2234.0
 INUR,Unemployment Rate in Indiana,Percent,Monthly,Seasonally Adjusted,2026-11-20 09:43:57-06,1990-01-01,2026-10-01,3.4
-IURNSA,Insured Unemployment Rate,Percent,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-19 07:34:26-06,1990-01-06,2026-11-07,1.0
-IURSA,Insured Unemployment Rate,Percent,"Weekly, Ending Saturday",Seasonally Adjusted,2026-11-19 07:34:26-06,1990-01-06,2026-11-07,1.1
+IURNSA,Insured Unemployment Rate,Percent,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-25 07:34:06-06,1990-01-06,2026-11-14,1.0
+IURSA,Insured Unemployment Rate,Percent,"Weekly, Ending Saturday",Seasonally Adjusted,2026-11-25 07:34:05-06,1990-01-06,2026-11-14,1.1
 JTSHIR,Hires: Total Nonfarm,Rate,Monthly,Seasonally Adjusted,2026-11-03 09:10:53-06,2000-12-01,2026-09-01,3.4
 JTSJOL,Job Openings: Total Nonfarm,Level in Thousands,Monthly,Seasonally Adjusted,2026-11-03 09:10:46-06,2000-12-01,2026-09-01,7523.0
 JTSLDR,Layoffs and Discharges: Total Nonfarm,Rate,Monthly,Seasonally Adjusted,2026-11-03 09:11:07-06,2000-12-01,2026-09-01,1.0
@@ -146,8 +146,8 @@ NDUR,Unemployment Rate in North Dakota,Percent,Monthly,Seasonally Adjusted,2026-
 NECCLAIMS,Continued Claims (Insured Unemployment) in Nebraska,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-20 07:39:42-06,1990-01-06,2026-11-07,3977.0
 NEICLAIMS,Initial Claims in Nebraska,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-20 07:39:50-06,1990-01-06,2026-11-14,554.0
 NEUR,Unemployment Rate in Nebraska,Percent,Monthly,Seasonally Adjusted,2026-11-20 09:47:45-06,1990-01-01,2026-10-01,2.8
-NFCI,Chicago Fed National Financial Conditions Index,Index,"Weekly, Ending Friday",Not Seasonally Adjusted,2026-11-18 07:35:29-06,1990-01-05,2026-11-13,-0.478
-NFCICREDIT,Chicago Fed National Financial Conditions Credit Subindex,Index,"Weekly, Ending Friday",Not Seasonally Adjusted,2026-11-18 07:33:56-06,1990-01-05,2026-11-13,-0.013
+NFCI,Chicago Fed National Financial Conditions Index,Index,"Weekly, Ending Friday",Not Seasonally Adjusted,2026-11-25 07:38:37-06,1990-01-05,2026-11-20,-0.444
+NFCICREDIT,Chicago Fed National Financial Conditions Credit Subindex,Index,"Weekly, Ending Friday",Not Seasonally Adjusted,2026-11-25 07:35:42-06,1990-01-05,2026-11-20,-0.01
 NHCCLAIMS,Continued Claims (Insured Unemployment) in New Hampshire,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-20 07:39:49-06,1990-01-06,2026-11-07,3259.0
 NHICLAIMS,Initial Claims in New Hampshire,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-20 07:39:48-06,1990-01-06,2026-11-14,397.0
 NHUR,Unemployment Rate in New Hampshire,Percent,Monthly,Seasonally Adjusted,2026-11-20 09:47:45-06,1990-01-01,2026-10-01,2.5
@@ -176,7 +176,7 @@ PACCLAIMS,Continued Claims (Insured Unemployment) in Pennsylvania,Number,"Weekly
 PAICLAIMS,Initial Claims in Pennsylvania,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-20 07:39:40-06,1990-01-06,2026-11-14,10099.0
 PAUR,Unemployment Rate in Pennsylvania,Percent,Monthly,Seasonally Adjusted,2026-11-20 09:50:16-06,1990-01-01,2026-10-01,3.5
 PAYEMS,"All Employees, Total Nonfarm",Thousands of Persons,Monthly,Seasonally Adjusted,2026-11-06 09:43:20-06,1948-01-01,2026-10-01,159293.0
-PERMIT,New Privately-Owned Housing Units Authorized in Permit-Issuing Places: Total Units,Thousands of Units,Monthly,Seasonally Adjusted Annual Rate,2026-11-18 07:33:44-06,1990-01-01,2026-10-01,1295.0
+PERMIT,New Privately-Owned Housing Units Authorized in Permit-Issuing Places: Total Units,Thousands of Units,Monthly,Seasonally Adjusted Annual Rate,2026-11-25 09:03:26-06,1990-01-01,2026-10-01,1297.0
 RICCLAIMS,Continued Claims (Insured Unemployment) in Rhode Island,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-20 07:39:37-06,1990-01-06,2026-11-07,7805.0
 RIICLAIMS,Initial Claims in Rhode Island,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-20 07:39:35-06,1990-01-06,2026-11-14,701.0
 RIUR,Unemployment Rate in Rhode Island,Percent,Monthly,Seasonally Adjusted,2026-11-20 09:49:17-06,1990-01-01,2026-10-01,3.5
@@ -187,7 +187,7 @@ SCUR,Unemployment Rate in South Carolina,Percent,Monthly,Seasonally Adjusted,202
 SDCCLAIMS,Continued Claims (Insured Unemployment) in South Dakota,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-20 07:39:36-06,1990-01-06,2026-11-07,1216.0
 SDICLAIMS,Initial Claims in South Dakota,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-20 07:39:36-06,1990-01-06,2026-11-14,238.0
 SDUR,Unemployment Rate in South Dakota,Percent,Monthly,Seasonally Adjusted,2026-11-20 09:49:39-06,1990-01-01,2026-10-01,2.0
-T10Y3M,10-Year Treasury Constant Maturity Minus 3-Month Treasury Constant Maturity,Percent,Daily,Not Seasonally Adjusted,2026-11-24 16:03:33-06,1990-01-01,2026-11-24,0.55
+T10Y3M,10-Year Treasury Constant Maturity Minus 3-Month Treasury Constant Maturity,Percent,Daily,Not Seasonally Adjusted,2026-11-25 16:04:34-06,1990-01-01,2026-11-25,0.51
 TEMPHELPS,"All Employees, Temporary Help Services",Thousands of Persons,Monthly,Seasonally Adjusted,2026-11-06 09:43:18-06,1990-01-01,2026-10-01,2526.0
 TNCCLAIMS,Continued Claims (Insured Unemployment) in Tennessee,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-20 07:39:34-06,1990-01-06,2026-11-07,12314.0
 TNICLAIMS,Initial Claims in Tennessee,Number,"Weekly, Ending Saturday",Not Seasonally Adjusted,2026-11-20 07:39:33-06,1990-01-06,2026-11-14,2376.0

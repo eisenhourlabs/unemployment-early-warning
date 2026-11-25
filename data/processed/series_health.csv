@@ -1,14 +1,14 @@
 series_id,source,tier,frequency,first_date,last_date,age_days,max_age_days,gaps,gap_examples,latest_change_z,areas_latest,last_fetch,flags,status
 UNRATE,FRED,1,monthly,1948-01-01,2026-10-01,55,70,0,,-0.67,,ok,,OK
 U6RATE,FRED,1,monthly,1994-01-01,2026-10-01,55,70,0,,2.02,,ok,,OK
-ICSA,FRED,1,weekly,1967-01-07,2026-11-14,11,14,0,,0.11,,ok,,OK
-ICNSA,FRED,1,weekly,1990-01-06,2026-11-14,11,14,0,,-0.58,,ok,,OK
-IC4WSA,FRED,1,weekly,1967-01-28,2026-11-14,11,14,0,,0.6,,ok,,OK
-CCSA,FRED,1,weekly,1967-01-07,2026-11-07,18,21,0,,3.04,,ok,,OK
-CCNSA,FRED,1,weekly,1990-01-06,2026-11-07,18,21,0,,1.22,,ok,,OK
-IURSA,FRED,1,weekly,1990-01-06,2026-11-07,18,21,0,,0.0,,ok,,OK
-CC4WSA,FRED,1,weekly,1967-01-28,2026-11-07,18,21,0,,1.63,,ok,,OK
-IURNSA,FRED,1,weekly,1990-01-06,2026-11-07,18,21,0,,0.0,,ok,,OK
+ICSA,FRED,1,weekly,1967-01-07,2026-11-21,4,14,0,,-1.46,,ok,,OK
+ICNSA,FRED,1,weekly,1990-01-06,2026-11-21,4,14,0,,1.16,,ok,,OK
+IC4WSA,FRED,1,weekly,1967-01-28,2026-11-21,4,14,0,,-0.45,,ok,,OK
+CCSA,FRED,1,weekly,1967-01-07,2026-11-14,11,21,0,,-3.92,,ok,,OK
+CCNSA,FRED,1,weekly,1990-01-06,2026-11-14,11,21,0,,0.16,,ok,,OK
+IURSA,FRED,1,weekly,1990-01-06,2026-11-14,11,21,0,,-10.37,,ok,outlier: latest change z = -10.4,WARN
+CC4WSA,FRED,1,weekly,1967-01-28,2026-11-14,11,21,0,,0.08,,ok,,OK
+IURNSA,FRED,1,weekly,1990-01-06,2026-11-14,11,21,0,,0.0,,ok,,OK
 PAYEMS,FRED,1,monthly,1948-01-01,2026-10-01,55,70,0,,0.97,,ok,,OK
 UEMPLT5,FRED,1,monthly,1948-01-01,2026-10-01,55,70,0,,0.23,,ok,,OK
 UNEMPLOY,FRED,1,monthly,1948-01-01,2026-10-01,55,70,0,,-0.49,,ok,,OK
@@ -22,13 +22,13 @@ SAHMREALTIME,FRED,1,monthly,1959-12-01,2026-10-01,55,70,0,,0.51,,ok,,OK
 USREC,FRED,4,monthly,1854-12-01,2026-10-01,55,70,0,,,,ok,,OK
 TEMPHELPS,FRED,2,monthly,1990-01-01,2026-10-01,55,70,0,,2.37,,ok,,OK
 AWHMAN,FRED,2,monthly,1990-01-01,2026-10-01,55,70,0,,-0.67,,ok,,OK
-T10Y3M,FRED,2,daily,1990-01-02,2026-11-24,1,10,0,,0.0,,ok,,OK
-PERMIT,FRED,2,monthly,1990-01-01,2026-10-01,55,85,0,,-1.83,,ok,,OK
+T10Y3M,FRED,2,daily,1990-01-02,2026-11-25,0,10,0,,-0.9,,ok,,OK
+PERMIT,FRED,2,monthly,1990-01-01,2026-10-01,55,85,0,,-1.79,,ok,,OK
 GACDFSA066MSFRBPHI,FRED,2,monthly,1990-01-01,2026-11-01,24,70,0,,-1.0,,ok,,OK
 GACDISA066MSFRBNY,FRED,2,monthly,2001-07-01,2026-11-01,24,70,0,,-1.3,,ok,,OK
 UMCSENT,FRED,2,monthly,1990-01-01,2026-10-01,55,100,0,,0.38,,ok,,OK
-NFCICREDIT,FRED,2,weekly,1990-01-05,2026-11-13,12,14,0,,-0.45,,ok,,OK
-NFCI,FRED,2,weekly,1990-01-05,2026-11-13,12,14,0,,-0.4,,ok,,OK
+NFCICREDIT,FRED,2,weekly,1990-01-05,2026-11-20,5,14,0,,-0.22,,ok,,OK
+NFCI,FRED,2,weekly,1990-01-05,2026-11-20,5,14,0,,1.08,,ok,,OK
 ADPMNUSNERSA,FRED,3,monthly,2010-01-01,2026-10-01,55,70,0,,0.38,,ok,,OK
 USPRIV,FRED,3,monthly,1990-01-01,2026-10-01,55,70,0,,1.15,,ok,,OK
 ALICLAIMS,FRED,4,weekly,1990-01-06,2026-11-14,11,21,0,,-0.36,,ok,,OK
@@ -189,14 +189,14 @@ LNS13026638,FRED,1,monthly,1994-01-01,2026-10-01,55,70,0,,-0.56,,ok,,OK
 LNS13023653,FRED,1,monthly,1967-01-01,2026-10-01,55,70,0,,-1.21,,ok,,OK
 LNS12032194,FRED,2,monthly,1955-05-01,2026-10-01,55,70,0,,1.83,,ok,,OK
 DRTSCILM,FRED,2,quarterly,1990-04-01,2026-10-01,55,130,0,,,,ok,,OK
-DOL:national_weekly_eta539.csv:ic_nsa,DOL,1,weekly,1971-01-02,2026-10-24,32,42,0,,0.53,,FAILED,last fetch FAILED,WARN
-DOL:national_weekly_eta539.csv:ic_sa,DOL,1,weekly,1971-01-02,2026-10-24,32,42,0,,0.0,,FAILED,last fetch FAILED,WARN
-DOL:national_weekly_eta539.csv:cc_nsa,DOL,1,weekly,1971-01-02,2026-10-24,32,42,0,,0.48,,FAILED,last fetch FAILED,WARN
-DOL:national_weekly_eta539.csv:cc_sa,DOL,1,weekly,1971-01-02,2026-10-24,32,42,0,,1.01,,FAILED,last fetch FAILED,WARN
-DOL:national_weekly.csv:ic_sa,DOL,1,weekly,1971-01-02,2026-11-14,11,14,0,,0.11,,ok,,OK
-DOL:national_weekly.csv:cc_sa,DOL,1,weekly,1971-01-02,2026-11-07,18,21,0,,3.04,,ok,,OK
-DOL:claims_rates_weekly.csv:ic_rate_sa,DOL,1,weekly,1971-01-02,2026-11-14,11,14,0,,0.12,,n/a,,OK
-DOL:claims_rates_weekly.csv:cc_rate_sa,DOL,1,weekly,1971-01-02,2026-11-07,18,21,0,,2.9,,n/a,,OK
+DOL:national_weekly_eta539.csv:ic_nsa,DOL,1,weekly,1971-01-02,2026-10-24,32,42,0,,0.53,,ok,,OK
+DOL:national_weekly_eta539.csv:ic_sa,DOL,1,weekly,1971-01-02,2026-10-24,32,42,0,,0.0,,ok,,OK
+DOL:national_weekly_eta539.csv:cc_nsa,DOL,1,weekly,1971-01-02,2026-10-24,32,42,0,,0.48,,ok,,OK
+DOL:national_weekly_eta539.csv:cc_sa,DOL,1,weekly,1971-01-02,2026-10-24,32,42,0,,1.01,,ok,,OK
+DOL:national_weekly.csv:ic_sa,DOL,1,weekly,1971-01-02,2026-11-21,4,14,0,,-1.46,,ok,,OK
+DOL:national_weekly.csv:cc_sa,DOL,1,weekly,1971-01-02,2026-11-14,11,21,0,,-3.92,,ok,,OK
+DOL:claims_rates_weekly.csv:ic_rate_sa,DOL,1,weekly,1971-01-02,2026-11-21,4,14,0,,-1.45,,n/a,,OK
+DOL:claims_rates_weekly.csv:cc_rate_sa,DOL,1,weekly,1971-01-02,2026-11-14,11,21,0,,-3.69,,n/a,,OK
 DOL:ar539.csv:ic_state_ui,DOL,4,weekly,1995-01-07,2026-11-14,11,14,0,,,53/53 (2026-11-14),ok,,OK
 DOL:ar5159.csv:fp_state_ui_total,DOL,2,monthly,1995-01-31,2026-10-31,25,75,0,,,53/53 (2026-10-31),ok,,OK
 DOL:ar218.csv:actual_avg_weeks,DOL,2,quarterly,1995-03-31,2026-06-30,148,200,0,,,52/53 (2026-09-30),ok,,OK
