@@ -1,0 +1,273 @@
+file,column,definition,units
+national_weekly.csv,week_ended,Week ended (Saturday). Continued-claims fields refer to the week of unemployment ending on this date,Date
+national_weekly.csv,source_initial,"Where the initial claims figures for this week come from: ETA 539 (DOL's official weekly report), news release, advance (newest week) or news release, revised",Text
+national_weekly.csv,source_continued,Where the continued claims figures for this week come from (same values as source_initial; continued claims lag initial claims by a week),Text
+national_weekly.csv,ic_nsa,"Initial claims, not seasonally adjusted (state programs incl. workshare equivalent)",Number
+national_weekly.csv,ic_sf,Initial claims seasonal factor (x100),Seasonal factor (x100)
+national_weekly.csv,ic_sa,"Initial claims, seasonally adjusted",Number
+national_weekly.csv,ic_sa_4wk,"Initial claims SA, 4-week moving average",Number
+national_weekly.csv,cc_nsa,"Continued claims (insured unemployment), NSA",Number
+national_weekly.csv,cc_sf,Continued claims seasonal factor (x100),Seasonal factor (x100)
+national_weekly.csv,cc_sa,"Continued claims, seasonally adjusted",Number
+national_weekly.csv,cc_sa_4wk,"Continued claims SA, 4-week moving average",Number
+national_weekly.csv,iur_nsa,"Insured unemployment rate, NSA (percent, 1 decimal)",Percent
+national_weekly.csv,iur_sa,"Insured unemployment rate, SA (percent, 1 decimal)",Percent
+national_weekly.csv,covered_employment,Covered employment used as the IUR denominator (updated quarterly),Number of jobs
+national_weekly.csv,ic_ucfe,Initial claims for federal employees with no state UI (FIC / UCFE),Number
+national_weekly.csv,ic_ucx,Initial claims for ex-servicemembers only (XIC / UCX),Number
+national_weekly.csv,cw_regular_state,"Continued weeks claimed, regular state UI programs (sum of all states, ar539 c8)",Number of weeks claimed or paid
+national_weekly.csv,cw_ucfe,Continued weeks claimed for federal employees with no state UI (FCW),Number of weeks claimed or paid
+national_weekly.csv,cw_ucx,Continued weeks claimed for ex-servicemembers only (XCW),Number of weeks claimed or paid
+national_weekly.csv,cw_eb,"Continued weeks claimed, Extended Benefits (sum of all states)",Number of weeks claimed or paid
+national_weekly.csv,cw_state_additional,"Continued weeks claimed, state additional benefit programs (sum of all states)",Number of weeks claimed or paid
+national_weekly.csv,cw_stc_workshare,Workshare continued weeks claimed (WSCW),Number of weeks claimed or paid
+national_weekly.csv,cw_all_programs,"Continued weeks claimed, all programs: regular state + UCFE + UCX + EB + state additional + STC/workshare",Number of weeks claimed or paid
+national_weekly_eta539.csv,week_ended,Week ended (Saturday). Continued-claims fields refer to the week of unemployment ending on this date,Date
+national_weekly_eta539.csv,ic_nsa,"Initial claims, not seasonally adjusted (state programs incl. workshare equivalent)",Number
+national_weekly_eta539.csv,ic_sf,Initial claims seasonal factor (x100),Seasonal factor (x100)
+national_weekly_eta539.csv,ic_sa,"Initial claims, seasonally adjusted",Number
+national_weekly_eta539.csv,ic_sa_4wk,"Initial claims SA, 4-week moving average",Number
+national_weekly_eta539.csv,cc_nsa,"Continued claims (insured unemployment), NSA",Number
+national_weekly_eta539.csv,cc_sf,Continued claims seasonal factor (x100),Seasonal factor (x100)
+national_weekly_eta539.csv,cc_sa,"Continued claims, seasonally adjusted",Number
+national_weekly_eta539.csv,cc_sa_4wk,"Continued claims SA, 4-week moving average",Number
+national_weekly_eta539.csv,iur_nsa,"Insured unemployment rate, NSA (percent, 1 decimal)",Percent
+national_weekly_eta539.csv,iur_sa,"Insured unemployment rate, SA (percent, 1 decimal)",Percent
+national_weekly_eta539.csv,covered_employment,Covered employment used as the IUR denominator (updated quarterly),Number of jobs
+seasonal_factors.csv,week_ended,Week ended (Saturday). Continued-claims fields refer to the week of unemployment ending on this date,Date
+seasonal_factors.csv,ic_sf,Initial claims seasonal factor (x100),Seasonal factor (x100)
+seasonal_factors.csv,cc_sf,Continued claims seasonal factor (x100),Seasonal factor (x100)
+claims_rates_weekly.csv,week_ended,Week ended (Saturday). Continued-claims fields refer to the week of unemployment ending on this date,Date
+claims_rates_weekly.csv,source_initial,"Where the initial claims figures for this week come from (ETA 539 or news release, advance / revised)",Text
+claims_rates_weekly.csv,source_continued,"Where the continued claims figures for this week come from (ETA 539 or news release, advance / revised)",Text
+claims_rates_weekly.csv,covered_employment,Covered employment used as the IUR denominator (updated quarterly),Number of jobs
+claims_rates_weekly.csv,ic_rate_sa,"SA initial claims rate: seasonally adjusted initial claims as a percent of covered employment (the site shows this x 100 = per 10,000 covered workers)",Percent
+claims_rates_weekly.csv,ic_rate_nsa,NSA initial claims rate: not seasonally adjusted initial claims as a percent of covered employment,Percent
+claims_rates_weekly.csv,ic_rate_sa_4wk,4-week average of the SA initial claims rate (percent),Percent
+claims_rates_weekly.csv,ic_rate_nsa_4wk,4-week average of the NSA initial claims rate (percent),Percent
+claims_rates_weekly.csv,cc_rate_sa,SA continuing claims rate: seasonally adjusted continued claims as a percent of covered employment (matches DOL's insured unemployment rate within rounding),Percent
+claims_rates_weekly.csv,cc_rate_nsa,NSA continuing claims rate: not seasonally adjusted continued claims as a percent of covered employment,Percent
+claims_rates_weekly.csv,cc_rate_sa_4wk,4-week average of the SA continuing claims rate (percent),Percent
+claims_rates_weekly.csv,cc_rate_nsa_4wk,4-week average of the NSA continuing claims rate (percent),Percent
+claims_rates_weekly.csv,iur_sa_published,"DOL's published insured unemployment rate, seasonally adjusted (percent, 1 decimal), for comparison",Percent
+exhaustion_duration_monthly.csv,state,State or area code,State code
+exhaustion_duration_monthly.csv,month_ended,Last day of the report month,Date
+exhaustion_duration_monthly.csv,first_payments,"First payments, state UI (ar5159 c51), for the month",Number
+exhaustion_duration_monthly.csv,final_payments,"Final payments (claimants who exhausted benefits), state UI (ar5159 c56), for the month",Number
+exhaustion_duration_monthly.csv,weeks_compensated,"Weeks compensated, all weeks, state UI (ar5159 c38), for the month",Number of weeks claimed or paid
+exhaustion_duration_monthly.csv,exhaustion_rate_12m,12-month exhaustion rate (percent): share of claimants who use up their state benefits,Percent
+exhaustion_duration_monthly.csv,avg_duration_12m,"Average benefit duration (weeks), all claimants",Weeks
+benefit_duration_quarterly.csv,state,State or area code,State code
+benefit_duration_quarterly.csv,quarter_ended,Last day of the report quarter,Date
+benefit_duration_quarterly.csv,potential_total,Potential duration: number of determinations establishing benefit years,Number
+benefit_duration_quarterly.csv,potential_avg_weeks,Average potential duration (weeks),Weeks
+benefit_duration_quarterly.csv,actual_total,Actual duration: claimants who received final payments (exhaustees),Number
+benefit_duration_quarterly.csv,actual_avg_weeks,Average actual duration of exhaustees (weeks),Weeks
+ar539.csv,state,State or area code (50 states + DC + PR + VI),State code
+ar539.csv,week_ended,Report week ended (Saturday); initial-claims fields refer to this week,Date
+ar539.csv,week_number,Week number of the year,Number
+ar539.csv,reflected_week_ended,Week of unemployment that continued-claims fields refer to (always 7 days before week_ended),Date
+ar539.csv,ic_state_ui,State UI initial claims (IC),Number
+ar539.csv,ic_ucfe,Initial claims for federal employees with no state UI (FIC / UCFE),Number
+ar539.csv,ic_ucx,Initial claims for ex-servicemembers only (XIC / UCX),Number
+ar539.csv,ic_stc_workshare,Short-time compensation (workshare) initial claims (WSIC),Number
+ar539.csv,ic_stc_workshare_equiv,Workshare equivalent initial claims (WSEIC),Number
+ar539.csv,cw_state_ui,State UI continued weeks claimed (CW),Number of weeks claimed or paid
+ar539.csv,cw_ucfe,Continued weeks claimed for federal employees with no state UI (FCW),Number of weeks claimed or paid
+ar539.csv,cw_ucx,Continued weeks claimed for ex-servicemembers only (XCW),Number of weeks claimed or paid
+ar539.csv,cw_stc_workshare,Workshare continued weeks claimed (WSCW),Number of weeks claimed or paid
+ar539.csv,cw_stc_workshare_equiv,Workshare equivalent continued weeks claimed (WSECW),Number of weeks claimed or paid
+ar539.csv,cw_eb_total,"Extended Benefits continued weeks claimed, total (EBT)",Number of weeks claimed or paid
+ar539.csv,ar539_c14_ebui,EBUI: EB continued weeks related to UI (exact meaning not confirmed),Number
+ar539.csv,cw_state_additional_total,"State additional benefits continued weeks claimed, total (ABT)",Number of weeks claimed or paid
+ar539.csv,ar539_c16_abui,ABUI: state additional benefit weeks related to UI (exact meaning not confirmed),Number
+ar539.csv,cw_13wk_avg,Average continued weeks claimed over 13 weeks (AT),Number of weeks claimed or paid
+ar539.csv,covered_employment,Covered employment (CE),Number of jobs
+ar539.csv,iur_13wk,13-week insured unemployment rate (R) used for EB triggers,Percent
+ar539.csv,iur_13wk_prior_2yr_avg,Average of the 13-week rate for the same period in the prior 2 years (AR),Percent
+ar539.csv,iur_13wk_pct_of_prior_2yr,c19 as a percent of c20 (P),Percent
+ar539.csv,eb_trigger_status,EB trigger status code (e.g. B / E),Text
+ar539.csv,eb_status_change_date,Date the EB trigger status last changed,Date
+ar5159.csv,state,State or area code,State code
+ar5159.csv,month_ended,Last day of the report month,Date
+ar5159.csv,ic_state_ui_total,"State UI initial claims, total (sum of c2 c3 c4)",Number
+ar5159.csv,ic_state_ui_new_intrastate,State UI new intrastate initial claims excl. transitional,Number
+ar5159.csv,ic_state_ui_additional_intrastate,State UI additional intrastate initial claims,Number
+ar5159.csv,ic_state_ui_interstate_filed_from_agent,State UI interstate claims filed from agent state,Number
+ar5159.csv,ic_state_ui_transitional,State UI transitional claims,Number
+ar5159.csv,ic_state_ui_interstate_received_as_liable,State UI interstate claims received as liable state,Number
+ar5159.csv,ic_ucfe_total,"UCFE-no-UI initial claims, total (sum of c8 c9 c10)",Number
+ar5159.csv,ic_ucfe_new_intrastate,UCFE new intrastate initial claims,Number
+ar5159.csv,ic_ucfe_additional_intrastate,UCFE additional intrastate initial claims,Number
+ar5159.csv,ic_ucfe_interstate_filed_from_agent,UCFE interstate claims filed from agent state,Number
+ar5159.csv,ic_ucfe_transitional,UCFE transitional claims,Number
+ar5159.csv,ic_ucfe_interstate_received_as_liable,UCFE interstate claims received as liable state,Number
+ar5159.csv,ic_ucx_total,"UCX-only initial claims, total (sum of c14 c15 c16)",Number
+ar5159.csv,ic_ucx_new_intrastate,UCX new intrastate initial claims,Number
+ar5159.csv,ic_ucx_additional_intrastate,UCX additional intrastate initial claims,Number
+ar5159.csv,ic_ucx_interstate_filed_from_agent,UCX interstate claims filed from agent state,Number
+ar5159.csv,ic_ucx_transitional,UCX transitional claims,Number
+ar5159.csv,ic_ucx_interstate_received_as_liable,UCX interstate claims received as liable state,Number
+ar5159.csv,ar5159_c19,State UI line 201 col 8 (eligibility reviews / continued weeks claimed section),Number
+ar5159.csv,ar5159_c20,State UI line 201 col 9,Number
+ar5159.csv,ar5159_c21,State UI line 201 col 10,Number
+ar5159.csv,ar5159_c22,State UI line 201 col 11,Number
+ar5159.csv,ar5159_c24,State UI line 201 col 12,Number
+ar5159.csv,ar5159_c25,UCFE line 202 col 8,Number
+ar5159.csv,ar5159_c26,UCFE line 202 col 9,Number
+ar5159.csv,ar5159_c27,UCFE line 202 col 10,Number
+ar5159.csv,ar5159_c28,UCFE line 202 col 11,Number
+ar5159.csv,ar5159_c30,UCFE line 202 col 12,Number
+ar5159.csv,ar5159_c31,UCX line 203 col 8,Number
+ar5159.csv,ar5159_c32,UCX line 203 col 9,Number
+ar5159.csv,ar5159_c33,UCX line 203 col 10,Number
+ar5159.csv,ar5159_c34,UCX line 203 col 11,Number
+ar5159.csv,ar5159_c36,UCX line 203 col 12,Number
+ar5159.csv,wc_state_ui_total,"State UI weeks compensated, all weeks",Number of weeks claimed or paid
+ar5159.csv,wc_state_ui_total_unemployment,State UI weeks compensated for total unemployment,Number of weeks claimed or paid
+ar5159.csv,wc_state_ui_interstate,State UI interstate weeks compensated,Number of weeks claimed or paid
+ar5159.csv,wc_ucfe_ucx_total,UCFE + UCX weeks compensated,Number of weeks claimed or paid
+ar5159.csv,wc_ucfe,UCFE-no-UI weeks compensated,Number of weeks claimed or paid
+ar5159.csv,wc_ucx,UCX-only weeks compensated,Number of weeks claimed or paid
+ar5159.csv,amt_state_ui_total,"State UI benefits paid, all weeks (dollars)",Dollars
+ar5159.csv,amt_state_ui_total_unemployment,State UI benefits paid for total unemployment (dollars),Dollars
+ar5159.csv,amt_state_ui_interstate,State UI interstate benefits paid (dollars),Dollars
+ar5159.csv,ar5159_c48,Line 302 col 17 (does NOT equal c49 + c50),Number
+ar5159.csv,amt_ucfe,UCFE-no-UI benefits paid (dollars),Dollars
+ar5159.csv,amt_ucx,UCX-only benefits paid (dollars),Dollars
+ar5159.csv,fp_state_ui_total,"State UI first payments, total",Number
+ar5159.csv,fp_state_ui_intrastate,State UI intrastate first payments,Number
+ar5159.csv,fp_state_ui_interstate,State UI interstate first payments,Number
+ar5159.csv,fp_ucfe,UCFE-no-UI first payments,Number
+ar5159.csv,fp_ucx,UCX-only first payments,Number
+ar5159.csv,final_payments_state_ui,State UI final payments (exhaustions),Number
+ar5159.csv,final_payments_ucfe,UCFE-no-UI final payments,Number
+ar5159.csv,final_payments_ucx,UCX-only final payments,Number
+ar5159.csv,ar5159_c94,State UI line 201 col 13 (entering self-employment),Number
+ar5159.csv,wc_self_employment,Self-employment assistance weeks compensated (all programs),Number of weeks claimed or paid
+ar5159.csv,amt_self_employment,Self-employment assistance benefits paid (dollars),Dollars
+ar5159.csv,ic_state_ui_interstate_taken_as_agent,State UI interstate claims taken as agent state,Number
+ar5159.csv,ic_ucfe_interstate_taken_as_agent,UCFE interstate claims taken as agent state,Number
+ar5159.csv,ic_ucx_interstate_taken_as_agent,UCX interstate claims taken as agent state,Number
+ar218.csv,state,State or area code,State code
+ar218.csv,quarter_ended,Last day of the report quarter,Date
+ar218.csv,md_total,"Monetary determinations, total",Number
+ar218.csv,md_insufficient_wage_credits,Monetary determinations with insufficient wage credits,Number
+ar218.csv,md_sufficient_wage_credits,Monetary determinations with sufficient wage credits,Number
+ar218.csv,by_established_total,"Claimants establishing benefit years, total",Number
+ar218.csv,by_at_max_weekly_benefit,Claimants establishing benefit years at maximum weekly benefit,Number
+ar218.csv,by_at_max_benefit_and_duration,Claimants establishing benefit years at maximum benefit and duration,Number
+ar218.csv,potential_total,Potential duration: number of determinations establishing benefit years,Number
+ar218.csv,potential_lt10wk,Potential duration under 10 weeks,Number
+ar218.csv,potential_10_14wk,Potential duration 10-14 weeks,Number
+ar218.csv,potential_15_19wk,Potential duration 15-19 weeks,Number
+ar218.csv,potential_20_21wk,Potential duration 20-21 weeks,Number
+ar218.csv,potential_22_23wk,Potential duration 22-23 weeks,Number
+ar218.csv,potential_24_25wk,Potential duration 24-25 weeks,Number
+ar218.csv,potential_26_27wk,Potential duration 26-27 weeks,Number
+ar218.csv,potential_28_29wk,Potential duration 28-29 weeks,Number
+ar218.csv,potential_30_31wk,Potential duration 30-31 weeks,Number
+ar218.csv,potential_32_33wk,Potential duration 32-33 weeks,Number
+ar218.csv,potential_34plus_wk,Potential duration 34 weeks and over,Number
+ar218.csv,potential_at_max,Number at maximum potential duration,Number
+ar218.csv,potential_avg_weeks,Average potential duration (weeks),Weeks
+ar218.csv,actual_total,Actual duration: claimants who received final payments (exhaustees),Number
+ar218.csv,actual_lt10wk,Actual duration under 10 weeks (exhaustees),Number
+ar218.csv,actual_10_14wk,Actual duration 10-14 weeks (exhaustees),Number
+ar218.csv,actual_15_19wk,Actual duration 15-19 weeks (exhaustees),Number
+ar218.csv,actual_20_21wk,Actual duration 20-21 weeks (exhaustees),Number
+ar218.csv,actual_22_23wk,Actual duration 22-23 weeks (exhaustees),Number
+ar218.csv,actual_24_25wk,Actual duration 24-25 weeks (exhaustees),Number
+ar218.csv,actual_26_27wk,Actual duration 26-27 weeks (exhaustees),Number
+ar218.csv,actual_28_29wk,Actual duration 28-29 weeks (exhaustees),Number
+ar218.csv,actual_30_31wk,Actual duration 30-31 weeks (exhaustees),Number
+ar218.csv,actual_32_33wk,Actual duration 32-33 weeks (exhaustees),Number
+ar218.csv,actual_34plus_wk,Actual duration 34 weeks and over (exhaustees),Number
+ar218.csv,actual_at_max,Exhaustees at maximum duration,Number
+ar218.csv,actual_avg_weeks,Average actual duration of exhaustees (weeks),Weeks
+state_weekly.csv,state,"Area code: every state, DC, PR (Puerto Rico) and VI (U.S. Virgin Islands)",State code
+state_weekly.csv,week_ended,Week ending (Saturday). Initial claims are dated by the week filed; continued weeks claimed by the week of unemployment they reflect,Date
+state_weekly.csv,initial_claims,"State UI initial claims, regular state programs only (excludes work-sharing equivalents), not seasonally adjusted",Number
+state_weekly.csv,initial_claims_4wk,4-week average of initial_claims (blank unless all 4 weeks are present),Number
+state_weekly.csv,covered_employment,Covered employment: jobs covered by state UI (the claims-rate denominator),Number of jobs
+state_weekly.csv,ic_rate,"Initial claims rate (claims rate = claims per 100 covered jobs, regular state UI, not seasonally adjusted): initial_claims / covered_employment x 100",Percent
+state_weekly.csv,ic_rate_4wk,4-week average of ic_rate,Percent
+state_weekly.csv,ic_yoy_pct,"Year-on-year change: ic_rate_4wk / the same 4 weeks 52 weeks earlier - 1, in % (the one basis used for every year-on-year figure on the States page)",Percent
+state_weekly.csv,ic_vs_normal_pct,"ic_rate_4wk vs. normal, in %: normal = median of ic_rate_4wk 52, 104 and 156 weeks earlier, leaving out weeks from Mar 2020 to Jun 2021",Percent
+state_weekly.csv,continued_weeks,"Continued weeks claimed, regular state programs only, not seasonally adjusted",Number
+state_weekly.csv,cc_rate,Continuing claims rate: continued_weeks / covered employment x 100,Percent
+state_weekly.csv,cc_rate_4wk,4-week average of cc_rate,Percent
+state_weekly.csv,cc_rate_yoy_pp,"cc_rate_4wk minus its value 52 weeks earlier, in percentage points",Percent
+state_monthly.csv,state,Area code (the unemployment rate exists for the states and DC only),State code
+state_monthly.csv,month,Month (YYYY-MM),Number
+state_monthly.csv,unemployment_rate,"State unemployment rate, seasonally adjusted (BLS Local Area Unemployment Statistics via FRED, {ST}UR)",Percent
+state_monthly.csv,ur_3m_avg,"3-month average of unemployment_rate (2 of 3 months allowed, e.g. Oct 2025 missing)",Number
+state_monthly.csv,ur_3m_avg_12m_low,Lowest ur_3m_avg over the previous 12 months (at least 11 present),Number
+state_monthly.csv,ur_gap_pp,"ur_3m_avg minus ur_3m_avg_12m_low, in percentage points: the Sahm rule applied to a state (no trigger attached)",Number
+state_monthly.csv,exhaustion_rate_12m,"12-month exhaustion rate: 12-month average final payments / 12-month average first payments 6 months earlier, in %",Percent
+state_monthly.csv,avg_duration_12m,"Average weeks paid: 12-month weeks compensated / 12-month first payments, all claimants",Weeks
+state_monthly.csv,exhaustion_change_12m_pp,"exhaustion_rate_12m minus its value 12 months earlier, in percentage points",Number
+diffusion_weekly.csv,week_ended,Week ending (Saturday),Date
+diffusion_weekly.csv,areas_reported,Number of areas (states and DC) with a year-on-year change this week,Number
+diffusion_weekly.csv,areas_up,Number of those areas whose initial claims rate (4-week average) is up 20% or more on a year earlier,Number
+diffusion_weekly.csv,diffusion_unweighted_pct,areas_up / areas_reported x 100,Percent
+diffusion_weekly.csv,diffusion_ce_weighted_pct,"Share of covered employment in the areas counted in areas_up, in % (the headline diffusion index)",Percent
+weighted_weekly.csv,week_ended,Week ending (Saturday),Date
+weighted_weekly.csv,weighted_ic_rate_4wk,"Weighted average of the states' ic_rate_4wk (claims rate = claims per 100 covered jobs, regular state UI, not seasonally adjusted); weights rescaled over the states with a value",Percent
+weighted_weekly.csv,weights_present_ic,Share of the total weight with an initial claims rate this week,Number
+weighted_weekly.csv,weighted_cc_rate_4wk,Weighted average of the states' cc_rate_4wk,Percent
+weighted_weekly.csv,weights_present_cc,Share of the total weight with a continuing claims rate this week,Number
+weighted_weekly.csv,weighted_ic_yoy_pct,Weighted year-on-year % change in the claims rate = sum of the state contributions (weighted_contributions_weekly),Percent
+weighted_weekly.csv,weighted_cc_rate_yoy_pp,"weighted_cc_rate_4wk minus its value 52 weeks earlier, in points",Percent
+weighted_weekly.csv,weighted_diffusion_pct,"Weighted share of states with the claims rate up 20%+ on a year earlier, in %",Percent
+weighted_weekly.csv,national_ic_rate_4wk,"National initial claims rate from the state sums (states + DC; claims rate = claims per 100 covered jobs, regular state UI, not seasonally adjusted), 4-week average",Percent
+weighted_weekly.csv,national_ic_yoy_pct,"national_ic_rate_4wk vs. the same 4 weeks a year earlier, in %",Percent
+weighted_weekly.csv,national_cc_rate_4wk,"National continuing claims rate from the state sums, 4-week average",Percent
+weighted_weekly.csv,national_cc_rate_yoy_pp,"national_cc_rate_4wk minus its value 52 weeks earlier, in points",Percent
+weighted_monthly.csv,month,Month (YYYY-MM),Number
+weighted_monthly.csv,weighted_ur,"Weighted average of the state unemployment rates (BLS LAUS), %",Number
+weighted_monthly.csv,weights_present,Share of the total weight with an unemployment rate this month,Number
+weighted_monthly.csv,weighted_ur_3m_avg,3-month average of weighted_ur,Number
+weighted_monthly.csv,weighted_ur_3m_avg_12m_low,Lowest weighted_ur_3m_avg of the previous 12 months,Number
+weighted_monthly.csv,weighted_ur_gap_pp,"weighted_ur_3m_avg minus weighted_ur_3m_avg_12m_low, in points (Sahm-style)",Number
+weighted_monthly.csv,national_ur,"National unemployment rate (UNRATE), %",Number
+weighted_monthly.csv,national_ur_3m_avg,3-month average of national_ur,Number
+weighted_monthly.csv,national_ur_3m_avg_12m_low,Lowest national_ur_3m_avg of the previous 12 months,Number
+weighted_monthly.csv,national_ur_gap_pp,"national_ur_3m_avg minus national_ur_3m_avg_12m_low, in points (the Sahm indicator on current data)",Number
+labor_flows_monthly.csv,month,Month (first day of the month; the job-finding rate is dated at the later of its two months),Number
+labor_flows_monthly.csv,job_finding_rate,"Job-finding rate, percent: share of the unemployed who leave unemployment within a month (includes leaving the labour force); dated the later month",Percent
+labor_flows_monthly.csv,job_finding_rate_3m,"Job-finding rate, 3-month average, percent",Percent
+labor_flows_monthly.csv,vacancies_per_unemployed,Job openings per unemployed person (from Dec 2000),Number
+labor_flows_monthly.csv,cc_per_new_claim,Continuing claims per new claim: weeks' worth of new claims still on the rolls,Number
+bundles/dol_weekly_claims.csv,week_ended,Week ended (Saturday). Continued-claims fields refer to the week of unemployment ending on this date,Date
+bundles/dol_weekly_claims.csv,source_initial,"Where the initial claims figures for this week come from: ETA 539 (DOL's official weekly report), news release, advance (newest week) or news release, revised",Text
+bundles/dol_weekly_claims.csv,source_continued,Where the continued claims figures for this week come from (same values as source_initial; continued claims lag initial claims by a week),Text
+bundles/dol_weekly_claims.csv,ic_nsa,"Initial claims, not seasonally adjusted (state programs incl. workshare equivalent)",Number
+bundles/dol_weekly_claims.csv,ic_sf,Initial claims seasonal factor (x100),Seasonal factor (x100)
+bundles/dol_weekly_claims.csv,ic_sa,"Initial claims, seasonally adjusted",Number
+bundles/dol_weekly_claims.csv,ic_sa_4wk,"Initial claims SA, 4-week moving average",Number
+bundles/dol_weekly_claims.csv,cc_nsa,"Continued claims (insured unemployment), NSA",Number
+bundles/dol_weekly_claims.csv,cc_sf,Continued claims seasonal factor (x100),Seasonal factor (x100)
+bundles/dol_weekly_claims.csv,cc_sa,"Continued claims, seasonally adjusted",Number
+bundles/dol_weekly_claims.csv,cc_sa_4wk,"Continued claims SA, 4-week moving average",Number
+bundles/dol_weekly_claims.csv,iur_nsa,"Insured unemployment rate, NSA (percent, 1 decimal)",Percent
+bundles/dol_weekly_claims.csv,iur_sa,"Insured unemployment rate, SA (percent, 1 decimal)",Percent
+bundles/dol_weekly_claims.csv,covered_employment,Covered employment used as the IUR denominator (updated quarterly),Number of jobs
+bundles/dol_weekly_claims.csv,ic_ucfe,Initial claims for federal employees with no state UI (FIC / UCFE),Number
+bundles/dol_weekly_claims.csv,ic_ucx,Initial claims for ex-servicemembers only (XIC / UCX),Number
+bundles/dol_weekly_claims.csv,cw_regular_state,"Continued weeks claimed, regular state UI programs (sum of all states, ar539 c8)",Number of weeks claimed or paid
+bundles/dol_weekly_claims.csv,cw_ucfe,Continued weeks claimed for federal employees with no state UI (FCW),Number of weeks claimed or paid
+bundles/dol_weekly_claims.csv,cw_ucx,Continued weeks claimed for ex-servicemembers only (XCW),Number of weeks claimed or paid
+bundles/dol_weekly_claims.csv,cw_eb,"Continued weeks claimed, Extended Benefits (sum of all states)",Number of weeks claimed or paid
+bundles/dol_weekly_claims.csv,cw_state_additional,"Continued weeks claimed, state additional benefit programs (sum of all states)",Number of weeks claimed or paid
+bundles/dol_weekly_claims.csv,cw_stc_workshare,Workshare continued weeks claimed (WSCW),Number of weeks claimed or paid
+bundles/dol_weekly_claims.csv,cw_all_programs,"Continued weeks claimed, all programs: regular state + UCFE + UCX + EB + state additional + STC/workshare",Number of weeks claimed or paid
+bundles/dol_weekly_claims.csv,ic_rate_sa,"SA initial claims rate: seasonally adjusted initial claims as a percent of covered employment (the site shows this x 100 = per 10,000 covered workers)",Percent
+bundles/dol_weekly_claims.csv,ic_rate_nsa,NSA initial claims rate: not seasonally adjusted initial claims as a percent of covered employment,Percent
+bundles/dol_weekly_claims.csv,ic_rate_sa_4wk,4-week average of the SA initial claims rate (percent),Percent
+bundles/dol_weekly_claims.csv,ic_rate_nsa_4wk,4-week average of the NSA initial claims rate (percent),Percent
+bundles/dol_weekly_claims.csv,cc_rate_sa,SA continuing claims rate: seasonally adjusted continued claims as a percent of covered employment (matches DOL's insured unemployment rate within rounding),Percent
+bundles/dol_weekly_claims.csv,cc_rate_nsa,NSA continuing claims rate: not seasonally adjusted continued claims as a percent of covered employment,Percent
+bundles/dol_weekly_claims.csv,cc_rate_sa_4wk,4-week average of the SA continuing claims rate (percent),Percent
+bundles/dol_weekly_claims.csv,cc_rate_nsa_4wk,4-week average of the NSA continuing claims rate (percent),Percent
+bundles/dol_weekly_claims.csv,iur_sa_published,"DOL's published insured unemployment rate, seasonally adjusted (percent, 1 decimal), for comparison",Percent

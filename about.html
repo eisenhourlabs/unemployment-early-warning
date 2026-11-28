@@ -1,0 +1,614 @@
+<!doctype html><html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>About · Unemployment Watch</title>
+  <meta name="description" content="US unemployment early-warning dashboard: claims, unemployment rate and duration, from public data.">
+  
+  <script>try { var t = localStorage.getItem("uw-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="index.html">Unemployment Watch</a>
+    <nav class="pages" aria-label="Pages">
+      <a href="index.html">Overview</a>
+      <a href="outlook.html">Outlook</a>
+      <a href="job-losses.html">Job Losses</a>
+      <a href="duration.html">Duration</a>
+      <a href="states.html">States</a>
+      <a href="leading.html">Leading</a>
+      <a href="data.html">Data</a>
+      <a href="about.html" aria-current="page">About</a>
+    </nav>
+    <button class="theme-toggle" type="button" id="theme-toggle" aria-pressed="false">
+      <span class="theme-icon" aria-hidden="true"></span><span class="theme-label">Dark mode</span>
+    </button>
+  </div>
+</header>
+
+<div class="wrap controls">
+  <p class="freshness">
+    Data through: initial claims week ending Nov 21, 2026 (advance) · continuing claims week ending Nov 14, 2026 (advance) · unemployment rate Oct 2026 · site updated Nov 28, 2026 9:29 AM CT (data refreshed weekday mornings; also rebuilt when the site changes)
+  </p>
+</div>
+
+<main class="wrap">
+
+<div class="page-intro">
+  <h1>About Unemployment Watch</h1>
+  <p>An early-warning view of US unemployment built from public data (one series is shown under its publisher's
+    citation terms). It follows two things:
+    <strong>new job losses</strong> (how often people start claiming state UI benefits) and <strong>how long
+    unemployment lasts</strong> (how long they keep claiming). It refreshes itself every weekday morning.</p>
+  <p class="intended-use">Intended use: a regular briefing on labour-market conditions that affect unemployment, from
+    public data. The early-warning score and forecast ranges are experimental model output with a short live record.
+    They are a monitoring aid, not a basis on their own for pricing, reserving or risk limits.</p>
+</div>
+
+<nav class="card toc" aria-label="On this page">
+  <a href="#definitions">Definitions</a> · <a href="#sources">Sources</a> · <a href="#updates">Updates</a> ·
+  <a href="#revisions">Revisions</a> · <a href="#methods">Method notes</a> · <a href="#model-card">Model card</a> · <a href="#disclaimer">Disclaimer</a>
+</nav>
+
+<section class="card prose" id="definitions" aria-labelledby="def-title">
+  <h2 id="def-title">Definitions</h2>
+  <dl>
+    <dt>SA and NSA</dt>
+    <dd>Seasonally adjusted (SA) figures remove regular patterns such as January layoffs and holiday weeks, so one
+      week can be compared with the next. Not seasonally adjusted (NSA) figures are the raw counts.</dd>
+    <dt>State UI claims</dt>
+    <dd>Claims for state unemployment insurance (UI) benefits, reported by each state to the U.S. Department of Labor
+      (DOL). These are the "claims" throughout this site.</dd>
+    <dt>Initial claims</dt>
+    <dd>New applications for state UI benefits in a week: the fastest public signal of job losses.</dd>
+    <dt>Continuing claims</dt>
+    <dd>People still claiming benefits; reported for the week before the initial claims week, so they run a week behind.
+      DOL and FRED call them “continued claims”.</dd>
+    <dt>State UI claims as a proxy</dt>
+    <dd>Initial claims are applications for state unemployment benefits; continuing claims are the number of people
+      receiving them. Both depend on state eligibility rules, waiting periods and benefit limits. Continuing claims
+      rise when more people start claiming as well as when people stay on benefits longer. For any private
+      unemployment insurance, they are indicators of direction and timing, not measures of that insurance's own
+      claims.</dd>
+    <dt>ETA 539</dt>
+    <dd>DOL's weekly claims report: national and state initial and continuing claims, covered employment and the
+      insured unemployment rate. Published every Thursday with the news release; the official figures follow.</dd>
+    <dt>ETA 5159</dt>
+    <dd>DOL's monthly report of state UI claims and payments: first payments, weeks compensated, final payments
+      (exhaustions) and amounts paid, by state.</dd>
+    <dt>ETA 218</dt>
+    <dd>DOL's quarterly report of benefit rights and experience: how many weeks new claimants are entitled to, and how
+      many weeks claimants who exhausted benefits actually received, by state.</dd>
+    <dt>Covered employment</dt>
+    <dd>The number of jobs covered by state unemployment insurance (about 154 million), published by the
+      Department of Labor (DOL). It is the denominator of the two claims rates.</dd>
+    <dt>SA initial claims rate</dt>
+    <dd>Seasonally adjusted initial claims per 10,000 covered workers, weekly. Example: 189,000 claims ÷ 153.9 million
+      covered workers × 10,000 = 12.3.</dd>
+    <dt>SA continuing claims rate</dt>
+    <dd>Seasonally adjusted continuing claims as a percent of covered workers. It reproduces DOL's published insured
+      unemployment rate: the largest difference in any week since 1971 is 0.05 percentage
+      points, which is DOL's rounding to one decimal.</dd>
+    <dt>4-week average</dt>
+    <dd>The mean of the latest four weeks, which smooths holiday and weather noise. Charts show it bold, with the
+      weekly figures faint behind it.</dd>
+    <dt>Preliminary weeks (advance, revised)</dt>
+    <dd>The newest weeks come from DOL's Thursday news release: the latest week is the <em>advance</em> figure, the week
+      before is <em>revised</em>. They are drawn dashed with hollow markers and are replaced when DOL's official weekly
+      report (ETA 539) covers them, usually within a few weeks.</dd>
+    <dt>Exhaustion rate (12-month)</dt>
+    <dd>The share of claimants who use up all their state benefits: 12-month average final payments ÷ 12-month average
+      first payments six months earlier (DOL's definition).</dd>
+    <dt>Average benefit duration</dt>
+    <dd>Weeks of benefits paid per claimant: 12-month weeks compensated ÷ 12-month first payments, for all claimants.
+      Shown against the average number of weeks claimants are entitled to (DOL's ETA 218 report).</dd>
+    <dt>Percentile</dt>
+    <dd>The share of all past observations at or below the latest value, over the full history shown on the tile or
+      table (for example "62nd percentile since 1971"). At the extremes the site says "Lowest since 1971 (start of
+      data)": the data begin there, so it is not an all-time record.</dd>
+    <dt>Sahm indicator</dt>
+    <dd>The 3-month average unemployment rate minus the lowest 3-month average of the prior 12 months. Readings of
+      0.50 or more have come in the early months of most past US recessions (St. Louis Fed, real-time version).</dd>
+    <dt>Event</dt>
+    <dd>A claims jump (new claims 25% or more above their low of the past year) or an unemployment rise (3-month average
+      0.5 point above its low of the past year). About half of past events were short scares.</dd>
+    <dt>Recession shading</dt>
+    <dd>Grey bands mark recessions as dated by the National Bureau of Economic Research (NBER). NBER announces dates
+      months after the fact, so a new downturn appears only once it is official.</dd>
+    <dt>Diffusion index</dt>
+    <dd>Regional Fed surveys report the share of firms seeing increases minus the share seeing decreases; below zero
+      means more firms report declines. The <a href="states.html">States</a> page uses a different one, the state
+      claims diffusion index: the share of covered jobs in states (and DC) whose state UI initial claims, as a 4-week
+      average, are up 20% or more on the same weeks a year earlier. Each state counts by its covered employment; the
+      simple share of states is in the download. The 20% threshold was fixed before any testing.</dd>
+    <dt>NFCI</dt>
+    <dd>The Chicago Fed's National Financial Conditions Index: zero is the average since 1971, positive means tighter
+      than average. The credit subindex covers credit conditions only.</dd>
+  </dl>
+</section>
+
+<section class="card" id="sources" aria-labelledby="src-title">
+  <h2 id="src-title">Sources</h2>
+  <p class="why">Every series the site collects, from the project's series catalog. Most come through FRED, the
+    Federal Reserve Bank of St. Louis's free database.</p>
+  <div class="table-scroll">
+  <table class="sources">
+    <thead><tr><th>Series</th><th>Publisher</th><th>Frequency</th><th>Use</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/UNRATE">Unemployment rate (U-3)</a> <code>UNRATE</code></td>
+        <td>BLS via FRED</td>
+        <td>monthly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/U6RATE">U-6 underemployment rate</a> <code>U6RATE</code></td>
+        <td>BLS via FRED</td>
+        <td>monthly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/ICSA">Initial claims (SA)</a> <code>ICSA</code></td>
+        <td>DOL via FRED</td>
+        <td>weekly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/ICNSA">Initial claims (NSA)</a> <code>ICNSA</code></td>
+        <td>DOL via FRED</td>
+        <td>weekly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/IC4WSA">Initial claims 4-week average</a> <code>IC4WSA</code></td>
+        <td>DOL via FRED</td>
+        <td>weekly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/CCSA">Continuing claims (SA)</a> <code>CCSA</code></td>
+        <td>DOL via FRED</td>
+        <td>weekly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/CCNSA">Continuing claims (NSA)</a> <code>CCNSA</code></td>
+        <td>DOL via FRED</td>
+        <td>weekly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/IURSA">Insured unemployment rate</a> <code>IURSA</code></td>
+        <td>DOL via FRED</td>
+        <td>weekly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/CC4WSA">Continuing claims 4-week average</a> <code>CC4WSA</code></td>
+        <td>DOL via FRED</td>
+        <td>weekly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/IURNSA">Insured unemployment rate (NSA)</a> <code>IURNSA</code></td>
+        <td>DOL via FRED</td>
+        <td>weekly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/PAYEMS">Nonfarm payrolls</a> <code>PAYEMS</code></td>
+        <td>BLS via FRED</td>
+        <td>monthly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/UEMPLT5">Unemployed less than 5 weeks</a> <code>UEMPLT5</code></td>
+        <td>BLS via FRED</td>
+        <td>monthly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/UNEMPLOY">Unemployment level</a> <code>UNEMPLOY</code></td>
+        <td>BLS via FRED</td>
+        <td>monthly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/UEMPMED">Median weeks unemployed</a> <code>UEMPMED</code></td>
+        <td>BLS via FRED</td>
+        <td>monthly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/LNS13025703">Share unemployed 27+ weeks</a> <code>LNS13025703</code></td>
+        <td>BLS via FRED</td>
+        <td>monthly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/JTSLDR">JOLTS layoffs and discharges rate</a> <code>JTSLDR</code></td>
+        <td>BLS via FRED</td>
+        <td>monthly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/JTSHIR">JOLTS hires rate</a> <code>JTSHIR</code></td>
+        <td>BLS via FRED</td>
+        <td>monthly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/JTSQUR">JOLTS quits rate</a> <code>JTSQUR</code></td>
+        <td>BLS via FRED</td>
+        <td>monthly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/JTSJOL">JOLTS job openings</a> <code>JTSJOL</code></td>
+        <td>BLS via FRED</td>
+        <td>monthly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/SAHMREALTIME">Sahm rule recession indicator (real-time)</a> <code>SAHMREALTIME</code></td>
+        <td>St. Louis Fed via FRED</td>
+        <td>monthly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/USREC">NBER recession indicator (1 = recession month)</a> <code>USREC</code></td>
+        <td>NBER via FRED</td>
+        <td>monthly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/TEMPHELPS">Temporary help services employment</a> <code>TEMPHELPS</code></td>
+        <td>BLS via FRED</td>
+        <td>monthly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/AWHMAN">Avg weekly hours manufacturing</a> <code>AWHMAN</code></td>
+        <td>BLS via FRED</td>
+        <td>monthly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/T10Y3M">Yield curve 10y minus 3m</a> <code>T10Y3M</code></td>
+        <td>Treasury via FRED</td>
+        <td>daily</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/PERMIT">Building permits</a> <code>PERMIT</code></td>
+        <td>Census via FRED</td>
+        <td>monthly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/GACDFSA066MSFRBPHI">Philly Fed manufacturing general activity</a> <code>GACDFSA066MSFRBPHI</code></td>
+        <td>Philadelphia Fed via FRED</td>
+        <td>monthly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/GACDISA066MSFRBNY">Empire State manufacturing general activity</a> <code>GACDISA066MSFRBNY</code></td>
+        <td>New York Fed via FRED</td>
+        <td>monthly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/UMCSENT">Consumer sentiment</a> <code>UMCSENT</code></td>
+        <td>U. Michigan via FRED</td>
+        <td>monthly</td>
+        <td>Copyright; charted with the required citation, not offered for download</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/NFCICREDIT">NFCI credit subindex (credit conditions)</a> <code>NFCICREDIT</code></td>
+        <td>Chicago Fed via FRED</td>
+        <td>weekly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/NFCI">National Financial Conditions Index</a> <code>NFCI</code></td>
+        <td>Chicago Fed via FRED</td>
+        <td>weekly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://www.chicagofed.org/research/data/chicago-fed-labor-market-indicators/index">Chicago Fed Labor Market Indicators (UR nowcast + flows)</a></td>
+        <td>Chicago Fed</td>
+        <td>twice-monthly</td>
+        <td>Licence does not allow republishing; not used</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/ADPMNUSNERSA">ADP private payrolls</a> <code>ADPMNUSNERSA</code></td>
+        <td>ADP via FRED</td>
+        <td>monthly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/USPRIV">Private nonfarm payrolls (BLS)</a> <code>USPRIV</code></td>
+        <td>BLS via FRED</td>
+        <td>monthly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/TXICLAIMS">State initial claims (e.g. TXICLAIMS) (by state)</a></td>
+        <td>DOL via FRED</td>
+        <td>weekly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/TXCCLAIMS">State continuing claims (e.g. TXCCLAIMS) (by state)</a></td>
+        <td>DOL via FRED</td>
+        <td>weekly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/TXUR">State unemployment rate (e.g. TXUR) (by state)</a></td>
+        <td>BLS LAUS via FRED</td>
+        <td>monthly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://oui.doleta.gov/unemploy/claims.asp">National weekly claims ETA 539 (official; IC/CC NSA SF SA; IUR; covered employment)</a></td>
+        <td>DOL</td>
+        <td>weekly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://oui.doleta.gov/unemploy/claims.asp">State weekly claims (ETA 539 detail)</a></td>
+        <td>DOL</td>
+        <td>weekly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://oui.doleta.gov/unemploy/claims.asp">State monthly first payments / weeks compensated / exhaustions (ETA 5159)</a></td>
+        <td>DOL</td>
+        <td>monthly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://oui.doleta.gov/unemploy/claims.asp">State quarterly benefit rights and duration (ETA 218)</a></td>
+        <td>DOL</td>
+        <td>quarterly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://oui.doleta.gov/unemploy/claims.asp">Merged national weekly table (ETA 539 + preliminary news-release weeks via FRED)</a></td>
+        <td>DOL</td>
+        <td>weekly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://oui.doleta.gov/unemploy/claims.asp">SA/NSA initial and continuing claims rates (claims / covered employment)</a></td>
+        <td>DOL (derived)</td>
+        <td>weekly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://oui.doleta.gov/unemploy/claims.asp">12-month exhaustion rate and average benefit duration (national + state)</a></td>
+        <td>DOL (derived)</td>
+        <td>monthly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/UNRATEMD">FOMC median projection, unemployment rate (Q4 average)</a> <code>UNRATEMD</code></td>
+        <td>Federal Reserve Board (FOMC Summary of Economic Projections) via FRED</td>
+        <td>annual</td>
+        <td>Public; shown as a reference marker (with its release date) and not offered for download</td>
+      </tr>
+      <tr>
+        <td><a href="https://oui.doleta.gov/unemploy/claims.asp">State claims diffusion index (share of covered jobs in states with initial claims up 20%+ vs. a year earlier) (by state)</a></td>
+        <td>DOL (derived)</td>
+        <td>weekly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/LNS13026638">Unemployed: permanent job losers</a> <code>LNS13026638</code></td>
+        <td>BLS via FRED</td>
+        <td>monthly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/LNS13023653">Unemployed: job losers on temporary layoff</a> <code>LNS13023653</code></td>
+        <td>BLS via FRED</td>
+        <td>monthly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/LNS12032194">Part-time for economic reasons</a> <code>LNS12032194</code></td>
+        <td>BLS via FRED</td>
+        <td>monthly</td>
+        <td>Public</td>
+      </tr>
+      <tr>
+        <td><a href="https://fred.stlouisfed.org/series/DRTSCILM">Banks tightening standards for business loans (net %)</a> <code>DRTSCILM</code></td>
+        <td>Federal Reserve Board via FRED</td>
+        <td>quarterly</td>
+        <td>Public</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+  <h3 id="not-used">Considered but not used</h3>
+  <ul class="small">
+    <li><strong>Revelio Labs Public Labor Statistics (RPLS)</strong>: monthly employment, hiring, attrition and
+      layoff-notice estimates from online profiles. Revelio's Terms of Service do not allow its content to be posted
+      on another website without written consent, or downloaded automatically, so it is not shown. ADP private payrolls
+      (Job Losses page) serve as the second, non-government read on jobs instead.</li>
+    <li><strong>WARN layoff notices</strong> (advance notices employers must file before large layoffs): planned as
+      a context chart; not yet added, because the free sources that compile them need a registered account. The
+      Federal Reserve Bank of Cleveland researchers' compilation (published under a Creative Commons licence) is the
+      preferred source.</li>
+    <li><strong>Google Trends</strong> (searches for "file for unemployment" and similar): no licensed automated
+      access (the official API is in a closed test), and this site does not scrape.</li>
+    <li><strong>Challenger, Gray &amp; Christmas job-cut announcements</strong>: no public terms for reuse.</li>
+    <li><strong>Indeed, ISM and Conference Board</strong> indicators: not free to republish.</li>
+  </ul>
+</section>
+
+<div class="grid">
+  <section class="card prose" id="updates" aria-labelledby="upd-title">
+    <h2 id="upd-title">How often it updates</h2>
+    <ul>
+      <li>The site rebuilds itself on weekday mornings at about 7:45 and 10:00 am Central Time, after the morning
+        releases.</li>
+      <li>On Thursdays an extra run starts at about 7:35 am CT and waits up to an hour for the weekly claims release.</li>
+      <li>The early-warning score and forecast ranges are recomputed automatically by the first refresh after each
+        Thursday claims release and each jobs report (other days the last run stays), with weights fixed for the year.
+        Two steps are manual: the January re-fit of the weights is reviewed before it is used, and a new event
+        (a claims jump or unemployment rise) is added to the history only after review. If a model run fails or a release is late, the pages say so
+        and keep the last good values. How it works: <a href="outlook.html#methodology">Outlook → Methodology</a>.</li>
+      <li>The <span class="badge-inline">⚠ stale</span> badge next to "Data through" appears if a series is older than
+        its normal release schedule allows (for example, a missed weekly claims release).</li>
+    </ul>
+    <h3>Next releases</h3>
+    <ul>
+      <li>JOLTS (job openings, hires, layoffs): Tue, Dec 1, 2026, 10:00 am ET</li>
+      <li>Weekly jobless claims: Thu, Dec 3, 2026, 8:30 am ET</li>
+      <li>Jobs report (unemployment rate, payrolls): Fri, Dec 4, 2026, 8:30 am ET</li>
+    </ul>
+  </section>
+
+  <section class="card prose" id="revisions" aria-labelledby="rev-title">
+    <h2 id="rev-title">Revisions</h2>
+    <ul>
+      <li>Publishers revise their figures. Charts, tiles and downloads always show the latest published values.</li>
+      <li>For FRED and Chicago Fed series the project also keeps a dated copy each time a series changes, so later
+        analysis can use only what was known at the time.</li>
+      <li>DOL files keep only the latest figures; every revision DOL makes to past weeks, months or quarters is
+        recorded in the project's data revision log.</li>
+    </ul>
+  </section>
+</div>
+
+<section class="card prose" id="methods" aria-labelledby="meth-title">
+  <h2 id="meth-title">Method notes</h2>
+  <ul>
+    <li><strong>US totals from state reports.</strong> The US exhaustion rate and average benefit duration are sums
+      over all states, used only for months (quarters) in which every state reported. Our state figures match DOL's
+      published ones for the states we checked (Alabama, California, Florida, New York, Ohio, Texas), but the US total can
+      differ slightly from DOL's published US figure (0.08 percentage points for exhaustion and
+      0.02 weeks for duration in the 2026 Q2 comparison).</li>
+    <li><strong>Why claims rates start in 1971.</strong> The rates divide claims by covered employment, and DOL's weekly
+      report publishes covered employment from 1971 (claims themselves go back to 1967). In 1978 UI coverage expanded
+      to most state and local government workers, so covered employment jumped and rates before and after 1978 are not
+      strictly comparable; the rate charts mark it. DOL's state files (ETA 539 by state, 5159, 218) start in 1995 by
+      choice of this project.</li>
+    <li><strong>State measures (States page).</strong> State claims are regular state UI programs only, not seasonally
+      adjusted: DOL publishes no state seasonal factors, and applying the national factors to states would be wrong
+      because states' seasonal patterns differ. So each week is compared with the same weeks a year earlier. Every
+      year-on-year figure on the States page uses one basis: the claims rate (claims per 100 covered jobs, 4-week
+      average), for each state, for National (the sum of the states and DC) and for Weighted; the continuing claims
+      rate changes in points. "vs. normal" compares the claims rate with the median of the same weeks in the prior 3
+      years, leaving out March 2020 to June 2021. DOL's national figures and FRED's state claims series also add
+      work-sharing claims (and the national ones Puerto Rico and the Virgin Islands), so they run slightly above ours.
+      The state "vs. 12-month low" gap follows the Sahm rule: the 3-month average of the state unemployment rate minus
+      its lowest 3-month average of the previous 12 months; no confirmation trigger is attached to it, and the "rising
+      states" list is a watch list that has not been tested on history. The map, tiles and table show the last week or month
+      at or before the end of the time setting in which nearly all states (90% or more) had reported; a state that
+      has not reported that period shows its own latest value with its date, or "not reported".</li>
+    <li><strong>Weighted view (States page).</strong> Weighted view: each state counts in proportion to a fixed set of regional weights this site uses for its own monitoring. The weighted figures are each state's
+      value times its weight, summed; when a state has no figure for a period, the remaining weights are scaled to
+      sum to one. The weighted % change in claims is the sum of the states' contributions (weight × change in the
+      state's claims rate ÷ the weighted rate a year earlier). The weighted series can be downloaded on the Data
+      page.</li>
+    <li><strong>When DOL's weekly claims release is delayed</strong> (for example during a federal government
+      shutdown, when states keep filing to DOL's database but no national release comes out), the site estimates
+      national claims from the state filings: the reporting states' claims, plus each missing state's last reported
+      figure scaled by the reporting states' change since that week, divided by DOL's published seasonal factor.
+      Estimated weeks are drawn with hollow markers and a dashed line, labelled "estimate (release delayed)", and the
+      early-warning score and forecasts run on them marked "provisional"; official figures replace them as soon as
+      DOL publishes. Tested on every week since 1996 with one to five states left out at random,
+      the typical error against the official seasonally adjusted figure was 0.8% for initial
+      claims (3.5% or less in 9 of 10 tests) and 0.3% for continuing claims
+      (1.3% or less in 9 of 10); a replay of the October–November 2025 shutdown was within 2%
+      every week. The test uses today's revised state data, so a live estimate can be somewhat less accurate.</li>
+    <li><strong>Reference lines.</strong> The dotted lines on the two claims-rate charts are the average SA weekly rate
+      over the 12 months up to each of the last three NBER business-cycle peaks (April 2000 to March 2001, January to
+      December 2007, March 2019 to February 2020), and over 2019.</li>
+    <li><strong>October 2025.</strong> No household survey was collected during the federal government shutdown, so the
+      unemployment rate and other household-survey series have no October 2025 value. Charts show the gap; tiles say
+      so when it affects a comparison.</li>
+    <li><strong>High-yield credit spread.</strong> Planned originally, but its licence does not allow republishing, so
+      the Chicago Fed's NFCI credit subindex is shown instead.</li>
+    <li><strong>Forecasts.</strong> The early-warning score and the forecast ranges are on the
+      <a href="outlook.html">Outlook</a> page, with their method, track record and limits. They are model output,
+      not official forecasts.</li>
+  </ul>
+</section>
+<section class="card prose" id="model-card" aria-labelledby="card-title">
+  <h2 id="card-title">Model card</h2>
+  <p>The early-warning score and the forecast ranges on the <a href="outlook.html">Outlook</a> page come from one
+    model, summarised here. The Outlook page has the full method, track record and limits.</p>
+  <ul>
+    <li><strong>What it estimates.</strong> The chance that, within 6 months, new claims jump 25% or more above their
+      low of the past year, or unemployment's 3-month average rises 0.5 point above its low. It is a labour-market
+      stress alert, not a recession forecast, and it covers new job losses, not how long unemployment lasts (the
+      <a href="duration.html">Duration</a> page follows that).</li>
+    <li><strong>Inputs.</strong> Eight measures, each as published at the time: the Sahm indicator, new claims against
+      their past-year low and against a year ago, continuing claims against a year ago, temp-help jobs, the yield
+      curve, regional manufacturing surveys and the Chicago Fed's financial conditions index. They are combined by a
+      logistic regression with weights of zero or above.</li>
+    <li><strong>Version.</strong> The 2026 model, fitted on data known by January 1, 2026 and frozen on
+      November 8, 2026. It is re-fitted once a year (January 2027 next); any change between re-fits must
+      first pass a test whose rule was fixed before it was run.</li>
+    <li><strong>How it was tested.</strong> Each month from 2000 was scored by a model fitted only on earlier data:
+      236 months covering 6 events (2020 left out). Results are given first with
+      claims as first published, then with today's revised claims, which make the record look better.</li>
+  </ul>
+  <div class="table-scroll">
+  <table class="model-table compact" id="card-table">
+    <thead><tr><th>Tested 2000–2026</th><th>Claims as first published</th><th>Claims as revised today</th></tr></thead>
+    <tbody>
+      <tr><td>Red (50% and above)</td><td>39 months, 44% followed by an event</td><td>27 months, 56% followed by an event</td></tr>
+      <tr><td>Amber (20% to 50%)</td><td>36 months, 22% followed by an event</td><td>36 months, 28% followed by an event</td></tr>
+      <tr><td>Green (under 20%)</td><td>161 months, 7% followed by an event</td><td>173 months, 6% followed by an event</td></tr>
+      <tr><td>Skill against the long-run average (90% range)</td><td>−0.01 (−0.49 to +0.30)</td><td>+0.18 (−0.07 to +0.42)</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <ul>
+    <li><strong>Forecast ranges.</strong> The unemployment rate's 80% ranges held 82% / 79% / 79% of outcomes at
+      3 / 6 / 12 months, but only 73% / 67% / 72% once a deterioration had been under way for 3 months or
+      more.</li>
+    <li><strong>Limits.</strong> The test rests on only 6 events since 2000: the skill range includes zero, and the
+      live record is short. State UI claims are a proxy for, not a measure of, any private insurance's claims. The
+      score and ranges are a monitoring aid, not a basis on their own for pricing, reserving or risk limits.</li>
+  </ul>
+</section>
+
+<section class="card prose" id="disclaimer" aria-labelledby="disc-title">
+  <h2 id="disc-title">Disclaimer</h2>
+  <p>This site is an independent project, not affiliated with or endorsed by any of the publishers above. Figures are provided as is, without warranty of accuracy or
+    completeness; use them at your own risk and check the original source before relying on a number.</p>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <p><strong>Not an official forecast; public data only.</strong> Figures are revised by their publishers;
+      this site shows the latest published values and refreshes automatically on weekday mornings.</p>
+    <p>Sources: U.S. Department of Labor, Employment and Training Administration
+      (<a href="https://oui.doleta.gov/unemploy/claims.asp">weekly claims, ETA 539</a>);
+      U.S. Bureau of Labor Statistics and Federal Reserve Bank of St. Louis via
+      <a href="https://fred.stlouisfed.org/">FRED</a> (unemployment rate, Sahm indicator, claims);
+      National Bureau of Economic Research recession dates via FRED (USREC);
+      leading indicators from the U.S. Treasury, U.S. Census Bureau, Federal Reserve Banks of Philadelphia,
+      New York and Chicago, and the University of Michigan Surveys of Consumers, via FRED (each chart names its source);
+      release schedules from FRED and the
+      <a href="https://www.chicagofed.org/research/data/chicago-fed-labor-market-indicators/release-schedule">Federal Reserve Bank of Chicago</a>.</p>
+  </div>
+</footer>
+
+<script id="page-data" type="application/json">{"today":"2026-11-28","defaultRange":"5y","recessionViews":[{"key":"2001","label":"2001","start":"2000-01-01","end":"2003-12-31"},{"key":"2008-09","label":"2008\u201309","start":"2007-01-01","end":"2011-12-31"},{"key":"2020","label":"2020","start":"2019-01-01","end":"2022-12-31"}],"charts":[]}</script>
+<script src="assets/site.js"></script>
+
+</body>
+</html>

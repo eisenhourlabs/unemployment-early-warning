@@ -1,0 +1,2789 @@
+<!doctype html><html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Data &amp; Downloads · Unemployment Watch</title>
+  <meta name="description" content="US unemployment early-warning dashboard: claims, unemployment rate and duration, from public data.">
+  
+  <script>try { var t = localStorage.getItem("uw-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <a class="brand" href="index.html">Unemployment Watch</a>
+    <nav class="pages" aria-label="Pages">
+      <a href="index.html">Overview</a>
+      <a href="outlook.html">Outlook</a>
+      <a href="job-losses.html">Job Losses</a>
+      <a href="duration.html">Duration</a>
+      <a href="states.html">States</a>
+      <a href="leading.html">Leading</a>
+      <a href="data.html" aria-current="page">Data</a>
+      <a href="about.html">About</a>
+    </nav>
+    <button class="theme-toggle" type="button" id="theme-toggle" aria-pressed="false">
+      <span class="theme-icon" aria-hidden="true"></span><span class="theme-label">Dark mode</span>
+    </button>
+  </div>
+</header>
+
+<div class="wrap controls">
+  <p class="freshness">
+    Data through: initial claims week ending Nov 21, 2026 (advance) · continuing claims week ending Nov 14, 2026 (advance) · unemployment rate Oct 2026 · site updated Nov 28, 2026 9:29 AM CT (data refreshed weekday mornings; also rebuilt when the site changes)
+  </p>
+</div>
+
+<main class="wrap">
+
+<div class="page-intro">
+  <h1>Data &amp; downloads</h1>
+  <p>Every public series behind the site, as CSV or Excel, refreshed with the site. Each file keeps the same
+    address, so a spreadsheet linked to it stays current.</p>
+</div>
+
+<div class="grid">
+  <section class="card" aria-labelledby="bundles-title">
+    <h2 id="bundles-title">Bundles</h2>
+    <ul class="bundle-list">
+      <li><strong>DOL weekly claims (merged), from 1995</strong> <span class="muted">· Every weekly DOL column, the calculated rates and the source flag (ETA 539 or preliminary news release)</span><br> <a href="data/bundles/dol_weekly_claims.csv" download>CSV</a> · <a href="data/bundles/dol_weekly_claims.xlsx" download>XLSX</a></li>
+      <li><strong>All weekly series</strong> <span class="muted">· Side by side, one column each (weeks ending Saturday: claims)</span><br> <a href="data/bundles/weekly_series.csv" download>CSV</a></li>
+      <li><strong>Weekly series ending Friday</strong> <span class="muted">· Chicago Fed NFCI and its credit subindex</span><br> <a href="data/bundles/weekly_friday_series.csv" download>CSV</a></li>
+      <li><strong>All monthly series</strong> <span class="muted">· Side by side, one column each</span><br> <a href="data/bundles/monthly_series.csv" download>CSV</a></li>
+      <li><strong>Everything workbook</strong> <span class="muted">· One sheet per frequency (daily, weekly ending Saturday, weekly ending Friday, monthly, quarterly) plus a data dictionary</span><br><a href="data/bundles/everything.xlsx" download>XLSX</a></li>
+    </ul>
+  </section>
+  <section class="card howto" aria-labelledby="howto-title">
+    <h2 id="howto-title">Keep a spreadsheet up to date</h2>
+    <ol>
+      <li>Right-click a <strong>CSV</strong> link below and copy the link address.</li>
+      <li>In Excel: <strong>Data → From Web</strong>, paste the link, then <strong>Load</strong>.</li>
+      <li>Later, <strong>Data → Refresh All</strong> pulls the latest figures.</li>
+    </ol>
+    <p class="muted">Addresses look like <code>…/data/series/ICSA.csv</code> and never change.
+      Each XLSX has an About sheet with the source, units and citation; DOL files also have a Columns sheet
+      describing every column.</p>
+  </section>
+</div>
+<section class="card outlook-section" id="model" aria-labelledby="model-title">
+  <h2 id="model-title">Early-warning model</h2>
+  <p class="why">What the model on the <a href="outlook.html">Outlook</a> page produces. Model output, not official
+    statistics; each Excel file has an About sheet describing every column.</p>
+  <div class="table-scroll">
+  <table class="model-table">
+    <thead><tr><th>File</th><th>Contents</th><th>As of</th><th class="num">Rows</th><th>Download</th></tr></thead>
+    <tbody>
+      <tr><td>Early-warning score history</td><td class="small">Month (1980 on) and live run: chance of a claims jump or unemployment rise within 3 / 6 / 12 months, the colour shown, and the basis (1980-1999 tested with partly revised data, out of sample 2000 on, live)</td><td>each row</td><td class="num">566</td>
+        <td class="nowrap"><a href="data/model/score_history.csv" download>CSV</a> · <a href="data/model/score_history.xlsx" download>XLSX</a></td></tr>
+      <tr><td>Confirmation-trigger history</td><td class="small">Monthly confirmation-trigger values and colours since 1967 (as of each month&#39;s last day), the data basis of each, and the overall status</td><td>each row</td><td class="num">718</td>
+        <td class="nowrap"><a href="data/model/trigger_history.csv" download>CSV</a> · <a href="data/model/trigger_history.xlsx" download>XLSX</a></td></tr>
+      <tr><td>Forecast archive</td><td class="small">Every live run&#39;s forecast ranges: target, horizon, middle value and the 10 / 25 / 75 / 90 percentiles, and the weight on past-event paths</td><td>run date</td><td class="num">20</td>
+        <td class="nowrap"><a href="data/model/forecast_archive.csv" download>CSV</a> · <a href="data/model/forecast_archive.xlsx" download>XLSX</a></td></tr>
+      <tr><td>What-if paths</td><td class="small">If a 2001-type or 2008-type downturn started now: the path from today&#39;s level (not forecasts)</td><td>run date</td><td class="num">470</td>
+        <td class="nowrap"><a href="data/model/stress_paths.csv" download>CSV</a> · <a href="data/model/stress_paths.xlsx" download>XLSX</a></td></tr>
+      <tr><td>Nowcast history</td><td class="small">Every nowcast of the next unemployment-rate release with its first release and error (tested on history from 2000; live runs once available). Typical range +/-0.2 point (held about 80% of first releases)</td><td>release date</td><td class="num">322</td>
+        <td class="nowrap"><a href="data/model/nowcast_history.csv" download>CSV</a> · <a href="data/model/nowcast_history.xlsx" download>XLSX</a></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="chart-footer">The FOMC median projection shown for comparison is FRED series
+    <a href="https://fred.stlouisfed.org/series/UNRATEMD">UNRATEMD</a> (Federal Reserve Board); it is not offered as a
+    download here.</p>
+</section>
+
+<section class="card" aria-labelledby="files-title">
+  <h2 id="files-title">All series and files</h2>
+  <form class="filters" id="filters" role="search" aria-label="Filter the list">
+    <label class="grow">Search <input type="search" name="q" placeholder="Name or ID, e.g. claims or ICSA"></label>
+    <label>Page <select name="page"><option value="">All</option><option value="All pages">All pages</option><option value="Duration">Duration</option><option value="Job Losses">Job Losses</option><option value="Leading">Leading</option><option value="Overview">Overview</option><option value="States">States</option></select></label>
+    <label>Source <select name="source"><option value="">All</option><option value="ADP">ADP</option><option value="BLS">BLS</option><option value="BLS LAUS">BLS LAUS</option><option value="BLS and DOL (derived)">BLS and DOL (derived)</option><option value="Census">Census</option><option value="Chicago Fed">Chicago Fed</option><option value="DOL">DOL</option><option value="DOL (derived)">DOL (derived)</option><option value="DOL and BLS (derived)">DOL and BLS (derived)</option><option value="Federal Reserve Board">Federal Reserve Board</option><option value="NBER via FRED">NBER via FRED</option><option value="New York Fed">New York Fed</option><option value="Philadelphia Fed">Philadelphia Fed</option><option value="St. Louis Fed">St. Louis Fed</option><option value="Treasury">Treasury</option></select></label>
+    <label>Frequency <select name="frequency"><option value="">All</option><option value="daily">daily</option><option value="weekly">weekly</option><option value="monthly">monthly</option><option value="quarterly">quarterly</option></select></label>
+    <label class="check"><input type="checkbox" name="states"> Show state series</label>
+  </form>
+  <p class="muted" id="row-count" aria-live="polite"></p>
+  <div class="table-scroll">
+  <table class="files">
+    <thead><tr><th>Name</th><th>ID</th><th>Source</th><th>Frequency</th><th>Units</th><th>Adj.</th>
+      <th>Latest value</th><th>Date</th><th>Updated / checked</th><th>Download</th></tr></thead>
+    <tbody>
+      <tr data-kind="DOL" data-search="merged national weekly claims (eta 539 + preliminary weeks) national_weekly" data-page="Job Losses" data-source="DOL (derived)"
+          data-frequency="weekly" data-state="">
+        <td>Merged national weekly claims (ETA 539 + preliminary weeks)</td>
+        <td><code>national_weekly</code></td>
+        <td><a href="https://oui.doleta.gov/unemploy/claims.asp">DOL (derived)</a></td>
+        <td>weekly</td>
+        <td>Various (see data dictionary)</td>
+        <td>SA and NSA</td>
+        <td class="num">2,917 rows</td>
+        <td class="nowrap">Jan 2, 1971 to Nov 21, 2026</td>
+        <td class="nowrap">checked 2026-11-28</td>
+        <td class="dl"><a href="data/dol/national_weekly.csv" download>CSV</a> · <a href="data/dol/national_weekly.xlsx" download>XLSX</a> · <a href="data/data_dictionary.csv" download>Columns</a></td>
+      </tr>
+      <tr data-kind="DOL" data-search="national weekly claims, eta 539 (official) national_weekly_eta539" data-page="Job Losses" data-source="DOL"
+          data-frequency="weekly" data-state="">
+        <td>National weekly claims, ETA 539 (official)</td>
+        <td><code>national_weekly_eta539</code></td>
+        <td><a href="https://oui.doleta.gov/unemploy/wkclaims/report.asp">DOL</a></td>
+        <td>weekly</td>
+        <td>Various (see data dictionary)</td>
+        <td>SA and NSA</td>
+        <td class="num">2,914 rows</td>
+        <td class="nowrap">Jan 2, 1971 to Oct 31, 2026</td>
+        <td class="nowrap">checked 2026-11-28</td>
+        <td class="dl"><a href="data/dol/national_weekly_eta539.csv" download>CSV</a> · <a href="data/dol/national_weekly_eta539.xlsx" download>XLSX</a> · <a href="data/data_dictionary.csv" download>Columns</a></td>
+      </tr>
+      <tr data-kind="DOL" data-search="published seasonal factors incl. future weeks seasonal_factors" data-page="Job Losses" data-source="DOL"
+          data-frequency="weekly" data-state="">
+        <td>Published seasonal factors incl. future weeks</td>
+        <td><code>seasonal_factors</code></td>
+        <td><a href="https://oui.doleta.gov/unemploy/wkclaims/report.asp">DOL</a></td>
+        <td>weekly</td>
+        <td>Various (see data dictionary)</td>
+        <td>SA and NSA</td>
+        <td class="num">2,936 rows</td>
+        <td class="nowrap">Jan 2, 1971 to Apr 3, 2027</td>
+        <td class="nowrap">checked 2026-11-28</td>
+        <td class="dl"><a href="data/dol/seasonal_factors.csv" download>CSV</a> · <a href="data/dol/seasonal_factors.xlsx" download>XLSX</a> · <a href="data/data_dictionary.csv" download>Columns</a></td>
+      </tr>
+      <tr data-kind="DOL" data-search="sa/nsa initial and continuing claims rates (claims / covered employment) claims_rates_weekly" data-page="Overview" data-source="DOL (derived)"
+          data-frequency="weekly" data-state="">
+        <td>SA/NSA initial and continuing claims rates (claims / covered employment)</td>
+        <td><code>claims_rates_weekly</code></td>
+        <td><a href="https://oui.doleta.gov/unemploy/claims.asp">DOL (derived)</a></td>
+        <td>weekly</td>
+        <td>Various (see data dictionary)</td>
+        <td>SA and NSA</td>
+        <td class="num">2,917 rows</td>
+        <td class="nowrap">Jan 2, 1971 to Nov 21, 2026</td>
+        <td class="nowrap">checked 2026-11-28</td>
+        <td class="dl"><a href="data/dol/claims_rates_weekly.csv" download>CSV</a> · <a href="data/dol/claims_rates_weekly.xlsx" download>XLSX</a> · <a href="data/data_dictionary.csv" download>Columns</a></td>
+      </tr>
+      <tr data-kind="DOL" data-search="12-month exhaustion rate and average benefit duration (national + state) exhaustion_duration_monthly" data-page="Duration" data-source="DOL (derived)"
+          data-frequency="monthly" data-state="">
+        <td>12-month exhaustion rate and average benefit duration (national + state)</td>
+        <td><code>exhaustion_duration_monthly</code></td>
+        <td><a href="https://oui.doleta.gov/unemploy/claims.asp">DOL (derived)</a></td>
+        <td>monthly</td>
+        <td>Various (see data dictionary)</td>
+        <td>NSA</td>
+        <td class="num">20,628 rows</td>
+        <td class="nowrap">Jan 31, 1995 to Oct 31, 2026</td>
+        <td class="nowrap">checked 2026-11-28</td>
+        <td class="dl"><a href="data/dol/exhaustion_duration_monthly.csv" download>CSV</a> · <a href="data/dol/exhaustion_duration_monthly.xlsx" download>XLSX</a> · <a href="data/data_dictionary.csv" download>Columns</a></td>
+      </tr>
+      <tr data-kind="DOL" data-search="state quarterly benefit rights and duration (eta 218) benefit_duration_quarterly" data-page="Duration" data-source="DOL (derived)"
+          data-frequency="quarterly" data-state="">
+        <td>State quarterly benefit rights and duration (ETA 218)</td>
+        <td><code>benefit_duration_quarterly</code></td>
+        <td><a href="https://oui.doleta.gov/unemploy/claims.asp">DOL (derived)</a></td>
+        <td>quarterly</td>
+        <td>Various (see data dictionary)</td>
+        <td>NSA</td>
+        <td class="num">6,842 rows</td>
+        <td class="nowrap">Mar 31, 1995 to Sep 30, 2026</td>
+        <td class="nowrap">checked 2026-11-28</td>
+        <td class="dl"><a href="data/dol/benefit_duration_quarterly.csv" download>CSV</a> · <a href="data/dol/benefit_duration_quarterly.xlsx" download>XLSX</a> · <a href="data/data_dictionary.csv" download>Columns</a></td>
+      </tr>
+      <tr data-kind="DOL" data-search="dol ar539 by state ar539" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="">
+        <td>DOL ar539 by state</td>
+        <td><code>ar539</code></td>
+        <td><a href="https://oui.doleta.gov/unemploy/csv/ar539.csv">DOL</a></td>
+        <td>weekly</td>
+        <td>Various (see data dictionary)</td>
+        <td>NSA</td>
+        <td class="num">88,190 rows</td>
+        <td class="nowrap">Jan 7, 1995 to Nov 21, 2026</td>
+        <td class="nowrap">checked 2026-11-28</td>
+        <td class="dl"><a href="data/dol/ar539.csv" download>CSV</a> · <a href="data/dol/ar539.xlsx" download>XLSX</a> · <a href="data/data_dictionary.csv" download>Columns</a></td>
+      </tr>
+      <tr data-kind="DOL" data-search="dol ar5159 by state ar5159" data-page="Duration" data-source="DOL"
+          data-frequency="monthly" data-state="">
+        <td>DOL ar5159 by state</td>
+        <td><code>ar5159</code></td>
+        <td><a href="https://oui.doleta.gov/unemploy/csv/ar5159.csv">DOL</a></td>
+        <td>monthly</td>
+        <td>Various (see data dictionary)</td>
+        <td>NSA</td>
+        <td class="num">20,246 rows</td>
+        <td class="nowrap">Jan 31, 1995 to Oct 31, 2026</td>
+        <td class="nowrap">checked 2026-11-28</td>
+        <td class="dl"><a href="data/dol/ar5159.csv" download>CSV</a> · <a href="data/dol/ar5159.xlsx" download>XLSX</a> · <a href="data/data_dictionary.csv" download>Columns</a></td>
+      </tr>
+      <tr data-kind="DOL" data-search="dol ar218 by state ar218" data-page="Duration" data-source="DOL"
+          data-frequency="quarterly" data-state="">
+        <td>DOL ar218 by state</td>
+        <td><code>ar218</code></td>
+        <td><a href="https://oui.doleta.gov/unemploy/csv/ar218.csv">DOL</a></td>
+        <td>quarterly</td>
+        <td>Various (see data dictionary)</td>
+        <td>NSA</td>
+        <td class="num">6,723 rows</td>
+        <td class="nowrap">Mar 31, 1995 to Sep 30, 2026</td>
+        <td class="nowrap">checked 2026-11-28</td>
+        <td class="dl"><a href="data/dol/ar218.csv" download>CSV</a> · <a href="data/dol/ar218.xlsx" download>XLSX</a> · <a href="data/data_dictionary.csv" download>Columns</a></td>
+      </tr>
+      <tr data-kind="DOL" data-search="state claims: rates, year-on-year and vs.-normal changes, by state and week, from 1995 state_weekly" data-page="States" data-source="DOL (derived)"
+          data-frequency="weekly" data-state="">
+        <td>State claims: rates, year-on-year and vs.-normal changes, by state and week, from 1995</td>
+        <td><code>state_weekly</code></td>
+        <td><a href="https://oui.doleta.gov/unemploy/DataDownloads.asp">DOL (derived)</a></td>
+        <td>weekly</td>
+        <td>Various (see data dictionary)</td>
+        <td>NSA</td>
+        <td class="num">88,243 rows</td>
+        <td class="nowrap">Dec 31, 1994 to Nov 21, 2026</td>
+        <td class="nowrap">checked 2026-11-28</td>
+        <td class="dl"><a href="data/states/state_weekly.csv" download>CSV</a> · <a href="data/states/state_weekly.xlsx" download>XLSX</a> · <a href="data/data_dictionary.csv" download>Columns</a></td>
+      </tr>
+      <tr data-kind="DOL" data-search="state unemployment rate and sahm-style gap, exhaustion and duration, by month state_monthly" data-page="States" data-source="DOL and BLS (derived)"
+          data-frequency="monthly" data-state="">
+        <td>State unemployment rate and Sahm-style gap, exhaustion and duration, by month</td>
+        <td><code>state_monthly</code></td>
+        <td><a href="https://oui.doleta.gov/unemploy/DataDownloads.asp">DOL and BLS (derived)</a></td>
+        <td>monthly</td>
+        <td>Various (see data dictionary)</td>
+        <td>SA (unemployment rate) and NSA</td>
+        <td class="num">23,306 rows</td>
+        <td class="nowrap">Jan 1, 1990 to Oct 1, 2026</td>
+        <td class="nowrap">checked 2026-11-28</td>
+        <td class="dl"><a href="data/states/state_monthly.csv" download>CSV</a> · <a href="data/states/state_monthly.xlsx" download>XLSX</a> · <a href="data/data_dictionary.csv" download>Columns</a></td>
+      </tr>
+      <tr data-kind="DOL" data-search="state claims diffusion index (share of states / covered jobs with claims up 20%+) diffusion_weekly" data-page="States" data-source="DOL (derived)"
+          data-frequency="weekly" data-state="">
+        <td>State claims diffusion index (share of states / covered jobs with claims up 20%+)</td>
+        <td><code>diffusion_weekly</code></td>
+        <td><a href="https://oui.doleta.gov/unemploy/DataDownloads.asp">DOL (derived)</a></td>
+        <td>weekly</td>
+        <td>Various (see data dictionary)</td>
+        <td>NSA</td>
+        <td class="num">1,609 rows</td>
+        <td class="nowrap">Jan 27, 1996 to Nov 21, 2026</td>
+        <td class="nowrap">checked 2026-11-28</td>
+        <td class="dl"><a href="data/states/diffusion_weekly.csv" download>CSV</a> · <a href="data/states/diffusion_weekly.xlsx" download>XLSX</a> · <a href="data/data_dictionary.csv" download>Columns</a></td>
+      </tr>
+      <tr data-kind="DOL" data-search="weighted claims rates and year-on-year changes vs. national (state sums) weighted_weekly" data-page="States" data-source="DOL (derived)"
+          data-frequency="weekly" data-state="">
+        <td>Weighted claims rates and year-on-year changes vs. national (state sums)</td>
+        <td><code>weighted_weekly</code></td>
+        <td><a href="https://oui.doleta.gov/unemploy/DataDownloads.asp">DOL (derived)</a></td>
+        <td>weekly</td>
+        <td>Various (see data dictionary)</td>
+        <td>NSA</td>
+        <td class="num">1,662 rows</td>
+        <td class="nowrap">Jan 21, 1995 to Nov 21, 2026</td>
+        <td class="nowrap">checked 2026-11-28</td>
+        <td class="dl"><a href="data/states/weighted_weekly.csv" download>CSV</a> · <a href="data/states/weighted_weekly.xlsx" download>XLSX</a> · <a href="data/data_dictionary.csv" download>Columns</a></td>
+      </tr>
+      <tr data-kind="DOL" data-search="weighted unemployment rate and sahm-style gap vs. national weighted_monthly" data-page="States" data-source="DOL and BLS (derived)"
+          data-frequency="monthly" data-state="">
+        <td>Weighted unemployment rate and Sahm-style gap vs. national</td>
+        <td><code>weighted_monthly</code></td>
+        <td><a href="https://oui.doleta.gov/unemploy/DataDownloads.asp">DOL and BLS (derived)</a></td>
+        <td>monthly</td>
+        <td>Various (see data dictionary)</td>
+        <td>SA (unemployment rate) and NSA</td>
+        <td class="num">442 rows</td>
+        <td class="nowrap">Jan 1, 1990 to Oct 1, 2026</td>
+        <td class="nowrap">checked 2026-11-28</td>
+        <td class="dl"><a href="data/states/weighted_monthly.csv" download>CSV</a> · <a href="data/states/weighted_monthly.xlsx" download>XLSX</a> · <a href="data/data_dictionary.csv" download>Columns</a></td>
+      </tr>
+      <tr data-kind="DOL" data-search="labour flows: job-finding rate, job openings per unemployed, continuing claims per new claim labor_flows_monthly" data-page="Duration" data-source="BLS and DOL (derived)"
+          data-frequency="monthly" data-state="">
+        <td>Labour flows: job-finding rate, job openings per unemployed, continuing claims per new claim</td>
+        <td><code>labor_flows_monthly</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/UNEMPLOY">BLS and DOL (derived)</a></td>
+        <td>monthly</td>
+        <td>Various (see data dictionary)</td>
+        <td>SA</td>
+        <td class="num">946 rows</td>
+        <td class="nowrap">Feb 1, 1948 to Nov 1, 2026</td>
+        <td class="nowrap">checked 2026-11-28</td>
+        <td class="dl"><a href="data/derived/labor_flows_monthly.csv" download>CSV</a> · <a href="data/derived/labor_flows_monthly.xlsx" download>XLSX</a> · <a href="data/data_dictionary.csv" download>Columns</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate (u-3) unrate" data-page="Overview" data-source="BLS"
+          data-frequency="monthly" data-state="">
+        <td>Unemployment rate (U-3)</td>
+        <td><code>UNRATE</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/UNRATE">BLS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">4.1</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-06</td>
+        <td class="dl"><a href="data/series/UNRATE.csv" download>CSV</a> · <a href="data/series/UNRATE.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="u-6 underemployment rate u6rate" data-page="Duration" data-source="BLS"
+          data-frequency="monthly" data-state="">
+        <td>U-6 underemployment rate</td>
+        <td><code>U6RATE</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/U6RATE">BLS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">7.9</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-06</td>
+        <td class="dl"><a href="data/series/U6RATE.csv" download>CSV</a> · <a href="data/series/U6RATE.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims (sa) icsa" data-page="Job Losses" data-source="DOL"
+          data-frequency="weekly" data-state="">
+        <td>Initial claims (SA)</td>
+        <td><code>ICSA</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/ICSA">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>SA</td>
+        <td class="num">189,000</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-25</td>
+        <td class="dl"><a href="data/series/ICSA.csv" download>CSV</a> · <a href="data/series/ICSA.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims (nsa) icnsa" data-page="Job Losses" data-source="DOL"
+          data-frequency="weekly" data-state="">
+        <td>Initial claims (NSA)</td>
+        <td><code>ICNSA</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/ICNSA">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">212,945</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-25</td>
+        <td class="dl"><a href="data/series/ICNSA.csv" download>CSV</a> · <a href="data/series/ICNSA.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims 4-week average ic4wsa" data-page="Overview" data-source="DOL"
+          data-frequency="weekly" data-state="">
+        <td>Initial claims 4-week average</td>
+        <td><code>IC4WSA</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/IC4WSA">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>SA</td>
+        <td class="num">196,000</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-25</td>
+        <td class="dl"><a href="data/series/IC4WSA.csv" download>CSV</a> · <a href="data/series/IC4WSA.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continuing claims (sa) ccsa" data-page="Duration" data-source="DOL"
+          data-frequency="weekly" data-state="">
+        <td>Continuing claims (SA)</td>
+        <td><code>CCSA</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/CCSA">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>SA</td>
+        <td class="num">1,697,000</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-25</td>
+        <td class="dl"><a href="data/series/CCSA.csv" download>CSV</a> · <a href="data/series/CCSA.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continuing claims (nsa) ccnsa" data-page="Duration" data-source="DOL"
+          data-frequency="weekly" data-state="">
+        <td>Continuing claims (NSA)</td>
+        <td><code>CCNSA</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/CCNSA">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">1,562,814</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-25</td>
+        <td class="dl"><a href="data/series/CCNSA.csv" download>CSV</a> · <a href="data/series/CCNSA.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="insured unemployment rate iursa" data-page="Duration" data-source="DOL"
+          data-frequency="weekly" data-state="">
+        <td>Insured unemployment rate</td>
+        <td><code>IURSA</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/IURSA">DOL</a></td>
+        <td>weekly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">1.1</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-25</td>
+        <td class="dl"><a href="data/series/IURSA.csv" download>CSV</a> · <a href="data/series/IURSA.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continuing claims 4-week average cc4wsa" data-page="Duration" data-source="DOL"
+          data-frequency="weekly" data-state="">
+        <td>Continuing claims 4-week average</td>
+        <td><code>CC4WSA</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/CC4WSA">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>SA</td>
+        <td class="num">1,724,750</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-25</td>
+        <td class="dl"><a href="data/series/CC4WSA.csv" download>CSV</a> · <a href="data/series/CC4WSA.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="insured unemployment rate (nsa) iurnsa" data-page="Duration" data-source="DOL"
+          data-frequency="weekly" data-state="">
+        <td>Insured unemployment rate (NSA)</td>
+        <td><code>IURNSA</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/IURNSA">DOL</a></td>
+        <td>weekly</td>
+        <td>Percent</td>
+        <td>NSA</td>
+        <td class="num">1</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-25</td>
+        <td class="dl"><a href="data/series/IURNSA.csv" download>CSV</a> · <a href="data/series/IURNSA.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="nonfarm payrolls payems" data-page="Job Losses" data-source="BLS"
+          data-frequency="monthly" data-state="">
+        <td>Nonfarm payrolls</td>
+        <td><code>PAYEMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/PAYEMS">BLS</a></td>
+        <td>monthly</td>
+        <td>Thousands</td>
+        <td>SA</td>
+        <td class="num">159,293</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-06</td>
+        <td class="dl"><a href="data/series/PAYEMS.csv" download>CSV</a> · <a href="data/series/PAYEMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployed less than 5 weeks uemplt5" data-page="Job Losses" data-source="BLS"
+          data-frequency="monthly" data-state="">
+        <td>Unemployed less than 5 weeks</td>
+        <td><code>UEMPLT5</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/UEMPLT5">BLS</a></td>
+        <td>monthly</td>
+        <td>Thousands</td>
+        <td>SA</td>
+        <td class="num">2,170</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-06</td>
+        <td class="dl"><a href="data/series/UEMPLT5.csv" download>CSV</a> · <a href="data/series/UEMPLT5.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment level unemploy" data-page="Duration" data-source="BLS"
+          data-frequency="monthly" data-state="">
+        <td>Unemployment level</td>
+        <td><code>UNEMPLOY</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/UNEMPLOY">BLS</a></td>
+        <td>monthly</td>
+        <td>Thousands</td>
+        <td>SA</td>
+        <td class="num">7,068</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-06</td>
+        <td class="dl"><a href="data/series/UNEMPLOY.csv" download>CSV</a> · <a href="data/series/UNEMPLOY.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="median weeks unemployed uempmed" data-page="Duration" data-source="BLS"
+          data-frequency="monthly" data-state="">
+        <td>Median weeks unemployed</td>
+        <td><code>UEMPMED</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/UEMPMED">BLS</a></td>
+        <td>monthly</td>
+        <td>Weeks</td>
+        <td>SA</td>
+        <td class="num">11.9</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-06</td>
+        <td class="dl"><a href="data/series/UEMPMED.csv" download>CSV</a> · <a href="data/series/UEMPMED.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="share unemployed 27+ weeks lns13025703" data-page="Duration" data-source="BLS"
+          data-frequency="monthly" data-state="">
+        <td>Share unemployed 27+ weeks</td>
+        <td><code>LNS13025703</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/LNS13025703">BLS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">27.6</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-06</td>
+        <td class="dl"><a href="data/series/LNS13025703.csv" download>CSV</a> · <a href="data/series/LNS13025703.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="jolts layoffs and discharges rate jtsldr" data-page="Job Losses" data-source="BLS"
+          data-frequency="monthly" data-state="">
+        <td>JOLTS layoffs and discharges rate</td>
+        <td><code>JTSLDR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/JTSLDR">BLS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">1</td>
+        <td class="nowrap">Sep 2026</td>
+        <td class="nowrap">2026-11-03</td>
+        <td class="dl"><a href="data/series/JTSLDR.csv" download>CSV</a> · <a href="data/series/JTSLDR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="jolts hires rate jtshir" data-page="Duration" data-source="BLS"
+          data-frequency="monthly" data-state="">
+        <td>JOLTS hires rate</td>
+        <td><code>JTSHIR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/JTSHIR">BLS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">3.4</td>
+        <td class="nowrap">Sep 2026</td>
+        <td class="nowrap">2026-11-03</td>
+        <td class="dl"><a href="data/series/JTSHIR.csv" download>CSV</a> · <a href="data/series/JTSHIR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="jolts quits rate jtsqur" data-page="Leading" data-source="BLS"
+          data-frequency="monthly" data-state="">
+        <td>JOLTS quits rate</td>
+        <td><code>JTSQUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/JTSQUR">BLS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">2.1</td>
+        <td class="nowrap">Sep 2026</td>
+        <td class="nowrap">2026-11-03</td>
+        <td class="dl"><a href="data/series/JTSQUR.csv" download>CSV</a> · <a href="data/series/JTSQUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="jolts job openings jtsjol" data-page="Leading" data-source="BLS"
+          data-frequency="monthly" data-state="">
+        <td>JOLTS job openings</td>
+        <td><code>JTSJOL</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/JTSJOL">BLS</a></td>
+        <td>monthly</td>
+        <td>Thousands</td>
+        <td>SA</td>
+        <td class="num">7,523</td>
+        <td class="nowrap">Sep 2026</td>
+        <td class="nowrap">2026-11-03</td>
+        <td class="dl"><a href="data/series/JTSJOL.csv" download>CSV</a> · <a href="data/series/JTSJOL.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="sahm rule recession indicator (real-time) sahmrealtime" data-page="Overview" data-source="St. Louis Fed"
+          data-frequency="monthly" data-state="">
+        <td>Sahm rule recession indicator (real-time)</td>
+        <td><code>SAHMREALTIME</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/SAHMREALTIME">St. Louis Fed</a></td>
+        <td>monthly</td>
+        <td>Percentage points</td>
+        <td>SA</td>
+        <td class="num">0</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-06</td>
+        <td class="dl"><a href="data/series/SAHMREALTIME.csv" download>CSV</a> · <a href="data/series/SAHMREALTIME.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="nber recession indicator (1 = recession month) usrec" data-page="All pages" data-source="NBER via FRED"
+          data-frequency="monthly" data-state="">
+        <td>NBER recession indicator (1 = recession month)</td>
+        <td><code>USREC</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/USREC">NBER via FRED</a></td>
+        <td>monthly</td>
+        <td>0/1 indicator</td>
+        <td>NSA</td>
+        <td class="num">0</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-02</td>
+        <td class="dl"><a href="data/series/USREC.csv" download>CSV</a> · <a href="data/series/USREC.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="temporary help services employment temphelps" data-page="Leading" data-source="BLS"
+          data-frequency="monthly" data-state="">
+        <td>Temporary help services employment</td>
+        <td><code>TEMPHELPS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/TEMPHELPS">BLS</a></td>
+        <td>monthly</td>
+        <td>Thousands</td>
+        <td>SA</td>
+        <td class="num">2,526</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-06</td>
+        <td class="dl"><a href="data/series/TEMPHELPS.csv" download>CSV</a> · <a href="data/series/TEMPHELPS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="avg weekly hours manufacturing awhman" data-page="Leading" data-source="BLS"
+          data-frequency="monthly" data-state="">
+        <td>Avg weekly hours manufacturing</td>
+        <td><code>AWHMAN</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/AWHMAN">BLS</a></td>
+        <td>monthly</td>
+        <td>Hours</td>
+        <td>SA</td>
+        <td class="num">41.8</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-06</td>
+        <td class="dl"><a href="data/series/AWHMAN.csv" download>CSV</a> · <a href="data/series/AWHMAN.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="yield curve 10y minus 3m t10y3m" data-page="Leading" data-source="Treasury"
+          data-frequency="daily" data-state="">
+        <td>Yield curve 10y minus 3m</td>
+        <td><code>T10Y3M</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/T10Y3M">Treasury</a></td>
+        <td>daily</td>
+        <td>Percent</td>
+        <td>NSA</td>
+        <td class="num">0.59</td>
+        <td class="nowrap">Nov 27, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/T10Y3M.csv" download>CSV</a> · <a href="data/series/T10Y3M.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="building permits permit" data-page="Leading" data-source="Census"
+          data-frequency="monthly" data-state="">
+        <td>Building permits</td>
+        <td><code>PERMIT</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/PERMIT">Census</a></td>
+        <td>monthly</td>
+        <td>Thousands, annual rate</td>
+        <td>SAAR</td>
+        <td class="num">1,297</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-25</td>
+        <td class="dl"><a href="data/series/PERMIT.csv" download>CSV</a> · <a href="data/series/PERMIT.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="philly fed manufacturing general activity gacdfsa066msfrbphi" data-page="Leading" data-source="Philadelphia Fed"
+          data-frequency="monthly" data-state="">
+        <td>Philly Fed manufacturing general activity</td>
+        <td><code>GACDFSA066MSFRBPHI</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/GACDFSA066MSFRBPHI">Philadelphia Fed</a></td>
+        <td>monthly</td>
+        <td>Index</td>
+        <td>SA</td>
+        <td class="num">6.3</td>
+        <td class="nowrap">Nov 2026</td>
+        <td class="nowrap">2026-11-19</td>
+        <td class="dl"><a href="data/series/GACDFSA066MSFRBPHI.csv" download>CSV</a> · <a href="data/series/GACDFSA066MSFRBPHI.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="empire state manufacturing general activity gacdisa066msfrbny" data-page="Leading" data-source="New York Fed"
+          data-frequency="monthly" data-state="">
+        <td>Empire State manufacturing general activity</td>
+        <td><code>GACDISA066MSFRBNY</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/GACDISA066MSFRBNY">New York Fed</a></td>
+        <td>monthly</td>
+        <td>Index</td>
+        <td>SA</td>
+        <td class="num">7.8</td>
+        <td class="nowrap">Nov 2026</td>
+        <td class="nowrap">2026-11-16</td>
+        <td class="dl"><a href="data/series/GACDISA066MSFRBNY.csv" download>CSV</a> · <a href="data/series/GACDISA066MSFRBNY.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="nfci credit subindex (credit conditions) nfcicredit" data-page="Leading" data-source="Chicago Fed"
+          data-frequency="weekly" data-state="">
+        <td>NFCI credit subindex (credit conditions)</td>
+        <td><code>NFCICREDIT</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/NFCICREDIT">Chicago Fed</a></td>
+        <td>weekly</td>
+        <td>Index</td>
+        <td>NSA</td>
+        <td class="num">-0.01</td>
+        <td class="nowrap">Nov 20, 2026</td>
+        <td class="nowrap">2026-11-25</td>
+        <td class="dl"><a href="data/series/NFCICREDIT.csv" download>CSV</a> · <a href="data/series/NFCICREDIT.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="national financial conditions index nfci" data-page="Leading" data-source="Chicago Fed"
+          data-frequency="weekly" data-state="">
+        <td>National Financial Conditions Index</td>
+        <td><code>NFCI</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/NFCI">Chicago Fed</a></td>
+        <td>weekly</td>
+        <td>Index</td>
+        <td>NSA</td>
+        <td class="num">-0.444</td>
+        <td class="nowrap">Nov 20, 2026</td>
+        <td class="nowrap">2026-11-25</td>
+        <td class="dl"><a href="data/series/NFCI.csv" download>CSV</a> · <a href="data/series/NFCI.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="adp private payrolls adpmnusnersa" data-page="Job Losses" data-source="ADP"
+          data-frequency="monthly" data-state="">
+        <td>ADP private payrolls</td>
+        <td><code>ADPMNUSNERSA</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/ADPMNUSNERSA">ADP</a></td>
+        <td>monthly</td>
+        <td>Number</td>
+        <td>SA</td>
+        <td class="num">132,971,000</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-04</td>
+        <td class="dl"><a href="data/series/ADPMNUSNERSA.csv" download>CSV</a> · <a href="data/series/ADPMNUSNERSA.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="private nonfarm payrolls (bls) uspriv" data-page="Job Losses" data-source="BLS"
+          data-frequency="monthly" data-state="">
+        <td>Private nonfarm payrolls (BLS)</td>
+        <td><code>USPRIV</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/USPRIV">BLS</a></td>
+        <td>monthly</td>
+        <td>Thousands</td>
+        <td>SA</td>
+        <td class="num">135,961</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-06</td>
+        <td class="dl"><a href="data/series/USPRIV.csv" download>CSV</a> · <a href="data/series/USPRIV.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in alabama aliclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="AL" hidden>
+        <td>Initial Claims in Alabama</td>
+        <td><code>ALICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/ALICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">1,634</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/ALICLAIMS.csv" download>CSV</a> · <a href="data/series/ALICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in alaska akiclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="AK" hidden>
+        <td>Initial Claims in Alaska</td>
+        <td><code>AKICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/AKICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">628</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/AKICLAIMS.csv" download>CSV</a> · <a href="data/series/AKICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in arizona aziclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="AZ" hidden>
+        <td>Initial Claims in Arizona</td>
+        <td><code>AZICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/AZICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">2,318</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/AZICLAIMS.csv" download>CSV</a> · <a href="data/series/AZICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in arkansas ariclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="AR" hidden>
+        <td>Initial Claims in Arkansas</td>
+        <td><code>ARICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/ARICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">1,496</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/ARICLAIMS.csv" download>CSV</a> · <a href="data/series/ARICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in california caiclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="CA" hidden>
+        <td>Initial Claims in California</td>
+        <td><code>CAICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/CAICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">48,700</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/CAICLAIMS.csv" download>CSV</a> · <a href="data/series/CAICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in colorado coiclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="CO" hidden>
+        <td>Initial Claims in Colorado</td>
+        <td><code>COICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/COICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">3,871</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/COICLAIMS.csv" download>CSV</a> · <a href="data/series/COICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in connecticut cticlaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="CT" hidden>
+        <td>Initial Claims in Connecticut</td>
+        <td><code>CTICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/CTICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">2,945</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/CTICLAIMS.csv" download>CSV</a> · <a href="data/series/CTICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in delaware deiclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="DE" hidden>
+        <td>Initial Claims in Delaware</td>
+        <td><code>DEICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/DEICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">592</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/DEICLAIMS.csv" download>CSV</a> · <a href="data/series/DEICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in the district of columbia dciclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="DC" hidden>
+        <td>Initial Claims in the District of Columbia</td>
+        <td><code>DCICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/DCICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">612</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/DCICLAIMS.csv" download>CSV</a> · <a href="data/series/DCICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in florida fliclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="FL" hidden>
+        <td>Initial Claims in Florida</td>
+        <td><code>FLICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/FLICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">5,037</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/FLICLAIMS.csv" download>CSV</a> · <a href="data/series/FLICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in georgia gaiclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="GA" hidden>
+        <td>Initial Claims in Georgia</td>
+        <td><code>GAICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/GAICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">3,592</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/GAICLAIMS.csv" download>CSV</a> · <a href="data/series/GAICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in hawaii hiiclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="HI" hidden>
+        <td>Initial Claims in Hawaii</td>
+        <td><code>HIICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/HIICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">10,680</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/HIICLAIMS.csv" download>CSV</a> · <a href="data/series/HIICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in idaho idiclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="ID" hidden>
+        <td>Initial Claims in Idaho</td>
+        <td><code>IDICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/IDICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">1,373</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/IDICLAIMS.csv" download>CSV</a> · <a href="data/series/IDICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in illinois iliclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="IL" hidden>
+        <td>Initial Claims in Illinois</td>
+        <td><code>ILICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/ILICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">10,206</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/ILICLAIMS.csv" download>CSV</a> · <a href="data/series/ILICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in indiana iniclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="IN" hidden>
+        <td>Initial Claims in Indiana</td>
+        <td><code>INICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/INICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">2,267</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/INICLAIMS.csv" download>CSV</a> · <a href="data/series/INICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in iowa iaiclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="IA" hidden>
+        <td>Initial Claims in Iowa</td>
+        <td><code>IAICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/IAICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">1,761</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/IAICLAIMS.csv" download>CSV</a> · <a href="data/series/IAICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in kansas ksiclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="KS" hidden>
+        <td>Initial Claims in Kansas</td>
+        <td><code>KSICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/KSICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">1,147</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/KSICLAIMS.csv" download>CSV</a> · <a href="data/series/KSICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in kentucky kyiclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="KY" hidden>
+        <td>Initial Claims in Kentucky</td>
+        <td><code>KYICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/KYICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">1,574</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/KYICLAIMS.csv" download>CSV</a> · <a href="data/series/KYICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in louisiana laiclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="LA" hidden>
+        <td>Initial Claims in Louisiana</td>
+        <td><code>LAICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/LAICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">1,292</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/LAICLAIMS.csv" download>CSV</a> · <a href="data/series/LAICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in maine meiclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="ME" hidden>
+        <td>Initial Claims in Maine</td>
+        <td><code>MEICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/MEICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">832</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/MEICLAIMS.csv" download>CSV</a> · <a href="data/series/MEICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in maryland mdiclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="MD" hidden>
+        <td>Initial Claims in Maryland</td>
+        <td><code>MDICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/MDICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">2,297</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/MDICLAIMS.csv" download>CSV</a> · <a href="data/series/MDICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in massachusetts maiclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="MA" hidden>
+        <td>Initial Claims in Massachusetts</td>
+        <td><code>MAICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/MAICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">5,470</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/MAICLAIMS.csv" download>CSV</a> · <a href="data/series/MAICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in michigan miiclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="MI" hidden>
+        <td>Initial Claims in Michigan</td>
+        <td><code>MIICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/MIICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">8,312</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/MIICLAIMS.csv" download>CSV</a> · <a href="data/series/MIICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in minnesota mniclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="MN" hidden>
+        <td>Initial Claims in Minnesota</td>
+        <td><code>MNICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/MNICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">6,071</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/MNICLAIMS.csv" download>CSV</a> · <a href="data/series/MNICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in mississippi msiclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="MS" hidden>
+        <td>Initial Claims in Mississippi</td>
+        <td><code>MSICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/MSICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">767</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/MSICLAIMS.csv" download>CSV</a> · <a href="data/series/MSICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in missouri moiclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="MO" hidden>
+        <td>Initial Claims in Missouri</td>
+        <td><code>MOICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/MOICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">2,643</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/MOICLAIMS.csv" download>CSV</a> · <a href="data/series/MOICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in montana mticlaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="MT" hidden>
+        <td>Initial Claims in Montana</td>
+        <td><code>MTICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/MTICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">1,031</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/MTICLAIMS.csv" download>CSV</a> · <a href="data/series/MTICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in nebraska neiclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="NE" hidden>
+        <td>Initial Claims in Nebraska</td>
+        <td><code>NEICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/NEICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">670</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/NEICLAIMS.csv" download>CSV</a> · <a href="data/series/NEICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in nevada nviclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="NV" hidden>
+        <td>Initial Claims in Nevada</td>
+        <td><code>NVICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/NVICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">3,123</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/NVICLAIMS.csv" download>CSV</a> · <a href="data/series/NVICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in new hampshire nhiclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="NH" hidden>
+        <td>Initial Claims in New Hampshire</td>
+        <td><code>NHICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/NHICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">416</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/NHICLAIMS.csv" download>CSV</a> · <a href="data/series/NHICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in new jersey njiclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="NJ" hidden>
+        <td>Initial Claims in New Jersey</td>
+        <td><code>NJICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/NJICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">9,158</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/NJICLAIMS.csv" download>CSV</a> · <a href="data/series/NJICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in new mexico nmiclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="NM" hidden>
+        <td>Initial Claims in New Mexico</td>
+        <td><code>NMICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/NMICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">833</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/NMICLAIMS.csv" download>CSV</a> · <a href="data/series/NMICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in new york nyiclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="NY" hidden>
+        <td>Initial Claims in New York</td>
+        <td><code>NYICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/NYICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">14,426</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/NYICLAIMS.csv" download>CSV</a> · <a href="data/series/NYICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in north carolina nciclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="NC" hidden>
+        <td>Initial Claims in North Carolina</td>
+        <td><code>NCICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/NCICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">3,576</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/NCICLAIMS.csv" download>CSV</a> · <a href="data/series/NCICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in north dakota ndiclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="ND" hidden>
+        <td>Initial Claims in North Dakota</td>
+        <td><code>NDICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/NDICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">545</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/NDICLAIMS.csv" download>CSV</a> · <a href="data/series/NDICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in ohio ohiclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="OH" hidden>
+        <td>Initial Claims in Ohio</td>
+        <td><code>OHICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/OHICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">5,813</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/OHICLAIMS.csv" download>CSV</a> · <a href="data/series/OHICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in oklahoma okiclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="OK" hidden>
+        <td>Initial Claims in Oklahoma</td>
+        <td><code>OKICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/OKICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">1,368</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/OKICLAIMS.csv" download>CSV</a> · <a href="data/series/OKICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in oregon oriclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="OR" hidden>
+        <td>Initial Claims in Oregon</td>
+        <td><code>ORICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/ORICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">5,574</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/ORICLAIMS.csv" download>CSV</a> · <a href="data/series/ORICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in pennsylvania paiclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="PA" hidden>
+        <td>Initial Claims in Pennsylvania</td>
+        <td><code>PAICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/PAICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">11,084</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/PAICLAIMS.csv" download>CSV</a> · <a href="data/series/PAICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in rhode island riiclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="RI" hidden>
+        <td>Initial Claims in Rhode Island</td>
+        <td><code>RIICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/RIICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">1,014</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/RIICLAIMS.csv" download>CSV</a> · <a href="data/series/RIICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in south carolina sciclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="SC" hidden>
+        <td>Initial Claims in South Carolina</td>
+        <td><code>SCICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/SCICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">1,991</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/SCICLAIMS.csv" download>CSV</a> · <a href="data/series/SCICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in south dakota sdiclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="SD" hidden>
+        <td>Initial Claims in South Dakota</td>
+        <td><code>SDICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/SDICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">267</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/SDICLAIMS.csv" download>CSV</a> · <a href="data/series/SDICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in tennessee tniclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="TN" hidden>
+        <td>Initial Claims in Tennessee</td>
+        <td><code>TNICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/TNICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">2,542</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/TNICLAIMS.csv" download>CSV</a> · <a href="data/series/TNICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in texas txiclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="TX" hidden>
+        <td>Initial Claims in Texas</td>
+        <td><code>TXICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/TXICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">14,564</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/TXICLAIMS.csv" download>CSV</a> · <a href="data/series/TXICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in utah uticlaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="UT" hidden>
+        <td>Initial Claims in Utah</td>
+        <td><code>UTICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/UTICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">2,109</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/UTICLAIMS.csv" download>CSV</a> · <a href="data/series/UTICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in vermont vticlaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="VT" hidden>
+        <td>Initial Claims in Vermont</td>
+        <td><code>VTICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/VTICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">488</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/VTICLAIMS.csv" download>CSV</a> · <a href="data/series/VTICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in virginia vaiclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="VA" hidden>
+        <td>Initial Claims in Virginia</td>
+        <td><code>VAICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/VAICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">2,361</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/VAICLAIMS.csv" download>CSV</a> · <a href="data/series/VAICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in washington waiclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="WA" hidden>
+        <td>Initial Claims in Washington</td>
+        <td><code>WAICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/WAICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">7,041</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/WAICLAIMS.csv" download>CSV</a> · <a href="data/series/WAICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in west virginia wviclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="WV" hidden>
+        <td>Initial Claims in West Virginia</td>
+        <td><code>WVICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/WVICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">748</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/WVICLAIMS.csv" download>CSV</a> · <a href="data/series/WVICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in wisconsin wiiclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="WI" hidden>
+        <td>Initial Claims in Wisconsin</td>
+        <td><code>WIICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/WIICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">3,101</td>
+        <td class="nowrap">Nov 21, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/WIICLAIMS.csv" download>CSV</a> · <a href="data/series/WIICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="initial claims in wyoming wyiclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="WY" hidden>
+        <td>Initial Claims in Wyoming</td>
+        <td><code>WYICLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/WYICLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">421</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/WYICLAIMS.csv" download>CSV</a> · <a href="data/series/WYICLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in alabama alcclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="AL" hidden>
+        <td>Continued Claims (Insured Unemployment) in Alabama</td>
+        <td><code>ALCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/ALCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">6,748</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/ALCCLAIMS.csv" download>CSV</a> · <a href="data/series/ALCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in alaska akcclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="AK" hidden>
+        <td>Continued Claims (Insured Unemployment) in Alaska</td>
+        <td><code>AKCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/AKCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">4,927</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/AKCCLAIMS.csv" download>CSV</a> · <a href="data/series/AKCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in arizona azcclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="AZ" hidden>
+        <td>Continued Claims (Insured Unemployment) in Arizona</td>
+        <td><code>AZCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/AZCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">16,779</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/AZCCLAIMS.csv" download>CSV</a> · <a href="data/series/AZCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in arkansas arcclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="AR" hidden>
+        <td>Continued Claims (Insured Unemployment) in Arkansas</td>
+        <td><code>ARCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/ARCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">4,818</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/ARCCLAIMS.csv" download>CSV</a> · <a href="data/series/ARCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in california cacclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="CA" hidden>
+        <td>Continued Claims (Insured Unemployment) in California</td>
+        <td><code>CACCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/CACCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">328,296</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/CACCLAIMS.csv" download>CSV</a> · <a href="data/series/CACCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in colorado cocclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="CO" hidden>
+        <td>Continued Claims (Insured Unemployment) in Colorado</td>
+        <td><code>COCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/COCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">32,029</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/COCCLAIMS.csv" download>CSV</a> · <a href="data/series/COCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in connecticut ctcclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="CT" hidden>
+        <td>Continued Claims (Insured Unemployment) in Connecticut</td>
+        <td><code>CTCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/CTCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">19,254</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/CTCCLAIMS.csv" download>CSV</a> · <a href="data/series/CTCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in delaware decclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="DE" hidden>
+        <td>Continued Claims (Insured Unemployment) in Delaware</td>
+        <td><code>DECCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/DECCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">4,347</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/DECCLAIMS.csv" download>CSV</a> · <a href="data/series/DECCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in the district of columbia dccclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="DC" hidden>
+        <td>Continued Claims (Insured Unemployment) in the District of Columbia</td>
+        <td><code>DCCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/DCCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">6,436</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/DCCCLAIMS.csv" download>CSV</a> · <a href="data/series/DCCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in florida flcclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="FL" hidden>
+        <td>Continued Claims (Insured Unemployment) in Florida</td>
+        <td><code>FLCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/FLCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">28,382</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/FLCCLAIMS.csv" download>CSV</a> · <a href="data/series/FLCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in georgia gacclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="GA" hidden>
+        <td>Continued Claims (Insured Unemployment) in Georgia</td>
+        <td><code>GACCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/GACCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">22,101</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/GACCLAIMS.csv" download>CSV</a> · <a href="data/series/GACCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in hawaii hicclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="HI" hidden>
+        <td>Continued Claims (Insured Unemployment) in Hawaii</td>
+        <td><code>HICCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/HICCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">6,628</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/HICCLAIMS.csv" download>CSV</a> · <a href="data/series/HICCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in idaho idcclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="ID" hidden>
+        <td>Continued Claims (Insured Unemployment) in Idaho</td>
+        <td><code>IDCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/IDCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">5,159</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/IDCCLAIMS.csv" download>CSV</a> · <a href="data/series/IDCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in illinois ilcclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="IL" hidden>
+        <td>Continued Claims (Insured Unemployment) in Illinois</td>
+        <td><code>ILCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/ILCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">80,166</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/ILCCLAIMS.csv" download>CSV</a> · <a href="data/series/ILCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in indiana incclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="IN" hidden>
+        <td>Continued Claims (Insured Unemployment) in Indiana</td>
+        <td><code>INCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/INCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">16,823</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/INCCLAIMS.csv" download>CSV</a> · <a href="data/series/INCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in iowa iacclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="IA" hidden>
+        <td>Continued Claims (Insured Unemployment) in Iowa</td>
+        <td><code>IACCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/IACCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">6,088</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/IACCLAIMS.csv" download>CSV</a> · <a href="data/series/IACCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in kansas kscclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="KS" hidden>
+        <td>Continued Claims (Insured Unemployment) in Kansas</td>
+        <td><code>KSCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/KSCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">6,568</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/KSCCLAIMS.csv" download>CSV</a> · <a href="data/series/KSCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in kentucky kycclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="KY" hidden>
+        <td>Continued Claims (Insured Unemployment) in Kentucky</td>
+        <td><code>KYCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/KYCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">8,491</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/KYCCLAIMS.csv" download>CSV</a> · <a href="data/series/KYCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in louisiana lacclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="LA" hidden>
+        <td>Continued Claims (Insured Unemployment) in Louisiana</td>
+        <td><code>LACCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/LACCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">4,981</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/LACCLAIMS.csv" download>CSV</a> · <a href="data/series/LACCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in maine mecclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="ME" hidden>
+        <td>Continued Claims (Insured Unemployment) in Maine</td>
+        <td><code>MECCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/MECCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">5,396</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/MECCLAIMS.csv" download>CSV</a> · <a href="data/series/MECCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in maryland mdcclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="MD" hidden>
+        <td>Continued Claims (Insured Unemployment) in Maryland</td>
+        <td><code>MDCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/MDCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">20,588</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/MDCCLAIMS.csv" download>CSV</a> · <a href="data/series/MDCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in massachusetts macclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="MA" hidden>
+        <td>Continued Claims (Insured Unemployment) in Massachusetts</td>
+        <td><code>MACCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/MACCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">64,504</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/MACCLAIMS.csv" download>CSV</a> · <a href="data/series/MACCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in michigan micclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="MI" hidden>
+        <td>Continued Claims (Insured Unemployment) in Michigan</td>
+        <td><code>MICCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/MICCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">46,240</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/MICCLAIMS.csv" download>CSV</a> · <a href="data/series/MICCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in minnesota mncclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="MN" hidden>
+        <td>Continued Claims (Insured Unemployment) in Minnesota</td>
+        <td><code>MNCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/MNCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">38,770</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/MNCCLAIMS.csv" download>CSV</a> · <a href="data/series/MNCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in mississippi mscclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="MS" hidden>
+        <td>Continued Claims (Insured Unemployment) in Mississippi</td>
+        <td><code>MSCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/MSCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">4,738</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/MSCCLAIMS.csv" download>CSV</a> · <a href="data/series/MSCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in missouri mocclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="MO" hidden>
+        <td>Continued Claims (Insured Unemployment) in Missouri</td>
+        <td><code>MOCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/MOCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">14,744</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/MOCCLAIMS.csv" download>CSV</a> · <a href="data/series/MOCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in montana mtcclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="MT" hidden>
+        <td>Continued Claims (Insured Unemployment) in Montana</td>
+        <td><code>MTCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/MTCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">5,933</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/MTCCLAIMS.csv" download>CSV</a> · <a href="data/series/MTCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in nebraska necclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="NE" hidden>
+        <td>Continued Claims (Insured Unemployment) in Nebraska</td>
+        <td><code>NECCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/NECCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">3,959</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/NECCLAIMS.csv" download>CSV</a> · <a href="data/series/NECCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in nevada nvcclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="NV" hidden>
+        <td>Continued Claims (Insured Unemployment) in Nevada</td>
+        <td><code>NVCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/NVCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">24,041</td>
+        <td class="nowrap">Nov 7, 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/NVCCLAIMS.csv" download>CSV</a> · <a href="data/series/NVCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in new hampshire nhcclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="NH" hidden>
+        <td>Continued Claims (Insured Unemployment) in New Hampshire</td>
+        <td><code>NHCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/NHCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">3,315</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/NHCCLAIMS.csv" download>CSV</a> · <a href="data/series/NHCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in new jersey njcclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="NJ" hidden>
+        <td>Continued Claims (Insured Unemployment) in New Jersey</td>
+        <td><code>NJCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/NJCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">88,783</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/NJCCLAIMS.csv" download>CSV</a> · <a href="data/series/NJCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in new mexico nmcclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="NM" hidden>
+        <td>Continued Claims (Insured Unemployment) in New Mexico</td>
+        <td><code>NMCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/NMCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">8,839</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/NMCCLAIMS.csv" download>CSV</a> · <a href="data/series/NMCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in new york nycclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="NY" hidden>
+        <td>Continued Claims (Insured Unemployment) in New York</td>
+        <td><code>NYCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/NYCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">132,038</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/NYCCLAIMS.csv" download>CSV</a> · <a href="data/series/NYCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in north carolina nccclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="NC" hidden>
+        <td>Continued Claims (Insured Unemployment) in North Carolina</td>
+        <td><code>NCCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/NCCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">16,842</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/NCCCLAIMS.csv" download>CSV</a> · <a href="data/series/NCCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in north dakota ndcclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="ND" hidden>
+        <td>Continued Claims (Insured Unemployment) in North Dakota</td>
+        <td><code>NDCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/NDCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">1,916</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/NDCCLAIMS.csv" download>CSV</a> · <a href="data/series/NDCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in ohio ohcclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="OH" hidden>
+        <td>Continued Claims (Insured Unemployment) in Ohio</td>
+        <td><code>OHCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/OHCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">37,369</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/OHCCLAIMS.csv" download>CSV</a> · <a href="data/series/OHCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in oklahoma okcclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="OK" hidden>
+        <td>Continued Claims (Insured Unemployment) in Oklahoma</td>
+        <td><code>OKCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/OKCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">8,891</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/OKCCLAIMS.csv" download>CSV</a> · <a href="data/series/OKCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in oregon orcclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="OR" hidden>
+        <td>Continued Claims (Insured Unemployment) in Oregon</td>
+        <td><code>ORCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/ORCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">32,603</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/ORCCLAIMS.csv" download>CSV</a> · <a href="data/series/ORCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in pennsylvania pacclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="PA" hidden>
+        <td>Continued Claims (Insured Unemployment) in Pennsylvania</td>
+        <td><code>PACCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/PACCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">76,768</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/PACCLAIMS.csv" download>CSV</a> · <a href="data/series/PACCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in rhode island ricclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="RI" hidden>
+        <td>Continued Claims (Insured Unemployment) in Rhode Island</td>
+        <td><code>RICCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/RICCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">7,705</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/RICCLAIMS.csv" download>CSV</a> · <a href="data/series/RICCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in south carolina sccclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="SC" hidden>
+        <td>Continued Claims (Insured Unemployment) in South Carolina</td>
+        <td><code>SCCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/SCCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">13,726</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/SCCCLAIMS.csv" download>CSV</a> · <a href="data/series/SCCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in south dakota sdcclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="SD" hidden>
+        <td>Continued Claims (Insured Unemployment) in South Dakota</td>
+        <td><code>SDCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/SDCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">1,279</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/SDCCLAIMS.csv" download>CSV</a> · <a href="data/series/SDCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in tennessee tncclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="TN" hidden>
+        <td>Continued Claims (Insured Unemployment) in Tennessee</td>
+        <td><code>TNCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/TNCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">12,483</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/TNCCLAIMS.csv" download>CSV</a> · <a href="data/series/TNCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in texas txcclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="TX" hidden>
+        <td>Continued Claims (Insured Unemployment) in Texas</td>
+        <td><code>TXCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/TXCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">129,093</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/TXCCLAIMS.csv" download>CSV</a> · <a href="data/series/TXCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in utah utcclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="UT" hidden>
+        <td>Continued Claims (Insured Unemployment) in Utah</td>
+        <td><code>UTCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/UTCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">11,473</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/UTCCLAIMS.csv" download>CSV</a> · <a href="data/series/UTCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in vermont vtcclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="VT" hidden>
+        <td>Continued Claims (Insured Unemployment) in Vermont</td>
+        <td><code>VTCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/VTCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">2,492</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/VTCCLAIMS.csv" download>CSV</a> · <a href="data/series/VTCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in virginia vacclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="VA" hidden>
+        <td>Continued Claims (Insured Unemployment) in Virginia</td>
+        <td><code>VACCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/VACCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">18,420</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/VACCLAIMS.csv" download>CSV</a> · <a href="data/series/VACCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in washington wacclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="WA" hidden>
+        <td>Continued Claims (Insured Unemployment) in Washington</td>
+        <td><code>WACCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/WACCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">72,427</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/WACCLAIMS.csv" download>CSV</a> · <a href="data/series/WACCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in west virginia wvcclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="WV" hidden>
+        <td>Continued Claims (Insured Unemployment) in West Virginia</td>
+        <td><code>WVCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/WVCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">5,193</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/WVCCLAIMS.csv" download>CSV</a> · <a href="data/series/WVCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in wisconsin wicclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="WI" hidden>
+        <td>Continued Claims (Insured Unemployment) in Wisconsin</td>
+        <td><code>WICCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/WICCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">16,295</td>
+        <td class="nowrap">Nov 14, 2026</td>
+        <td class="nowrap">2026-11-27</td>
+        <td class="dl"><a href="data/series/WICCLAIMS.csv" download>CSV</a> · <a href="data/series/WICCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="continued claims (insured unemployment) in wyoming wycclaims" data-page="States" data-source="DOL"
+          data-frequency="weekly" data-state="WY" hidden>
+        <td>Continued Claims (Insured Unemployment) in Wyoming</td>
+        <td><code>WYCCLAIMS</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/WYCCLAIMS">DOL</a></td>
+        <td>weekly</td>
+        <td>Number</td>
+        <td>NSA</td>
+        <td class="num">1,677</td>
+        <td class="nowrap">Nov 7, 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/WYCCLAIMS.csv" download>CSV</a> · <a href="data/series/WYCCLAIMS.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in alabama alur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="AL" hidden>
+        <td>Unemployment Rate in Alabama</td>
+        <td><code>ALUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/ALUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">3.5</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/ALUR.csv" download>CSV</a> · <a href="data/series/ALUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in alaska akur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="AK" hidden>
+        <td>Unemployment Rate in Alaska</td>
+        <td><code>AKUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/AKUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">4.3</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/AKUR.csv" download>CSV</a> · <a href="data/series/AKUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in arizona azur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="AZ" hidden>
+        <td>Unemployment Rate in Arizona</td>
+        <td><code>AZUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/AZUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">4.9</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/AZUR.csv" download>CSV</a> · <a href="data/series/AZUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in arkansas arur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="AR" hidden>
+        <td>Unemployment Rate in Arkansas</td>
+        <td><code>ARUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/ARUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">3.8</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/ARUR.csv" download>CSV</a> · <a href="data/series/ARUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in california caur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="CA" hidden>
+        <td>Unemployment Rate in California</td>
+        <td><code>CAUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/CAUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">5</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/CAUR.csv" download>CSV</a> · <a href="data/series/CAUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in colorado cour" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="CO" hidden>
+        <td>Unemployment Rate in Colorado</td>
+        <td><code>COUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/COUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">4.4</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/COUR.csv" download>CSV</a> · <a href="data/series/COUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in connecticut ctur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="CT" hidden>
+        <td>Unemployment Rate in Connecticut</td>
+        <td><code>CTUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/CTUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">5.1</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/CTUR.csv" download>CSV</a> · <a href="data/series/CTUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in delaware deur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="DE" hidden>
+        <td>Unemployment Rate in Delaware</td>
+        <td><code>DEUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/DEUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">4.6</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/DEUR.csv" download>CSV</a> · <a href="data/series/DEUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in the district of columbia dcur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="DC" hidden>
+        <td>Unemployment Rate in the District of Columbia</td>
+        <td><code>DCUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/DCUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">5.4</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/DCUR.csv" download>CSV</a> · <a href="data/series/DCUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in florida flur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="FL" hidden>
+        <td>Unemployment Rate in Florida</td>
+        <td><code>FLUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/FLUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">4.3</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/FLUR.csv" download>CSV</a> · <a href="data/series/FLUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in georgia gaur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="GA" hidden>
+        <td>Unemployment Rate in Georgia</td>
+        <td><code>GAUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/GAUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">3.3</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/GAUR.csv" download>CSV</a> · <a href="data/series/GAUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in hawaii hiur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="HI" hidden>
+        <td>Unemployment Rate in Hawaii</td>
+        <td><code>HIUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/HIUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">2.8</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/HIUR.csv" download>CSV</a> · <a href="data/series/HIUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in idaho idur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="ID" hidden>
+        <td>Unemployment Rate in Idaho</td>
+        <td><code>IDUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/IDUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">3.7</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/IDUR.csv" download>CSV</a> · <a href="data/series/IDUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in illinois ilur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="IL" hidden>
+        <td>Unemployment Rate in Illinois</td>
+        <td><code>ILUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/ILUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">4.5</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/ILUR.csv" download>CSV</a> · <a href="data/series/ILUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in indiana inur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="IN" hidden>
+        <td>Unemployment Rate in Indiana</td>
+        <td><code>INUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/INUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">3.4</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/INUR.csv" download>CSV</a> · <a href="data/series/INUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in iowa iaur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="IA" hidden>
+        <td>Unemployment Rate in Iowa</td>
+        <td><code>IAUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/IAUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">3.3</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/IAUR.csv" download>CSV</a> · <a href="data/series/IAUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in kansas ksur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="KS" hidden>
+        <td>Unemployment Rate in Kansas</td>
+        <td><code>KSUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/KSUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">3.9</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/KSUR.csv" download>CSV</a> · <a href="data/series/KSUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in kentucky kyur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="KY" hidden>
+        <td>Unemployment Rate in Kentucky</td>
+        <td><code>KYUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/KYUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">4.6</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/KYUR.csv" download>CSV</a> · <a href="data/series/KYUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in louisiana laur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="LA" hidden>
+        <td>Unemployment Rate in Louisiana</td>
+        <td><code>LAUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/LAUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">3.9</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/LAUR.csv" download>CSV</a> · <a href="data/series/LAUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in maine meur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="ME" hidden>
+        <td>Unemployment Rate in Maine</td>
+        <td><code>MEUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/MEUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">3.3</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/MEUR.csv" download>CSV</a> · <a href="data/series/MEUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in maryland mdur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="MD" hidden>
+        <td>Unemployment Rate in Maryland</td>
+        <td><code>MDUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/MDUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">3.8</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/MDUR.csv" download>CSV</a> · <a href="data/series/MDUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in massachusetts maur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="MA" hidden>
+        <td>Unemployment Rate in Massachusetts</td>
+        <td><code>MAUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/MAUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">4.2</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/MAUR.csv" download>CSV</a> · <a href="data/series/MAUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in michigan miur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="MI" hidden>
+        <td>Unemployment Rate in Michigan</td>
+        <td><code>MIUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/MIUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">5</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/MIUR.csv" download>CSV</a> · <a href="data/series/MIUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in minnesota mnur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="MN" hidden>
+        <td>Unemployment Rate in Minnesota</td>
+        <td><code>MNUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/MNUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">4.6</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/MNUR.csv" download>CSV</a> · <a href="data/series/MNUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in mississippi msur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="MS" hidden>
+        <td>Unemployment Rate in Mississippi</td>
+        <td><code>MSUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/MSUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">3.4</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/MSUR.csv" download>CSV</a> · <a href="data/series/MSUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in missouri mour" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="MO" hidden>
+        <td>Unemployment Rate in Missouri</td>
+        <td><code>MOUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/MOUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">3.6</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/MOUR.csv" download>CSV</a> · <a href="data/series/MOUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in montana mtur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="MT" hidden>
+        <td>Unemployment Rate in Montana</td>
+        <td><code>MTUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/MTUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">3.1</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/MTUR.csv" download>CSV</a> · <a href="data/series/MTUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in nebraska neur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="NE" hidden>
+        <td>Unemployment Rate in Nebraska</td>
+        <td><code>NEUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/NEUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">2.8</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/NEUR.csv" download>CSV</a> · <a href="data/series/NEUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in nevada nvur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="NV" hidden>
+        <td>Unemployment Rate in Nevada</td>
+        <td><code>NVUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/NVUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">4.7</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/NVUR.csv" download>CSV</a> · <a href="data/series/NVUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in new hampshire nhur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="NH" hidden>
+        <td>Unemployment Rate in New Hampshire</td>
+        <td><code>NHUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/NHUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">2.5</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/NHUR.csv" download>CSV</a> · <a href="data/series/NHUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in new jersey njur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="NJ" hidden>
+        <td>Unemployment Rate in New Jersey</td>
+        <td><code>NJUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/NJUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">4.2</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/NJUR.csv" download>CSV</a> · <a href="data/series/NJUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in new mexico nmur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="NM" hidden>
+        <td>Unemployment Rate in New Mexico</td>
+        <td><code>NMUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/NMUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">4.8</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/NMUR.csv" download>CSV</a> · <a href="data/series/NMUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in new york nyur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="NY" hidden>
+        <td>Unemployment Rate in New York</td>
+        <td><code>NYUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/NYUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">4.2</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/NYUR.csv" download>CSV</a> · <a href="data/series/NYUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in north carolina ncur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="NC" hidden>
+        <td>Unemployment Rate in North Carolina</td>
+        <td><code>NCUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/NCUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">3.4</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/NCUR.csv" download>CSV</a> · <a href="data/series/NCUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in north dakota ndur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="ND" hidden>
+        <td>Unemployment Rate in North Dakota</td>
+        <td><code>NDUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/NDUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">2.2</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/NDUR.csv" download>CSV</a> · <a href="data/series/NDUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in ohio ohur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="OH" hidden>
+        <td>Unemployment Rate in Ohio</td>
+        <td><code>OHUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/OHUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">3.4</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/OHUR.csv" download>CSV</a> · <a href="data/series/OHUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in oklahoma okur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="OK" hidden>
+        <td>Unemployment Rate in Oklahoma</td>
+        <td><code>OKUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/OKUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">4.1</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/OKUR.csv" download>CSV</a> · <a href="data/series/OKUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in oregon orur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="OR" hidden>
+        <td>Unemployment Rate in Oregon</td>
+        <td><code>ORUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/ORUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">4.9</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/ORUR.csv" download>CSV</a> · <a href="data/series/ORUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in pennsylvania paur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="PA" hidden>
+        <td>Unemployment Rate in Pennsylvania</td>
+        <td><code>PAUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/PAUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">3.5</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/PAUR.csv" download>CSV</a> · <a href="data/series/PAUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in rhode island riur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="RI" hidden>
+        <td>Unemployment Rate in Rhode Island</td>
+        <td><code>RIUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/RIUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">3.5</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/RIUR.csv" download>CSV</a> · <a href="data/series/RIUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in south carolina scur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="SC" hidden>
+        <td>Unemployment Rate in South Carolina</td>
+        <td><code>SCUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/SCUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">3.9</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/SCUR.csv" download>CSV</a> · <a href="data/series/SCUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in south dakota sdur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="SD" hidden>
+        <td>Unemployment Rate in South Dakota</td>
+        <td><code>SDUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/SDUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">2</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/SDUR.csv" download>CSV</a> · <a href="data/series/SDUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in tennessee tnur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="TN" hidden>
+        <td>Unemployment Rate in Tennessee</td>
+        <td><code>TNUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/TNUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">3.4</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/TNUR.csv" download>CSV</a> · <a href="data/series/TNUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in texas txur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="TX" hidden>
+        <td>Unemployment Rate in Texas</td>
+        <td><code>TXUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/TXUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">4.4</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/TXUR.csv" download>CSV</a> · <a href="data/series/TXUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in utah utur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="UT" hidden>
+        <td>Unemployment Rate in Utah</td>
+        <td><code>UTUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/UTUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">3.5</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/UTUR.csv" download>CSV</a> · <a href="data/series/UTUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in vermont vtur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="VT" hidden>
+        <td>Unemployment Rate in Vermont</td>
+        <td><code>VTUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/VTUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">2.6</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/VTUR.csv" download>CSV</a> · <a href="data/series/VTUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in virginia vaur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="VA" hidden>
+        <td>Unemployment Rate in Virginia</td>
+        <td><code>VAUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/VAUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">3.6</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/VAUR.csv" download>CSV</a> · <a href="data/series/VAUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in washington waur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="WA" hidden>
+        <td>Unemployment Rate in Washington</td>
+        <td><code>WAUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/WAUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">4.7</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/WAUR.csv" download>CSV</a> · <a href="data/series/WAUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in west virginia wvur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="WV" hidden>
+        <td>Unemployment Rate in West Virginia</td>
+        <td><code>WVUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/WVUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">4</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/WVUR.csv" download>CSV</a> · <a href="data/series/WVUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in wisconsin wiur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="WI" hidden>
+        <td>Unemployment Rate in Wisconsin</td>
+        <td><code>WIUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/WIUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">3.3</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/WIUR.csv" download>CSV</a> · <a href="data/series/WIUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployment rate in wyoming wyur" data-page="States" data-source="BLS LAUS"
+          data-frequency="monthly" data-state="WY" hidden>
+        <td>Unemployment Rate in Wyoming</td>
+        <td><code>WYUR</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/WYUR">BLS LAUS</a></td>
+        <td>monthly</td>
+        <td>Percent</td>
+        <td>SA</td>
+        <td class="num">3.1</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-20</td>
+        <td class="dl"><a href="data/series/WYUR.csv" download>CSV</a> · <a href="data/series/WYUR.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployed: permanent job losers lns13026638" data-page="Job Losses" data-source="BLS"
+          data-frequency="monthly" data-state="">
+        <td>Unemployed: permanent job losers</td>
+        <td><code>LNS13026638</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/LNS13026638">BLS</a></td>
+        <td>monthly</td>
+        <td>Thousands</td>
+        <td>SA</td>
+        <td class="num">1,733</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-06</td>
+        <td class="dl"><a href="data/series/LNS13026638.csv" download>CSV</a> · <a href="data/series/LNS13026638.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="unemployed: job losers on temporary layoff lns13023653" data-page="Job Losses" data-source="BLS"
+          data-frequency="monthly" data-state="">
+        <td>Unemployed: job losers on temporary layoff</td>
+        <td><code>LNS13023653</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/LNS13023653">BLS</a></td>
+        <td>monthly</td>
+        <td>Thousands</td>
+        <td>SA</td>
+        <td class="num">766</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-06</td>
+        <td class="dl"><a href="data/series/LNS13023653.csv" download>CSV</a> · <a href="data/series/LNS13023653.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="part-time for economic reasons lns12032194" data-page="Leading" data-source="BLS"
+          data-frequency="monthly" data-state="">
+        <td>Part-time for economic reasons</td>
+        <td><code>LNS12032194</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/LNS12032194">BLS</a></td>
+        <td>monthly</td>
+        <td>Thousands</td>
+        <td>SA</td>
+        <td class="num">4,840</td>
+        <td class="nowrap">Oct 2026</td>
+        <td class="nowrap">2026-11-06</td>
+        <td class="dl"><a href="data/series/LNS12032194.csv" download>CSV</a> · <a href="data/series/LNS12032194.xlsx" download>XLSX</a></td>
+      </tr>
+      <tr data-kind="FRED" data-search="banks tightening standards for business loans (net %) drtscilm" data-page="Leading" data-source="Federal Reserve Board"
+          data-frequency="quarterly" data-state="">
+        <td>Banks tightening standards for business loans (net %)</td>
+        <td><code>DRTSCILM</code></td>
+        <td><a href="https://fred.stlouisfed.org/series/DRTSCILM">Federal Reserve Board</a></td>
+        <td>quarterly</td>
+        <td>Percent</td>
+        <td>NSA</td>
+        <td class="num">1.7</td>
+        <td class="nowrap">Oct 1, 2026</td>
+        <td class="nowrap">2026-11-02</td>
+        <td class="dl"><a href="data/series/DRTSCILM.csv" download>CSV</a> · <a href="data/series/DRTSCILM.xlsx" download>XLSX</a></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="chart-footer">"Updated" is the publisher's last update for FRED series; "checked" is the date we last
+    checked DOL for DOL files. "Columns" is the <a href="data/data_dictionary.csv" download>data dictionary</a>
+    (file, column, definition, units) for every DOL file. DOL files keep only the latest figures; revisions are logged in the project's
+    data revision log.</p>
+</section>
+
+<section class="card excluded" aria-labelledby="excluded-title">
+  <h2 id="excluded-title">Not available for download</h2>
+  <ul>
+    <li><strong>Consumer sentiment</strong> <code>UMCSENT</code>: copyrighted; charted with its required citation but not redistributed.</li>
+    <li><strong>Chicago Fed Labor Market Indicators (UR nowcast + flows)</strong> <code>CHI_LMI</code>: licence does not allow redistribution.</li>
+    <li><strong>FOMC median projection, unemployment rate (Q4 average)</strong> <code>UNRATEMD</code>: a published forecast, shown only as a comparison marker on the charts.</li>
+  </ul>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <p><strong>Not an official forecast; public data only.</strong> Figures are revised by their publishers;
+      this site shows the latest published values and refreshes automatically on weekday mornings.</p>
+    <p>Sources: U.S. Department of Labor, Employment and Training Administration
+      (<a href="https://oui.doleta.gov/unemploy/claims.asp">weekly claims, ETA 539</a>);
+      U.S. Bureau of Labor Statistics and Federal Reserve Bank of St. Louis via
+      <a href="https://fred.stlouisfed.org/">FRED</a> (unemployment rate, Sahm indicator, claims);
+      National Bureau of Economic Research recession dates via FRED (USREC);
+      leading indicators from the U.S. Treasury, U.S. Census Bureau, Federal Reserve Banks of Philadelphia,
+      New York and Chicago, and the University of Michigan Surveys of Consumers, via FRED (each chart names its source);
+      release schedules from FRED and the
+      <a href="https://www.chicagofed.org/research/data/chicago-fed-labor-market-indicators/release-schedule">Federal Reserve Bank of Chicago</a>.</p>
+  </div>
+</footer>
+
+<script id="page-data" type="application/json">{"today":"2026-11-28","defaultRange":"5y","recessionViews":[{"key":"2001","label":"2001","start":"2000-01-01","end":"2003-12-31"},{"key":"2008-09","label":"2008\u201309","start":"2007-01-01","end":"2011-12-31"},{"key":"2020","label":"2020","start":"2019-01-01","end":"2022-12-31"}],"charts":[]}</script>
+<script src="assets/site.js"></script>
+<script src="assets/data.js"></script>
+</body>
+</html>
