@@ -22,6 +22,7 @@ How to run it (from the project folder):
 
 import csv
 import os
+import re
 import sys
 import time
 from datetime import date, datetime, timezone
@@ -98,8 +99,16 @@ def history_starts() -> dict[str, str]:
                 if row.get("history_start")}
 
 
+def hide_key(text: str, key: str) -> str:
+    """Remove the API key from an error message. Callers save these messages to data/fetch_log.csv, which is
+    committed, and a connection error from requests includes the full web address with the key in it."""
+    text = re.sub(r"api_key=[^&\s]+", "api_key=***", text)   # the address, however the key is encoded there
+    return text.replace(key, "***") if key else text         # the key quoted anywhere else
+
+
 def fred_get(endpoint: str, params: dict, key: str, tries: int = 3) -> dict:
-    """Call one FRED API endpoint and return the JSON. Retries a few times on network hiccups."""
+    """Call one FRED API endpoint and return the JSON. Retries a few times on network hiccups.
+    Error messages from this function never contain the API key."""
     params = {**params, "api_key": key, "file_type": "json"}
     for attempt in range(1, tries + 1):
         try:
@@ -107,10 +116,11 @@ def fred_get(endpoint: str, params: dict, key: str, tries: int = 3) -> dict:
             if r.status_code == 200:
                 return r.json()
             if r.status_code == 400:   # bad series ID: no point retrying
-                raise ValueError(r.json().get("error_message", r.text))
+                raise ValueError(hide_key(str(r.json().get("error_message", r.text)), key))
         except requests.RequestException as e:
             if attempt == tries:
-                raise
+                # A new error with the key removed; "from None" keeps the original out of the printed traceback.
+                raise RuntimeError(hide_key(f"{type(e).__name__}: {e}", key)) from None
         time.sleep(2 * attempt)
     raise RuntimeError(f"FRED returned status {r.status_code} for {params.get('series_id')}")
 
