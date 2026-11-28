@@ -11,6 +11,7 @@ Run:  python src/fetchers/dol_national.py
 """
 
 import sys
+import time
 import xml.etree.ElementTree as ET
 from datetime import date
 
@@ -20,6 +21,31 @@ from dol_common import OUI, NATIONAL_START_DATE, column_names, download, log_fet
 
 SERIES_ID = "DOL_ETA539_NATIONAL"
 REPORT_URL = f"{OUI}/wkclaims/report.asp"
+REPLY_TRIES = 3             # DOL sometimes answers "success" with something that is not the report
+REPLY_WAIT_SECONDS = 60     # wait before the 2nd try; twice as long before the 3rd
+
+
+def download_xml(form: dict) -> ET.Element:
+    """Download the report and read it as XML, trying again if the reply is not the report. (download() itself
+    only retries network and HTTP errors.) The final error shows how the reply began, so we can see what DOL sent."""
+    for attempt in range(1, REPLY_TRIES + 1):
+        body = download(REPORT_URL, data=form)
+        try:
+            root = ET.fromstring(body)
+            if next(root.iter("week"), None) is not None:
+                return root
+            problem = "no weeks in it"
+        except ET.ParseError as e:
+            problem = str(e)
+        # The start of the reply as one short line of printable text (it is saved in data/fetch_log.csv).
+        text = body[:500].decode("utf-8", errors="replace")
+        start = " ".join("".join(c if c.isprintable() else " " for c in text).split())[:150]
+        message = f"DOL's reply was not the XML report ({problem}; {len(body)} bytes); it begins: {start!r}"
+        if attempt == REPLY_TRIES:
+            raise RuntimeError(message)
+        wait = REPLY_WAIT_SECONDS * attempt
+        print(f"{SERIES_ID}: try {attempt} of {REPLY_TRIES}: {message}. Trying again in {wait} seconds.")
+        time.sleep(wait)
 
 
 def fetch() -> pd.DataFrame:
@@ -27,7 +53,7 @@ def fetch() -> pd.DataFrame:
     last_year = date.today().year + 1          # the form offers next year too (future seasonal factors)
     form = {"level": "us", "final_yr": last_year, "strtdate": NATIONAL_START_DATE[:4],
             "enddate": last_year, "filetype": "xml"}
-    root = ET.fromstring(download(REPORT_URL, data=form))
+    root = download_xml(form)
 
     names = column_names("eta539_national")    # e.g. "InitialClaims/NSA" -> "ic_nsa"
     rows = []
