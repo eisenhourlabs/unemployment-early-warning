@@ -31,6 +31,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7       # current major as of 2026-11-07 (Node 24)
+        with:
+          ref: ${{ github.ref_name }}   # newest commit when the job starts, not when the run was created
       - uses: actions/setup-python@v7   # current major as of 2026-11-07 (Node 24)
         with:
           python-version: "3.15"        # matches the local .venv (3.15.x); newest 3.15 patch is used
