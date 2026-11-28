@@ -38,7 +38,7 @@ FRED_RELEASES = [
 ]
 
 CHICAGO_URL = "https://www.chicagofed.org/research/data/chicago-fed-labor-market-indicators/release-schedule"
-HEADERS = {"User-Agent": "unemployment-early-warning (github.com/eisenhourlabs/unemployment-early-warning)"}
+HEADERS = {"User-Agent": "unemployment-early-warning"}
 
 
 def fred_dates(series_id: str, key: str, today: date) -> tuple[list[str], str, int]:

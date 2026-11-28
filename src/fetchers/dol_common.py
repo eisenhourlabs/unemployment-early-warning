@@ -30,7 +30,7 @@ START_DATE = "1995-01-01"   # DOL state files start here (decision 2026-11-07)
 # government workers), so rates before and after 1978 are not strictly comparable; the charts mark it.
 NATIONAL_START_DATE = "1971-01-01"
 OUI = "https://oui.doleta.gov/unemploy"
-HEADERS = {"User-Agent": "unemployment-early-warning (github.com/eisenhourlabs/unemployment-early-warning)"}
+HEADERS = {"User-Agent": "unemployment-early-warning"}
 
 
 def download(url: str, data: dict | None = None, tries: int = 3) -> bytes:

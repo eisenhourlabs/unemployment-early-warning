@@ -19,7 +19,7 @@ import time
 import pandas as pd
 import requests
 
-HEADERS = {"User-Agent": "unemployment-early-warning research probe (github.com/eisenhourlabs/unemployment-early-warning)"}
+HEADERS = {"User-Agent": "unemployment-early-warning research probe"}
 CDX = "https://web.archive.org/cdx/search/cdx"
 SOURCES = {"ar539.csv": "oui.doleta.gov/unemploy/csv/ar539.csv",
            "claims.asp (state report pages)": "oui.doleta.gov/unemploy/claims.asp*",
