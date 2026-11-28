@@ -1,5 +1,8 @@
 # Getting started (Windows)
 
+> **Old setup.** These steps describe the original Windows installation. The project now runs in WSL2: see
+> "Environment" in `CLAUDE.md`.
+
 About 30 minutes, once. After this, GitHub refreshes the data on its own.
 
 ## 1. Install Python (5 min)

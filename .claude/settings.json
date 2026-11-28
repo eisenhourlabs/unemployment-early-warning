@@ -1,0 +1,84 @@
+{
+  "permissions": {
+    "allow": [
+      "Edit(/**)",
+      "Bash(.venv/bin/python -m unittest *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git branch *)",
+      "Bash(git switch -c claude/*)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git fetch *)",
+      "Bash(git pull --ff-only *)",
+      "Bash(gh pr create *)",
+      "Bash(gh pr view *)",
+      "Bash(gh pr list *)",
+      "Bash(gh pr diff *)",
+      "Bash(gh pr checks *)"
+    ],
+    "ask": [
+      "Bash(git push *)",
+      "Bash(git checkout *)",
+      "Bash(git reset *)",
+      "Bash(git rebase *)",
+      "Bash(git merge *)",
+      "Bash(pip *)",
+      "Bash(.venv/bin/pip *)",
+      "Bash(uv *)",
+      "WebFetch"
+    ],
+    "deny": [
+      "Read(/config/.env)",
+      "Read(/.env)",
+      "Read(/.env.*)",
+      "Read(~/.config/gh/**)",
+      "Edit(/.github/**)",
+      "Edit(/.claude/**)",
+      "Edit(/**/*.bat)",
+      "Edit(/**/*.ps1)",
+      "Edit(/**/*.cmd)",
+      "Edit(/.venv/**)",
+      "Bash(git add -A*)",
+      "Bash(git add --all*)",
+      "Bash(git add .)",
+      "Bash(git push origin main *)",
+      "Bash(git push -u origin main *)",
+      "Bash(git push origin HEAD:main *)",
+      "Bash(git push --force*)",
+      "Bash(git push -f *)",
+      "Bash(git push --mirror *)",
+      "Bash(git push --delete *)",
+      "Bash(git remote *)",
+      "Bash(git config *)",
+      "Bash(gh pr merge *)",
+      "Bash(gh pr review *)",
+      "Bash(gh repo *)",
+      "Bash(gh secret *)",
+      "Bash(gh variable *)",
+      "Bash(gh auth *)",
+      "Bash(gh api *)",
+      "Bash(gh workflow *)",
+      "Bash(gh run rerun *)",
+      "Bash(curl *)",
+      "Bash(wget *)",
+      "Bash(rm -rf *)",
+      "Bash(sudo *)"
+    ]
+  },
+  "sandbox": {
+    "enabled": true,
+    "failIfUnavailable": true,
+    "autoAllowBashIfSandboxed": true,
+    "allowUnsandboxedCommands": false,
+    "filesystem": {
+      "denyRead": ["~/.config/gh", "./config/.env"],
+      "denyWrite": ["./.venv"]
+    },
+    "network": {
+      "allowedDomains": ["github.com", "api.github.com", "pypi.org", "files.pythonhosted.org"]
+    }
+  }
+}
