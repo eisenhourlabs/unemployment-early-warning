@@ -415,12 +415,15 @@ Run from the project folder. "(key)" = reads `config/.env`, so Troy runs it (see
   start from the newest commit (PR #3), non-XML DOL replies retried (PR #4).
 - 2026-11-28: Stage 3 steps 3.1-3.5 done on branch claude/secure-setup-files: sandbox settings tightened, these
   instructions updated for WSL2. Remaining in stage 3: 3.6, the browser check in WSL.
+- 2026-11-28: Stage 3 step 3.6 done and merged (PR #6): the browser check runs in WSL, inside the sandbox, with
+  Playwright's headless Chromium; 1,184 checks pass on the locally built site, 103 unit tests OK, 3 GB WSL cap
+  unchanged. Also fixed: the States sorting check crashed on a value carrying its own date. STAGE 3 IS COMPLETE.
 - Watch: scheduled refreshes of Nov 25-27 saved their data about 8 hours after the scheduled times (cause not
   checked); consider starting "Refresh data" by hand on release mornings.
 
 ## Next steps, in order
-0. Secure-setup move, one stage at a time with Troy's approval: finish stage 3 (browser check in WSL); publish
-   through Cloudflare Pages; protect main; make the repository private; redirect the old site; test every workflow.
+0. Secure-setup move, one stage at a time with Troy's approval (stages 1-3 done): stage 4 publish through Cloudflare
+   Pages; 5 protect main; 6 make the repository private; 7 redirect the old site; 8 test every workflow.
    No publishing or visibility changes near 2026-12-04, 2026-12-11 or 2027-01-15.
 
 Phase 4 and its review (Gates 1-4) are complete, merged and live; Troy ratified all delegated Phase 4 decisions on
