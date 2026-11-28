@@ -1,8 +1,8 @@
 """
 Check the built website in a real browser (run on your PC after build_site.py).
 
-It serves the site/ folder on a local address, opens every page linked in the top bar in Microsoft
-Edge without a window (Playwright drives the browser), and checks on each page:
+It serves the site/ folder on a local address, opens every page linked in the top bar in Chromium
+without a window (Playwright downloads and drives the browser), and checks on each page:
   1. the page loads with no browser errors;
   2. every chart has real data and its last date matches the data behind it;
   3. every time-control button sets every chart's dates (fixed-view charts stay put), rescales the
@@ -17,8 +17,11 @@ toggle shows and hides the stress paths.
 Screenshots (desktop and phone, per page) are saved to the folder given (default: site_check/ in your
 temp folder).
 
-Setup once:  pip install -r requirements-dev.txt     (uses the Edge already installed on Windows)
-Run:         python src/checks/check_site.py [screenshot folder]
+Setup once (WSL, in your own terminal):
+    .venv/bin/pip install -r requirements-dev.txt
+    .venv/bin/playwright install --only-shell chromium      (repeat after a Playwright version change)
+    sudo apt-get install -y libnss3 libnspr4 libasound2t64 fonts-liberation
+Run:         .venv/bin/python src/checks/check_site.py [screenshot folder]
 Exit code 1 if any check fails.
 """
 
@@ -46,11 +49,25 @@ def check(ok: bool, what: str) -> None:
         failures.append(what)
 
 
+class QuietHandler(http.server.SimpleHTTPRequestHandler):
+    """The standard file server, without a log line for every request."""
+
+    def log_message(self, *args):
+        pass
+
+
+class QuietServer(http.server.ThreadingHTTPServer):
+    """Ignores the browser hanging up mid-download; reports every other server error."""
+
+    def handle_error(self, request, client_address):
+        if not isinstance(sys.exc_info()[1], ConnectionError):
+            super().handle_error(request, client_address)
+
+
 def serve() -> str:
     """Start a small web server for site/ on a free port, in the background. Returns its address."""
-    handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(SITE))
-    handler.log_message = lambda *a: None   # keep the output quiet
-    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), handler)
+    handler = functools.partial(QuietHandler, directory=str(SITE))
+    server = QuietServer(("127.0.0.1", 0), handler)
     threading.Thread(target=server.serve_forever, daemon=True).start()
     return f"http://127.0.0.1:{server.server_address[1]}/"
 
@@ -797,7 +814,9 @@ def table_column(page, i: int) -> list:
 
 
 def as_numbers(vals: list) -> list:
-    return [float(v.replace("\u2212", "-").replace("+", "").replace("%", "").replace(",", "")) for v in vals if v != "—"]
+    """Table cells as numbers. Drops an older reading's own date, e.g. '+4.7% (Nov 14)', and skips cells with no value."""
+    nums = [v.split(" (")[0] for v in vals if v not in ("—", "not reported", "n/a")]
+    return [float(v.replace("\u2212", "-").replace("+", "").replace("%", "").replace(",", "")) for v in nums]
 
 
 def check_states(browser, base) -> None:
@@ -1279,7 +1298,7 @@ def main() -> int:
     SHOTS.mkdir(parents=True, exist_ok=True)
     base = serve()
     with sync_playwright() as p:
-        browser = p.chromium.launch(channel="msedge", headless=True)
+        browser = p.chromium.launch(headless=True)      # Playwright's own Chromium
         # Every page that has a real link in the top bar
         nav = browser.new_page()
         nav.goto(base)
