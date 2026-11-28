@@ -18,3 +18,11 @@ data/vintages/CFLMI*/
 
 # Shutdown-fallback preview (PC only, dol_state_fallback.py --simulate-delay)
 data/processed/dol/claims_estimates_preview.csv
+
+# Claude Code / credentials
+.claude/settings.local.json
+.env.*
+!config/.env.example
+*.key
+*.pem
+*.bak-*
