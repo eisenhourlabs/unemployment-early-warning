@@ -11,7 +11,8 @@ What it does, step by step:
        leading.py     -> leading.html      (summary table + 8 charts)
        downloads.py   -> data.html + every CSV / XLSX under site/data/
        about.py       -> about.html        (definitions, sources, updates, revisions, disclaimer)
-     Shared pieces (reading data, formats, chart builders) live in common.py.
+     Shared pieces (reading data, formats, chart builders) live in common.py. A small "page not found" page
+     (404.html) is written too.
   2. Adds the shared frame every page has: the freshness line, the stale-data badge (from the
      health check), the time control, the release calendar and the footer.
   3. Fills in the HTML templates in src/site/templates/ with Jinja2 (a fill-in-the-blanks tool:
@@ -219,6 +220,8 @@ def main() -> None:
     for template, out_name, context, n_charts in pages:
         (OUT / out_name).write_text(env.get_template(template).render(**context), encoding="utf-8")
         print(f"  {out_name:<18} {n_charts} charts")
+    # "Page not found". Without a 404.html, Cloudflare Pages answers any wrong address with the home page.
+    (OUT / "404.html").write_text(env.get_template("404.html").render(site_url=downloads.SITE_URL), encoding="utf-8")
 
     size_kb = sum(p.stat().st_size for p in OUT.rglob("*") if p.is_file()) / 1024
     print(f"Site built in {OUT} ({size_kb:,.0f} KB, {len(pages)} pages).")

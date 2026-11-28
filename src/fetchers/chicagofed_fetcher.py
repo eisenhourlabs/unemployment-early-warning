@@ -29,7 +29,7 @@ from fred_fetcher import LOG_FILE, PROCESSED, save
 SERIES_ID = "CHI_LMI"
 URL = "https://api.data.chicagofed.org/CFLMI/chi-labor-market-indicators.json"
 RELEASE_DATE_URL = "https://api.data.chicagofed.org/CFLMI/release-date.txt"
-HEADERS = {"User-Agent": "unemployment-early-warning (github.com/eisenhourlabs/unemployment-early-warning)"}
+HEADERS = {"User-Agent": "unemployment-early-warning"}
 
 
 def fetch() -> tuple[dict, str]:

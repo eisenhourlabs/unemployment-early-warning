@@ -448,6 +448,8 @@ def check_wording() -> None:
     # 2026-11-12 (Troy): no page links to the project's GitHub repository, issue tracker or account
     repo = [p.name for p in pages if re.search(r"(?i)github\.com/eisenhourlabs", p.read_text(encoding="utf-8"))]
     check(not repo, f"no page links to the GitHub repository {repo}")
+    # Without a 404.html, Cloudflare Pages answers any wrong address with the home page
+    check((SITE / "404.html").exists(), "404.html ('page not found') is built")
     # Review WP9 (C1, C3, C6, C10, C11): statements the data do not support are gone from every page ...
     banned = r"(?i)before finding work|only the data known|reprinted with permission|every chart on this page|free-to-use"
     gone = [f"{p.name}: {m.group(0)}" for p in pages for m in re.finditer(banned, p.read_text(encoding="utf-8"))]
