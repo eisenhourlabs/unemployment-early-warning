@@ -177,3 +177,32 @@ jobs:
       - name: Publish to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5    # current major as of 2026-11-07
+
+  # Copy the built site to the cf-pages branch, which Cloudflare Pages publishes with no build step, so no
+  # Cloudflare key is stored in GitHub. The branch holds a single commit, replaced each time. Main only.
+  # This job installs no packages and checks out no code.
+  cloudflare:
+    needs: build
+    if: ${{ !cancelled() && needs.build.result == 'success' && github.ref == 'refs/heads/main' && (github.event_name != 'workflow_dispatch' || inputs.publish) }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download the built site
+        uses: actions/download-artifact@v8    # current major as of 2026-11-28
+        with:
+          name: github-pages                  # the package the build job made for GitHub Pages
+      - name: Replace the cf-pages branch with this build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir site
+          tar -xf artifact.tar -C site
+          test -f site/index.html
+          cd site
+          git init -q -b cf-pages
+          git config user.name "site-bot"
+          git config user.email "site-bot@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Site build $(date -u +%Y-%m-%dT%H:%MZ), run ${GITHUB_RUN_ID}"
+          git push -q --force "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" cf-pages
