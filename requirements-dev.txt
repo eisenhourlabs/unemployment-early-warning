@@ -1,5 +1,6 @@
 # Only needed on your PC, for checking the built site in a real browser (src/checks/check_site.py).
-# Not installed in the cloud.
+# Not installed in the cloud. The check also needs Playwright's browser and a few Ubuntu packages: see
+# "Setup once" at the top of that script.
 -r requirements.txt
 playwright==1.64.1
 matplotlib==3.11.2  # review charts in reports/ (Phase 3 modeling); not used by the site

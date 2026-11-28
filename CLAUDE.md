@@ -129,7 +129,7 @@ pushing into `main`.
 | `config/derived_columns.csv` | Descriptions of the columns we calculate in DOL files (used in download Columns sheets) |
 | `src/site/templates/`, `src/site/static/` | Templates (`base.html` = shared frame, `_macros.html` = chart card, `charts_page.html` = chart-grid pages) and the site's CSS / JavaScript (time control, dark mode, downloads) |
 | `site/` | Built website (not committed; rebuilt and published to GitHub Pages by the workflow) |
-| `src/checks/check_site.py` | Browser check of the built site (Playwright; PC only, `requirements-dev.txt`; written for Edge on Windows, not yet set up in WSL) |
+| `src/checks/check_site.py` | Browser check of the built site (Playwright's headless Chromium; PC only, `requirements-dev.txt`) |
 | `docs/phase2_design.md` | Approved Phase 2 design (pages, charts, conventions, time control) |
 | `.github/workflows/refresh-data.yml` | Scheduled cloud refresh (weekday mornings + Thursday after claims), then the model step (tests, model inputs, `live.py --archive`, only with a new claims week or jobs report), then build + publish the site; manual runs have a "publish" box (untick for a branch test) |
 | `.github/workflows/refit-model.yml` | January re-fit (15 Jan + manual; test = tick the box or push branch `refit-dry-run`): full modeling chain, `freeze_model.py`, `refit_summary.py` -> `reports/refit_<year>.md`, opens a pull request for review |
@@ -164,7 +164,8 @@ Run from the project folder. "(key)" = reads `config/.env`, so Troy runs it (see
 - Build the site: `.venv/bin/python src/site/build_site.py`; preview: `.venv/bin/python -m http.server 8000 --directory site`,
   then open http://localhost:8000 (Ctrl+C stops the server; run the server in Troy's terminal, because one started
   in the sandbox cannot be reached)
-- Check the built site in a browser (not yet set up in WSL; once, in Troy's terminal: `.venv/bin/pip install -r requirements-dev.txt`): `.venv/bin/python src/checks/check_site.py`
+- Check the built site in a browser (build it first): `.venv/bin/python src/checks/check_site.py`. Setup once, in Troy's
+  terminal: see "Setup once" at the top of the script (pip packages, Playwright's headless Chromium, four Ubuntu packages)
 - Phase 3 modeling data, in order (the fetchers and `benchmarks.py` are (key)): `.venv/bin/python src/model/build_claims_history.py`, `.venv/bin/python src/model/alfred_fetcher.py`
   (~3 min), `.venv/bin/python src/model/current_fetcher.py`, `.venv/bin/python src/model/realtime.py` (Sahm check), `.venv/bin/python src/model/events.py`,
   `.venv/bin/python src/model/plot_events.py`, `.venv/bin/python src/model/triggers.py` (~15 s), `.venv/bin/python src/model/backtest_triggers.py`,
